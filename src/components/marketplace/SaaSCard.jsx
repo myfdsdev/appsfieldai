@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -52,8 +53,10 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, delay = 0, onBuyShare }) {
+export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwnership }) {
+  const navigate = useNavigate();
   const { title, category, fullPrice, sharePrice, totalShares, soldShares, monthlyRevenue, growthRate, rating, imageGradient, status, auctionEndsAt, riskScore, aiScore } = listing;
+  const isSold = status === "sold";
   const sharesLeft = totalShares - soldShares;
   const sharePercent = (soldShares / totalShares) * 100;
 
@@ -75,6 +78,14 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare }) {
             <Gavel className="w-3 h-3" /> Auction
           </Badge>
         )}
+        {isSold && (
+          <Badge className="absolute top-3 right-3 bg-red-500/90 text-white text-[10px] border-0 flex items-center gap-1">
+            <BadgeCheck className="w-3 h-3" /> Sold
+          </Badge>
+        )}
+        {isSold && <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+          <span className="text-white font-display font-bold text-2xl tracking-widest border-2 border-white/30 rounded-lg px-4 py-1 bg-black/30 backdrop-blur-sm rotate-[-8deg]">SOLD</span>
+        </div>}
         <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2.5 py-1">
           <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
           <span className="text-white text-[11px] font-medium">{rating}</span>
@@ -125,14 +136,14 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare }) {
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" onClick={() => onBuyShare?.(listing)} className="flex-1 bg-violet-600 hover:bg-violet-700 rounded-lg text-[11px] h-8">
+          <Button size="sm" onClick={() => onBuyShare?.(listing)} disabled={isSold} className="flex-1 bg-violet-600 hover:bg-violet-700 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Buy Share
           </Button>
-          <Button size="sm" variant="outline" className="flex-1 border-violet-500/30 text-violet-400 hover:bg-violet-500/10 rounded-lg text-[11px] h-8">
+          <Button size="sm" variant="outline" onClick={() => onBuyFullOwnership?.(listing)} disabled={isSold} className="flex-1 border-violet-500/30 text-violet-400 hover:bg-violet-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Full Ownership
           </Button>
-          <Button size="sm" variant="ghost" className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
-            Details
+          <Button size="sm" variant="ghost" onClick={() => navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
+            <ExternalLink className="w-3 h-3" />
           </Button>
         </div>
       </div>

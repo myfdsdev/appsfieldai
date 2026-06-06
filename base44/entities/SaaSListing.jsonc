@@ -63,7 +63,11 @@
     },
     "ownerUserId": {
       "type": "string",
-      "description": "The user ID of the owner/seller"
+      "description": "The user ID of the original owner/seller"
+    },
+    "fullOwnerUserId": {
+      "type": "string",
+      "description": "The user ID of the buyer who purchased full ownership"
     },
     "status": {
       "type": "string",
@@ -104,6 +108,20 @@
         "type": "string"
       },
       "description": "List of tags"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of key features"
+    },
+    "revenueProofFiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs of revenue proof documents"
     }
   },
   "required": [

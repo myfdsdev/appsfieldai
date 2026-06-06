@@ -9,7 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Dashboard from '@/pages/Dashboard';
 import Marketplace from '@/pages/Marketplace';
-import SaaDetail from '@/pages/SaaDetail';
+import SaaSDetail from '@/pages/SaaSDetail';
 import LiveAuctions from '@/pages/LiveAuctions';
 import MyInvestments from '@/pages/MyInvestments';
 import SellMySaaS from '@/pages/SellMySaaS';
@@ -46,7 +46,7 @@ const AuthenticatedApp = () => {
       <Route element={<DashboardLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/saas/:id" element={<SaaDetail />} />
+        <Route path="/saas/:id" element={<SaaSDetail />} />
         <Route path="/auctions" element={<LiveAuctions />} />
         <Route path="/investments" element={<MyInvestments />} />
         <Route path="/sell" element={<SellMySaaS />} />

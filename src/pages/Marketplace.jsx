@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import SaaSCard from "@/components/marketplace/SaaSCard";
 import MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
 import BuyShareModal from "@/components/marketplace/BuyShareModal";
+import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
 
 const revenueMap = {
   "All": () => true, "Under $500": (v) => v < 500, "$500-$1,000": (v) => v >= 500 && v < 1000,
@@ -26,7 +27,8 @@ export default function Marketplace() {
   const [priceFilter, setPriceFilter] = useState("All");
   const [riskFilter, setRiskFilter] = useState("All");
   const [auctionEndingSoon, setAuctionEndingSoon] = useState(false);
-  const [buyListing, setBuyListing] = useState(null);
+  const [buyShareListing, setBuyShareListing] = useState(null);
+  const [buyFullListing, setBuyFullListing] = useState(null);
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["saasListings"],
@@ -74,7 +76,7 @@ export default function Marketplace() {
         <>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map((l, i) => (
-              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onBuyShare={setBuyListing} />
+              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} />
             ))}
           </div>
 
@@ -88,9 +90,15 @@ export default function Marketplace() {
       )}
 
       <BuyShareModal
-        listing={buyListing}
-        open={!!buyListing}
-        onClose={() => setBuyListing(null)}
+        listing={buyShareListing}
+        open={!!buyShareListing}
+        onClose={() => setBuyShareListing(null)}
+        onSuccess={handleBuySuccess}
+      />
+      <FullOwnershipModal
+        listing={buyFullListing}
+        open={!!buyFullListing}
+        onClose={() => setBuyFullListing(null)}
         onSuccess={handleBuySuccess}
       />
     </div>
