@@ -75,7 +75,9 @@
         "active",
         "auction",
         "sold",
-        "draft"
+        "draft",
+        "pending",
+        "rejected"
       ],
       "default": "active"
     },

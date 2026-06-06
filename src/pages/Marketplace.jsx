@@ -38,7 +38,9 @@ export default function Marketplace() {
   const now = Date.now();
   const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
-  const filtered = listings.filter((l) => {
+  const publicListings = listings.filter((l) => l.status === "active" || l.status === "auction" || l.status === "sold");
+
+  const filtered = publicListings.filter((l) => {
     const catMatch = selectedCategory === "All" || l.category === selectedCategory;
     const searchMatch = l.title.toLowerCase().includes(search.toLowerCase());
     const revenueMatch = revenueMap[revenueFilter](l.monthlyRevenue);
