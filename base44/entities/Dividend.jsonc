@@ -1,0 +1,27 @@
+{
+  "name": "Dividend",
+  "type": "object",
+  "properties": {
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
+    },
+    "totalAmount": {
+      "type": "number",
+      "description": "Total profit amount distributed"
+    },
+    "period": {
+      "type": "string",
+      "description": "Period label (e.g. June 2026)"
+    }
+  },
+  "required": [
+    "listingId",
+    "listingTitle",
+    "totalAmount"
+  ]
+}

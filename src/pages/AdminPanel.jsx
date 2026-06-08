@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Users, Store, Gavel, DollarSign, Clock, CheckCircle, Ban, Eye, Trash2, Pencil, X } from "lucide-react";
+import DividendPanel from "@/components/admin/DividendPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,9 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Dividend Panel */}
+      <DividendPanel />
 
       {/* Edit Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>

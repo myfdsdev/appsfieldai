@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Shield, TrendingUp, AlertCircle, CheckCircle2, Building2 } from "lucide-react";
+import { Shield, TrendingUp, AlertCircle, CheckCircle2, Building2, CreditCard } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
 export default function FullOwnershipModal({ listing, open, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
   const [error, setError] = useState("");
 
   if (!listing) return null;
@@ -19,6 +20,38 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
     if (listing.status === "draft") return "This listing is not yet published.";
     if (isAuctionExpired) return "The auction for this listing has expired.";
     return "";
+  };
+
+  const handleStripeCheckout = async () => {
+    const validationError = validateAndGetError();
+    if (validationError) { setError(validationError); return; }
+
+    setStripeLoading(true);
+    setError("");
+
+    try {
+      const inIframe = window.self !== window.top;
+      if (inIframe) {
+        alert("Card payment only works from the published app. Please open the app directly.");
+        setStripeLoading(false);
+        return;
+      }
+
+      const res = await base44.functions.invoke("stripeCheckout", {
+        listingId: listing.id,
+        type: "ownership",
+      });
+
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        setError("Could not start checkout. Try again.");
+      }
+    } catch (err) {
+      setError("Payment failed. Please try again.");
+    } finally {
+      setStripeLoading(false);
+    }
   };
 
   const handleBuy = async () => {
@@ -130,20 +163,34 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
           </AnimatePresence>
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose} className="border-border/40 rounded-xl" disabled={loading}>Cancel</Button>
+        <DialogFooter className="flex-col gap-2">
           <Button
-            onClick={handleBuy}
-            disabled={listing.status === "sold" || loading}
-            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl gap-2 text-white border-0"
+            onClick={handleStripeCheckout}
+            disabled={listing.status === "sold" || stripeLoading}
+            className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl gap-2 text-white border-0"
           >
-            {loading ? (
+            {stripeLoading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <CheckCircle2 className="w-4 h-4" />
+              <CreditCard className="w-4 h-4" />
             )}
-            Buy for ${listing.fullPrice?.toLocaleString()}
+            Pay with Card
           </Button>
+          <div className="flex gap-2 w-full">
+            <Button variant="outline" onClick={onClose} className="flex-1 border-border/40 rounded-xl" disabled={loading || stripeLoading}>Cancel</Button>
+            <Button
+              onClick={handleBuy}
+              disabled={listing.status === "sold" || loading || stripeLoading}
+              className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl gap-2 text-white border-0 text-xs"
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-3 h-3" />
+              )}
+              Wallet
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
