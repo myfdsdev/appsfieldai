@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, LayoutGrid, LayoutDashboard } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -113,29 +113,7 @@ export default function MarketplaceFilters({
           </SelectContent>
         </Select>
 
-        {/* Grid Toggle Buttons */}
-        <div className="flex gap-1 ml-1">
-          <button
-            onClick={() => setGridCols(3)}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
-              gridCols === 3
-                ? "bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-500/20"
-                : "bg-secondary/50 border border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60"
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setGridCols(4)}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
-              gridCols === 4
-                ? "bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-500/20"
-                : "bg-secondary/50 border border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60"
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-        </div>
+
       </div>
     </div>
   );
