@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, LayoutGrid, LayoutDashboard } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,7 +14,9 @@ export default function MarketplaceFilters({
   revenueFilter, setRevenueFilter,
   priceFilter, setPriceFilter,
   riskFilter, setRiskFilter,
-  auctionEndingSoon, setAuctionEndingSoon 
+  auctionEndingSoon, setAuctionEndingSoon,
+  sortBy, setSortBy,
+  gridCols, setGridCols
 }) {
   return (
     <div className="space-y-4">
@@ -61,7 +63,7 @@ export default function MarketplaceFilters({
         ))}
       </div>
 
-      {/* Filter Dropdowns */}
+      {/* Filter + Sort + Grid Row */}
       <div className="flex flex-wrap gap-2 items-center">
         <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
         
@@ -97,6 +99,43 @@ export default function MarketplaceFilters({
             ))}
           </SelectContent>
         </Select>
+
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg bg-secondary/50 border-border/30">
+            <SelectValue placeholder="Newest" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest" className="text-xs">Newest</SelectItem>
+            <SelectItem value="price-low" className="text-xs">Price: Low to High</SelectItem>
+            <SelectItem value="price-high" className="text-xs">Price: High to Low</SelectItem>
+            <SelectItem value="revenue" className="text-xs">Highest Revenue</SelectItem>
+            <SelectItem value="growth" className="text-xs">Highest Growth</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Grid Toggle Buttons */}
+        <div className="flex gap-1 ml-1">
+          <button
+            onClick={() => setGridCols(3)}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+              gridCols === 3
+                ? "bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-500/20"
+                : "bg-secondary/50 border border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60"
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setGridCols(4)}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+              gridCols === 4
+                ? "bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-500/20"
+                : "bg-secondary/50 border border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60"
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

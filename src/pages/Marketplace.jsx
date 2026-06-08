@@ -27,6 +27,8 @@ export default function Marketplace() {
   const [priceFilter, setPriceFilter] = useState("All");
   const [riskFilter, setRiskFilter] = useState("All");
   const [auctionEndingSoon, setAuctionEndingSoon] = useState(false);
+  const [sortBy, setSortBy] = useState("newest");
+  const [gridCols, setGridCols] = useState(4);
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
 
@@ -50,6 +52,14 @@ export default function Marketplace() {
     return catMatch && searchMatch && revenueMatch && priceMatch && riskMatch && auctionMatch;
   });
 
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "price-low") return a.fullPrice - b.fullPrice;
+    if (sortBy === "price-high") return b.fullPrice - a.fullPrice;
+    if (sortBy === "revenue") return (b.monthlyRevenue || 0) - (a.monthlyRevenue || 0);
+    if (sortBy === "growth") return (b.growthRate || 0) - (a.growthRate || 0);
+    return new Date(b.created_date) - new Date(a.created_date);
+  });
+
   const handleBuySuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["saasListings"] });
   };
@@ -68,6 +78,8 @@ export default function Marketplace() {
         priceFilter={priceFilter} setPriceFilter={setPriceFilter}
         riskFilter={riskFilter} setRiskFilter={setRiskFilter}
         auctionEndingSoon={auctionEndingSoon} setAuctionEndingSoon={setAuctionEndingSoon}
+        sortBy={sortBy} setSortBy={setSortBy}
+        gridCols={gridCols} setGridCols={setGridCols}
       />
 
       {isLoading ? (
@@ -76,13 +88,13 @@ export default function Marketplace() {
         </div>
       ) : (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((l, i) => (
+          <div className={`grid sm:grid-cols-2 gap-4 ${gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
+            {sorted.map((l, i) => (
               <SaaSCard key={l.id} listing={l} delay={i * 0.05} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} />
             ))}
           </div>
 
-          {filtered.length === 0 && (
+          {sorted.length === 0 && (
             <div className="text-center py-20 text-muted-foreground">
               <p className="text-lg font-display">No listings found</p>
               <p className="text-sm mt-1">Try adjusting your filters or search terms.</p>
