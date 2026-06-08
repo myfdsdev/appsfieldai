@@ -1,32 +1,95 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, PieChart, BarChart3, DollarSign, ArrowUpRight, ArrowDownRight, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { TrendingUp, DollarSign, BarChart3, ArrowUpRight, ArrowDownRight, Clock, PieChart as PieIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-
-const investments = [
-  { name: "Real Estate Agent SaaS", shares: 12, invested: 1200, currentValue: 1440, revenue: 240, growth: 18, sharePrice: 100, color: "from-violet-500 to-purple-500" },
-  { name: "CRM Dashboard Pro", shares: 5, invested: 1250, currentValue: 1625, revenue: 500, growth: 24, sharePrice: 250, color: "from-cyan-500 to-teal-500" },
-  { name: "AI Content Writer", shares: 20, invested: 2000, currentValue: 2560, revenue: 400, growth: 32, sharePrice: 100, color: "from-emerald-500 to-green-500" },
-  { name: "E-com Analytics Tool", shares: 8, invested: 400, currentValue: 480, revenue: 160, growth: 15, sharePrice: 50, color: "from-amber-500 to-orange-500" },
-  { name: "Marketing Automator", shares: 3, invested: 390, currentValue: 440, revenue: 90, growth: 28, sharePrice: 130, color: "from-rose-500 to-pink-500" },
-];
-
-const transactionHistory = [
-  { type: "Dividend", item: "CRM Dashboard Pro", amount: "+$45", date: "Jun 6, 2026", color: "text-emerald-400" },
-  { type: "Share Purchase", item: "AI Content Writer", amount: "-$200", date: "Jun 5, 2026", color: "text-cyan-400" },
-  { type: "Dividend", item: "Real Estate Agent SaaS", amount: "+$24", date: "Jun 4, 2026", color: "text-emerald-400" },
-  { type: "Share Sale", item: "E-com Analytics", amount: "+$120", date: "Jun 2, 2026", color: "text-amber-400" },
-  { type: "Share Purchase", item: "Marketing Automator", amount: "-$130", date: "May 30, 2026", color: "text-cyan-400" },
-];
+import PortfolioChart from "@/components/investments/PortfolioChart";
 
 export default function MyInvestments() {
-  const totalInvested = investments.reduce((s, i) => s + i.invested, 0);
-  const totalValue = investments.reduce((s, i) => s + i.currentValue, 0);
-  const totalRevenue = investments.reduce((s, i) => s + i.revenue, 0);
-  const profit = totalValue - totalInvested;
-  const profitPct = ((profit / totalInvested) * 100).toFixed(1);
+  const { data: sharePurchases = [], isLoading: loadingShares } = useQuery({
+    queryKey: ["mySharePurchases"],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.SharePurchase.filter({ userId: user.id }, ["-created_date"], 100);
+    },
+  });
+
+  const { data: transactions = [], isLoading: loadingTx } = useQuery({
+    queryKey: ["myTransactions"],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.Transaction.filter({ userId: user.id }, ["-created_date"], 50);
+    },
+  });
+
+  // Build holdings grouped by listingId
+  const holdings = useMemo(() => {
+    const grouped = {};
+    sharePurchases.forEach((p) => {
+      if (!grouped[p.listingId]) {
+        grouped[p.listingId] = {
+          listingId: p.listingId,
+          title: "SaaS Listing",
+          totalShares: 0,
+          totalInvested: 0,
+          avgPricePerShare: 0,
+        };
+      }
+      grouped[p.listingId].totalShares += p.sharesBought || 0;
+      grouped[p.listingId].totalInvested += p.totalAmount || 0;
+    });
+    // Calculate avg price
+    Object.values(grouped).forEach((h) => {
+      h.avgPricePerShare = h.totalShares > 0 ? Math.round(h.totalInvested / h.totalShares) : 0;
+    });
+    return Object.values(grouped);
+  }, [sharePurchases]);
+
+  // Fetch listing titles for holdings
+  const { data: listingTitles = {} } = useQuery({
+    queryKey: ["listingTitles", holdings.map((h) => h.listingId)],
+    queryFn: async () => {
+      const titles = {};
+      await Promise.all(
+        holdings.map(async (h) => {
+          try {
+            const items = await base44.entities.SaaSListing.filter({ id: h.listingId });
+            if (items[0]) titles[h.listingId] = items[0].title;
+          } catch { /* listing may be deleted */ }
+        })
+      );
+      return titles;
+    },
+    enabled: holdings.length > 0,
+  });
+
+  // Enrich holdings with titles
+  const enrichedHoldings = useMemo(() =>
+    holdings.map((h) => ({
+      ...h,
+      title: listingTitles[h.listingId] || `Listing ${h.listingId.slice(0, 6)}`,
+    })),
+  [holdings, listingTitles]);
+
+  const totalInvested = enrichedHoldings.reduce((s, h) => s + h.totalInvested, 0);
+  const totalShares = enrichedHoldings.reduce((s, h) => s + h.totalShares, 0);
+  const estimatedValue = totalInvested * 1.15; // placeholder: 15% growth assumption
+  const profit = estimatedValue - totalInvested;
+  const profitPct = totalInvested > 0 ? ((profit / totalInvested) * 100).toFixed(1) : "0";
+
+  const isLoading = loadingShares || loadingTx;
+
+  const txTypeMeta = {
+    share_purchase: { label: "Share Purchase", color: "text-cyan-400", icon: ArrowDownRight },
+    ownership_purchase: { label: "Ownership Purchase", color: "text-violet-400", icon: ArrowDownRight },
+    deposit: { label: "Deposit", color: "text-emerald-400", icon: ArrowUpRight },
+    withdrawal: { label: "Withdrawal", color: "text-red-400", icon: ArrowDownRight },
+    dividend: { label: "Dividend", color: "text-emerald-400", icon: ArrowUpRight },
+    sale_revenue: { label: "Sale Revenue", color: "text-amber-400", icon: ArrowUpRight },
+  };
 
   return (
     <div className="space-y-6">
@@ -38,15 +101,15 @@ export default function MyInvestments() {
       {/* Summary Cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Invested", value: `$${totalInvested.toLocaleString()}`, icon: DollarSign, color: "from-violet-500 to-purple-500" },
-          { label: "Current Value", value: `$${totalValue.toLocaleString()}`, icon: BarChart3, color: "from-cyan-500 to-teal-500" },
-          { label: "Total Profit", value: `${profit >= 0 ? "+" : ""}$${profit.toLocaleString()}`, icon: TrendingUp, color: "from-emerald-500 to-green-500", extra: `${profitPct}%` },
-          { label: "Monthly Revenue", value: `$${totalRevenue}/mo`, icon: DollarSign, color: "from-amber-500 to-orange-500" },
+          { label: "Total Invested", value: `$${totalInvested.toLocaleString()}`, icon: DollarSign, grad: "from-violet-500 to-purple-500" },
+          { label: "Est. Portfolio Value", value: `$${estimatedValue.toLocaleString()}`, icon: BarChart3, grad: "from-cyan-500 to-teal-500" },
+          { label: "Total Profit", value: `${profit >= 0 ? "+" : ""}$${profit.toLocaleString()}`, icon: TrendingUp, grad: "from-emerald-500 to-green-500", extra: `${profitPct}%` },
+          { label: "Total Shares", value: totalShares, icon: PieIcon, grad: "from-amber-500 to-orange-500" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-            <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+            <Card className="border-border/40 bg-card/60 backdrop-blur-xl h-full">
               <CardContent className="p-5">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}>
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.grad} flex items-center justify-center mb-3`}>
                   <s.icon className="w-5 h-5 text-white" />
                 </div>
                 <p className="text-2xl font-display font-bold">{s.value}</p>
@@ -58,65 +121,94 @@ export default function MyInvestments() {
         ))}
       </div>
 
-      {/* Holdings */}
-      <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-        <CardHeader><CardTitle className="text-base font-display">My Holdings</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          {investments.map((inv, i) => (
-            <motion.div
-              key={inv.name}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.06 }}
-              className="flex items-center gap-4 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors"
-            >
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${inv.color} flex items-center justify-center shrink-0`}>
-                <TrendingUp className="w-5 h-5 text-white" />
+      {/* Portfolio Chart + Holdings */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <PortfolioChart holdings={enrichedHoldings} />
+
+        {/* Holdings List */}
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader><CardTitle className="text-base font-display">My Holdings</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {isLoading ? (
+              <div className="flex justify-center py-10">
+                <div className="w-6 h-6 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium truncate">{inv.name}</p>
-                  <span className={`text-xs font-medium ${inv.growth >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                    +{inv.growth}%
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                  <span>{inv.shares} shares</span>
-                  <span>·</span>
-                  <span>${inv.revenue}/mo</span>
-                  <span>·</span>
-                  <span>Invested ${inv.invested}</span>
-                </div>
+            ) : enrichedHoldings.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground text-sm">
+                <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                No investments yet. Browse the marketplace to get started!
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-sm font-display font-bold">${inv.currentValue}</p>
-                <p className={`text-[11px] ${inv.currentValue >= inv.invested ? "text-emerald-400" : "text-red-400"}`}>
-                  {inv.currentValue >= inv.invested ? "+" : ""}${inv.currentValue - inv.invested}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </CardContent>
-      </Card>
+            ) : (
+              enrichedHoldings.map((h, i) => {
+                const pctOfPortfolio = totalInvested > 0 ? ((h.totalInvested / totalInvested) * 100).toFixed(0) : 0;
+                const colors = ["from-violet-500 to-purple-500", "from-cyan-500 to-teal-500", "from-emerald-500 to-green-500", "from-amber-500 to-orange-500", "from-rose-500 to-pink-500"];
+                return (
+                  <motion.div
+                    key={h.listingId}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                  >
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors[i % colors.length]} flex items-center justify-center shrink-0`}>
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium truncate">{h.title}</p>
+                        <Badge variant="outline" className="text-[10px] border-border/40 shrink-0 ml-2">{pctOfPortfolio}%</Badge>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <span>{h.totalShares} shares</span>
+                        <span>·</span>
+                        <span>Avg ${h.avgPricePerShare}/share</span>
+                      </div>
+                      <Progress value={Number(pctOfPortfolio)} className="h-1 mt-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-purple-500" />
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-display font-bold">${h.totalInvested.toLocaleString()}</p>
+                      <p className="text-[11px] text-muted-foreground">invested</p>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Transaction History */}
       <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
         <CardHeader><CardTitle className="text-base font-display">Transaction History</CardTitle></CardHeader>
         <CardContent className="divide-y divide-border/30">
-          {transactionHistory.map((t, i) => (
-            <div key={i} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center`}>
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm"><span className="font-medium">{t.type}</span> — {t.item}</p>
-                  <p className="text-[11px] text-muted-foreground">{t.date}</p>
-                </div>
-              </div>
-              <span className={`text-sm font-medium ${t.color}`}>{t.amount}</span>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="w-5 h-5 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
             </div>
-          ))}
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">No transactions yet.</div>
+          ) : (
+            transactions.slice(0, 20).map((t, i) => {
+              const meta = txTypeMeta[t.type] || { label: t.type, color: "text-muted-foreground", icon: Clock };
+              const isPositive = t.amount > 0;
+              return (
+                <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center">
+                      <meta.icon className={`w-4 h-4 ${meta.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{meta.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                    </div>
+                  </div>
+                  <span className={`text-sm font-medium ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                    {isPositive ? "+" : ""}{t.type === "share_purchase" || t.type === "ownership_purchase" ? "-" : ""}${Math.abs(t.amount).toLocaleString()}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </CardContent>
       </Card>
     </div>

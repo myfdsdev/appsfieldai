@@ -1,0 +1,40 @@
+{
+  "name": "QnA",
+  "type": "object",
+  "properties": {
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
+    },
+    "question": {
+      "type": "string",
+      "description": "The question asked"
+    },
+    "answer": {
+      "type": "string",
+      "description": "The seller's answer"
+    },
+    "askedByName": {
+      "type": "string",
+      "description": "Name of the person who asked"
+    },
+    "answeredByName": {
+      "type": "string",
+      "description": "Name of the person who answered"
+    },
+    "isAnswered": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the question has been answered"
+    }
+  },
+  "required": [
+    "listingId",
+    "question",
+    "askedByName"
+  ]
+}

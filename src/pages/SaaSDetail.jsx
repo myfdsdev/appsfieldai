@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
+import QnAPanel from "@/components/marketplace/QnAPanel";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -295,6 +296,11 @@ export default function SaaSDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Q&A Panel */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <QnAPanel listing={listing} />
+          </motion.div>
 
           {/* Recent Bids */}
           {bids.length > 0 && (
