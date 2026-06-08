@@ -53,12 +53,17 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Public routes — accessible without login */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/saas/:id" element={<SaaSDetail />} />
+        <Route path="/auctions" element={<LiveAuctions />} />
+      </Route>
+
+      {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/saas/:id" element={<SaaSDetail />} />
-          <Route path="/auctions" element={<LiveAuctions />} />
           <Route path="/investments" element={<MyInvestments />} />
           <Route path="/sell" element={<SellMySaaS />} />
           <Route path="/wallet" element={<Wallet />} />

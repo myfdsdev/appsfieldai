@@ -104,9 +104,7 @@ export default function Dashboard() {
           >
             Explore SaaS Deals
           </button>
-          <a href="/sell" className="px-6 py-2.5 rounded-full bg-white/5 border border-white/15 text-sm font-semibold hover:bg-white/10 transition-colors">
-            Submit Your SaaS
-          </a>
+
         </motion.div>
       </motion.div>
 
