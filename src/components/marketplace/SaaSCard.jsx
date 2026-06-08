@@ -132,7 +132,7 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
             <span className="text-muted-foreground">Shares sold</span>
             <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
           </div>
-          <Progress value={sharePercent} className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-cyan-500" />
+          <Progress value={sharePercent} className="h-2 [&>div]:bg-[#2b2b2b]" />
         </div>
 
         {/* Revenue & Growth */}
@@ -143,10 +143,10 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" onClick={() => onBuyShare?.(listing)} disabled={isSold} className="flex-1 bg-violet-600 hover:bg-violet-700 rounded-lg text-[11px] h-8 disabled:opacity-40">
+          <Button size="sm" onClick={() => onBuyShare?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
             Buy Share
           </Button>
-          <Button size="sm" variant="outline" onClick={() => onBuyFullOwnership?.(listing)} disabled={isSold} className="flex-1 border-violet-500/30 text-violet-400 hover:bg-violet-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
+          <Button size="sm" variant="outline" onClick={() => onBuyFullOwnership?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Full Ownership
           </Button>
           <Button size="sm" variant="ghost" onClick={() => navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
