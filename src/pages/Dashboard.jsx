@@ -1,63 +1,186 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, TrendingUp, PieChart, Activity, Wallet, Gavel, BarChart3 } from "lucide-react";
-import StatCard from "@/components/dashboard/StatCard";
-import PortfolioChart from "@/components/dashboard/PortfolioChart";
-import RevenueChart from "@/components/dashboard/RevenueChart";
-import LiveAuctionsCard from "@/components/dashboard/LiveAuctionsCard";
-import InvestmentsTable from "@/components/dashboard/InvestmentsTable";
-import AITipCard from "@/components/dashboard/AITipCard";
-import RecentActivity from "@/components/dashboard/RecentActivity";
-import UpcomingPayouts from "@/components/dashboard/UpcomingPayouts";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { Zap, TrendingUp, Search, SlidersHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import SaaSCard from "@/components/marketplace/SaaSCard";
+import BuyShareModal from "@/components/marketplace/BuyShareModal";
+import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
 
-const stats = [
-  { icon: DollarSign, label: "Total Portfolio Value", value: "$48,250", change: "+12.4%", up: true, color: "from-violet-500 to-purple-500" },
-  { icon: PieChart, label: "Total Shares Owned", value: "45", change: null, up: true, color: "from-cyan-500 to-teal-500" },
-  { icon: TrendingUp, label: "Monthly Revenue", value: "$2,840", change: "+8.1%", up: true, color: "from-emerald-500 to-green-500" },
-  { icon: BarChart3, label: "Total Investments", value: "8", change: null, up: true, color: "from-amber-500 to-orange-500" },
-  { icon: Wallet, label: "Available Balance", value: "$5,420", change: "+$500", up: true, color: "from-pink-500 to-rose-500" },
-  { icon: Activity, label: "Active Auctions", value: "6", change: "2 ending soon", up: true, color: "from-indigo-500 to-blue-500" },
-];
+const CATEGORIES = ["All Categories", "AI & ML", "CRM", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance", "Developer Tools", "Design Tools"];
+const SORT_OPTIONS = ["Newest", "Oldest", "Highest Revenue", "Lowest Price", "Highest Price"];
+
+const revenueMap = {
+  "All": () => true, "Under $500": (v) => v < 500, "$500-$1,000": (v) => v >= 500 && v < 1000,
+  "$1,000-$2,000": (v) => v >= 1000 && v < 2000, "$2,000-$5,000": (v) => v >= 2000 && v < 5000, "$5,000+": (v) => v >= 5000,
+};
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [sortBy, setSortBy] = useState("Newest");
+  const [buyShareListing, setBuyShareListing] = useState(null);
+  const [buyFullListing, setBuyFullListing] = useState(null);
+
+  const { data: listings = [], isLoading } = useQuery({
+    queryKey: ["saasListings"],
+    queryFn: () => base44.entities.SaaSListing.list(),
+  });
+
+  const publicListings = listings.filter((l) => l.status === "active" || l.status === "auction" || l.status === "sold");
+
+  const filtered = publicListings.filter((l) => {
+    const catMatch = selectedCategory === "All Categories" || l.category === selectedCategory;
+    const searchMatch = !search || l.title.toLowerCase().includes(search.toLowerCase());
+    return catMatch && searchMatch;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "Newest") return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === "Oldest") return new Date(a.created_date) - new Date(b.created_date);
+    if (sortBy === "Highest Revenue") return (b.monthlyRevenue || 0) - (a.monthlyRevenue || 0);
+    if (sortBy === "Highest Price") return (b.fullPrice || 0) - (a.fullPrice || 0);
+    if (sortBy === "Lowest Price") return (a.fullPrice || 0) - (b.fullPrice || 0);
+    return 0;
+  });
+
+  const handleBuySuccess = () => queryClient.invalidateQueries({ queryKey: ["saasListings"] });
+
   return (
-    <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl font-display font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Welcome back, Alex. Here's your portfolio overview.</p>
+    <div className="space-y-0">
+      {/* Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative py-16 px-4 text-center overflow-hidden"
+      >
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-violet-600/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[200px] bg-cyan-600/10 rounded-full blur-3xl" />
+        </div>
+
+        {/* Badge */}
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-400 text-xs font-medium mb-6"
+        >
+          <Zap className="w-3 h-3" />
+          Group Buying for Software
+        </motion.div>
+
+        {/* Headline */}
+        <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-3"
+        >
+          Split the Price.<br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
+            Own the Software.
+          </span>
+        </motion.h1>
+
+        {/* Subheadline */}
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-6"
+        >
+          Join group deals on premium SaaS businesses. Lock a slot, split the cost, and own a share for a fraction of the price.
+        </motion.p>
+
+        {/* Live badge */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+        >
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <TrendingUp className="w-3 h-3" />
+            {publicListings.length} active deals live now
+          </span>
+        </motion.div>
       </motion.div>
 
-      {/* Stats Grid - 6 cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {stats.map((s, i) => (
-          <StatCard key={s.label} {...s} delay={i * 0.06} />
-        ))}
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <PortfolioChart />
+      {/* Search + Filter Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center px-0 pb-6"
+      >
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search software deals..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 bg-secondary/60 border-border/40 rounded-xl h-10 text-sm"
+          />
         </div>
-        <div>
-          <RevenueChart />
-        </div>
-      </div>
 
-      {/* Middle Row - Auctions + Payouts + AI Tip */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <LiveAuctionsCard />
-        <UpcomingPayouts />
-        <AITipCard />
-      </div>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-full sm:w-[180px] h-10 text-sm rounded-xl bg-secondary/60 border-border/40">
+            <SlidersHorizontal className="w-4 h-4 mr-2 text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORIES.map((c) => (
+              <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Bottom Row - Investments Table + Recent Activity */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <InvestmentsTable />
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-[140px] h-10 text-sm rounded-xl bg-secondary/60 border-border/40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((s) => (
+              <SelectItem key={s} value={s} className="text-sm">{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </motion.div>
+
+      {/* Listings Grid */}
+      {isLoading ? (
+        <div className="flex justify-center py-20">
+          <div className="w-8 h-8 border-4 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
         </div>
-        <RecentActivity />
-      </div>
+      ) : (
+        <>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {sorted.map((l, i) => (
+              <SaaSCard
+                key={l.id}
+                listing={l}
+                delay={i * 0.04}
+                onBuyShare={setBuyShareListing}
+                onBuyFullOwnership={setBuyFullListing}
+              />
+            ))}
+          </div>
+
+          {sorted.length === 0 && (
+            <div className="text-center py-20 text-muted-foreground">
+              <p className="text-lg font-display">No listings found</p>
+              <p className="text-sm mt-1">Try a different category or search term.</p>
+            </div>
+          )}
+        </>
+      )}
+
+      <BuyShareModal
+        listing={buyShareListing}
+        open={!!buyShareListing}
+        onClose={() => setBuyShareListing(null)}
+        onSuccess={handleBuySuccess}
+      />
+      <FullOwnershipModal
+        listing={buyFullListing}
+        open={!!buyFullListing}
+        onClose={() => setBuyFullListing(null)}
+        onSuccess={handleBuySuccess}
+      />
     </div>
   );
 }
