@@ -53,7 +53,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwnership }) {
+export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwnership, onViewDetails }) {
   const navigate = useNavigate();
   const { title, category, fullPrice, sharePrice, totalShares, soldShares, monthlyRevenue, growthRate, rating, imageGradient, status, auctionEndsAt, riskScore, aiScore } = listing;
   const isSold = status === "sold";
@@ -70,7 +70,7 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
       {/* Image / Header */}
       <div
         className={`h-36 bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden cursor-pointer`}
-        onClick={() => navigate(`/saas/${listing.id}`)}
+        onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)}
       >
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
@@ -149,7 +149,7 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
           <Button size="sm" variant="outline" onClick={() => onBuyFullOwnership?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Full Ownership
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
+          <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
             <ExternalLink className="w-3 h-3" />
           </Button>
         </div>

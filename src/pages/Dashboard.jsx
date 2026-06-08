@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import SaaSCard from "@/components/marketplace/SaaSCard";
 import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
+import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
 
 const CATEGORIES = ["All Categories", "AI & ML", "CRM", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance", "Developer Tools", "Design Tools"];
 const SORT_OPTIONS = ["Newest", "Oldest", "Highest Revenue", "Lowest Price", "Highest Price"];
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("Newest");
   const [gridCols, setGridCols] = useState(4);
+  const [viewDetailListing, setViewDetailListing] = useState(null);
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
 
@@ -187,6 +189,7 @@ export default function Dashboard() {
                 key={l.id}
                 listing={l}
                 delay={i * 0.04}
+                onViewDetails={setViewDetailListing}
                 onBuyShare={setBuyShareListing}
                 onBuyFullOwnership={setBuyFullListing}
               />
@@ -213,6 +216,11 @@ export default function Dashboard() {
         open={!!buyFullListing}
         onClose={() => setBuyFullListing(null)}
         onSuccess={handleBuySuccess}
+      />
+      <SaaSDetailModal
+        listingId={viewDetailListing?.id}
+        open={!!viewDetailListing}
+        onClose={() => setViewDetailListing(null)}
       />
     </div>
   );

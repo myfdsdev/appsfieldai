@@ -6,6 +6,7 @@ import SaaSCard from "@/components/marketplace/SaaSCard";
 import MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
 import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
+import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
 
 const revenueMap = {
   "All": () => true, "Under $500": (v) => v < 500, "$500-$1,000": (v) => v >= 500 && v < 1000,
@@ -29,6 +30,7 @@ export default function Marketplace() {
   const [auctionEndingSoon, setAuctionEndingSoon] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
   const [gridCols, setGridCols] = useState(4);
+  const [viewDetailListing, setViewDetailListing] = useState(null);
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
 
@@ -90,7 +92,7 @@ export default function Marketplace() {
         <>
           <div className={`grid sm:grid-cols-2 gap-4 ${gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
             {sorted.map((l, i) => (
-              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} />
+              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} />
             ))}
           </div>
 
@@ -114,6 +116,11 @@ export default function Marketplace() {
         open={!!buyFullListing}
         onClose={() => setBuyFullListing(null)}
         onSuccess={handleBuySuccess}
+      />
+      <SaaSDetailModal
+        listingId={viewDetailListing?.id}
+        open={!!viewDetailListing}
+        onClose={() => setViewDetailListing(null)}
       />
     </div>
   );
