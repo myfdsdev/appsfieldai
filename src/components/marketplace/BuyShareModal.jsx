@@ -100,7 +100,7 @@ export default function BuyShareModal({ listing, open, onClose, onSuccess }) {
             <hr className="border-border/30" />
             <div className="flex justify-between text-base">
               <span className="text-muted-foreground">Total</span>
-              <span className="font-display font-bold text-cyan-400">${totalAmount.toLocaleString()}</span>
+              <span className="font-display font-bold text-[#f79a1b]">${totalAmount.toLocaleString()}</span>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export default function BuyShareModal({ listing, open, onClose, onSuccess }) {
           <div className="rounded-lg bg-secondary/30 p-3 text-xs space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground">
               <TrendingUp className="w-3 h-3" />
-              {listing.sharePrice} x {quantity} = <span className="font-bold text-cyan-400">${totalAmount.toLocaleString()}</span>
+              {listing.sharePrice} x {quantity} = <span className="font-bold text-[#f79a1b]">${totalAmount.toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Shield className="w-3 h-3" />
@@ -170,7 +170,7 @@ export default function BuyShareModal({ listing, open, onClose, onSuccess }) {
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} className="border-border/40 rounded-xl" disabled={loading}>Cancel</Button>
-          <Button onClick={handleBuy} disabled={!canBuy || loading} className="bg-violet-600 hover:bg-violet-700 rounded-xl gap-2">
+          <Button onClick={handleBuy} disabled={!canBuy || loading} className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl gap-2 text-white border-0">
             {loading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (

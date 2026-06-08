@@ -122,7 +122,7 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
           </div>
           <div className="rounded-lg bg-secondary/40 p-2.5">
             <p className="text-[10px] text-muted-foreground">Per Share</p>
-            <p className="text-sm font-display font-bold text-cyan-400">${sharePrice}</p>
+            <p className="text-sm font-display font-bold text-[#f79a1b]">${sharePrice}</p>
           </div>
         </div>
 

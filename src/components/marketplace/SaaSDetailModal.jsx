@@ -229,7 +229,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                     </div>
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
                       <p className="text-[9px] text-muted-foreground uppercase">Profit</p>
-                      <p className="text-xs font-display font-bold text-cyan-400">${monthlyProfit.toLocaleString()}</p>
+                      <p className="text-xs font-display font-bold text-[#f79a1b]">${monthlyProfit.toLocaleString()}</p>
                       <p className="text-[9px] text-muted-foreground">/mo</p>
                     </div>
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
@@ -241,7 +241,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                   {/* Share Price & Progress */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Per Share: <span className="text-cyan-400 font-bold">${listing.sharePrice}</span></span>
+                      <span className="text-muted-foreground">Per Share: <span className="text-[#f79a1b] font-bold">${listing.sharePrice}</span></span>
                       <span className="text-muted-foreground">{listing.soldShares}/{listing.totalShares} sold</span>
                     </div>
                     <Progress value={(listing.soldShares / listing.totalShares) * 100} className="h-1.5 bg-secondary [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />

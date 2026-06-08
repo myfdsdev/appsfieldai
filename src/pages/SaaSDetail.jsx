@@ -239,7 +239,7 @@ export default function SaaSDetail() {
                 </div>
                 <div className="rounded-xl bg-secondary/40 p-3 text-center">
                   <p className="text-[10px] text-muted-foreground uppercase">Monthly Profit</p>
-                  <p className="text-lg font-display font-bold text-cyan-400">${monthlyProfit.toLocaleString()}</p>
+                  <p className="text-lg font-display font-bold text-[#f79a1b]">${monthlyProfit.toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -338,7 +338,7 @@ export default function SaaSDetail() {
                   </div>
                   <div className="rounded-xl bg-secondary/40 p-3">
                     <p className="text-[10px] text-muted-foreground uppercase">Per Share</p>
-                    <p className="text-xl font-display font-bold text-cyan-400 mt-1">${listing.sharePrice}</p>
+                    <p className="text-xl font-display font-bold text-[#f79a1b] mt-1">${listing.sharePrice}</p>
                   </div>
                 </div>
 
@@ -359,7 +359,7 @@ export default function SaaSDetail() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Monthly Profit</span>
-                    <span className="font-medium text-cyan-400">${monthlyProfit.toLocaleString()}</span>
+                    <span className="font-medium text-[#f79a1b]">${monthlyProfit.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Seller</span>
