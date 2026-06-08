@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -20,6 +20,28 @@ export default function AdminPanel() {
     queryKey: ["allListings"],
     queryFn: () => base44.entities.SaaSListing.list(),
   });
+
+  const { data: allBids = [] } = useQuery({
+    queryKey: ["allBids"],
+    queryFn: () => base44.entities.Bid.filter({}, ["-created_date"], 100),
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ["allUsers"],
+    queryFn: () => base44.entities.User.list(),
+  });
+
+  const enrichedBids = useMemo(() => {
+    const listingMap = {};
+    allListings.forEach((l) => { listingMap[l.id] = l.title; });
+    const userMap = {};
+    allUsers.forEach((u) => { userMap[u.id] = u.full_name || u.email; });
+    return allBids.map((b) => ({
+      ...b,
+      listingTitle: listingMap[b.listingId] || "Unknown Listing",
+      bidderName: userMap[b.userId] || "Unknown User",
+    }));
+  }, [allBids, allListings, allUsers]);
 
   const pendingListings = allListings.filter((l) => l.status === "pending");
   const activeListings = allListings.filter((l) => l.status === "active");
@@ -132,6 +154,39 @@ export default function AdminPanel() {
                     <Button size="sm" variant="ghost" onClick={() => handleReject(l)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 text-xs"><Ban className="w-3.5 h-3.5 mr-1" /> Reject</Button>
                     <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 hover:bg-red-500/10 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
                   </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Recent Bids */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <Gavel className="w-4 h-4 text-amber-400" />
+              All Bids
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{enrichedBids.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {enrichedBids.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No bids placed yet</p>
+            ) : (
+              enrichedBids.map((b) => (
+                <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                      <Gavel className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{b.bidderName}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-display font-bold text-amber-400 flex-shrink-0 ml-3">${b.bidAmount?.toLocaleString()}</span>
                 </div>
               ))
             )}
