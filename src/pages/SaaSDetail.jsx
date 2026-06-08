@@ -348,7 +348,7 @@ export default function SaaSDetail() {
                     <span className="text-muted-foreground">Shares</span>
                     <span className="font-medium">{listing.soldShares}/{listing.totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
                   </div>
-                  <Progress value={(listing.soldShares / listing.totalShares) * 100} className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-cyan-500" />
+                  <Progress value={(listing.soldShares / listing.totalShares) * 100} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
                 </div>
 
                 {/* Metrics */}
@@ -378,10 +378,10 @@ export default function SaaSDetail() {
                 {/* Action Buttons */}
                 {!isSold && (
                   <div className="space-y-2 pt-2">
-                    <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl h-10 font-semibold text-sm" onClick={() => setBuyShareListing(listing)}>
+                    <Button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setBuyShareListing(listing)}>
                       <DollarSign className="w-4 h-4 mr-2" /> Buy Shares
                     </Button>
-                    <Button variant="outline" className="w-full border-violet-500/20 text-violet-400 hover:bg-violet-500/10 rounded-xl h-10 text-sm" onClick={() => setBuyFullListing(listing)}>
+                    <Button variant="outline" className="w-full border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-xl h-10 text-sm" onClick={() => setBuyFullListing(listing)}>
                       <Building2 className="w-4 h-4 mr-2" /> Full Ownership
                     </Button>
                     {listing.status === "auction" && (
