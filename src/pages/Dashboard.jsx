@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaaSCard from "@/components/marketplace/SaaSCard";
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("Newest");
+  const [gridCols, setGridCols] = useState(4);
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
 
@@ -147,6 +148,30 @@ export default function Dashboard() {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Grid Toggle Buttons */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => setGridCols(3)}
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${
+              gridCols === 3
+                ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20"
+                : "bg-secondary/60 border border-border/40 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setGridCols(4)}
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${
+              gridCols === 4
+                ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20"
+                : "bg-secondary/60 border border-border/40 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
       </motion.div>
 
       {/* Listings Grid */}
@@ -156,7 +181,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <div id="listings-grid" className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div id="listings-grid" className={`grid sm:grid-cols-2 gap-4 ${gridCols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
             {sorted.map((l, i) => (
               <SaaSCard
                 key={l.id}
