@@ -68,11 +68,22 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
       className="group rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 flex flex-col"
     >
       {/* Image / Header */}
-      <div className={`h-36 bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden`}>
+      <div
+        className={`h-36 bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden cursor-pointer`}
+        onClick={() => navigate(`/saas/${listing.id}`)}
+      >
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
         <span className="relative text-white font-display font-bold text-xl text-center px-4 leading-tight drop-shadow-lg">{title}</span>
-        
+
+        {/* Hover overlay with "View Details" */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-250">
+          <div className="flex items-center gap-2 bg-white text-black font-semibold text-sm px-5 py-2 rounded-full shadow-lg">
+            <ExternalLink className="w-4 h-4" />
+            View Details
+          </div>
+        </div>
+
         {status === "auction" && (
           <Badge className="absolute top-3 right-3 bg-amber-500/90 text-white text-[10px] border-0 flex items-center gap-1">
             <Gavel className="w-3 h-3" /> Auction
