@@ -132,7 +132,7 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
             <span className="text-muted-foreground">Shares sold</span>
             <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
           </div>
-          <Progress value={sharePercent} className="h-2 [&>div]:bg-[#2b2b2b]" />
+          <Progress value={sharePercent} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
         </div>
 
         {/* Revenue & Growth */}
