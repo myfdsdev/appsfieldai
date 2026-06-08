@@ -21,6 +21,7 @@ import MyInvestments from '@/pages/MyInvestments';
 import SellMySaaS from '@/pages/SellMySaaS';
 import Wallet from '@/pages/Wallet';
 import AdminPanel from '@/pages/AdminPanel';
+import AdminSettings from '@/pages/AdminSettings';
 // Add page imports here
 
 const AuthenticatedApp = () => {
