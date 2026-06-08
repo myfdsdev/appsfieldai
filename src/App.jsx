@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import Home from '@/pages/Home';
+import Dashboard from '@/pages/Dashboard';
 import Marketplace from '@/pages/Marketplace';
 import SaaSDetail from '@/pages/SaaSDetail';
 import LiveAuctions from '@/pages/LiveAuctions';
@@ -44,7 +44,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<DashboardLayout />}>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/saas/:id" element={<SaaSDetail />} />
         <Route path="/auctions" element={<LiveAuctions />} />
