@@ -4,9 +4,10 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,12 +18,27 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!email.trim()) { setError("Email is required"); return; }
+    if (!password) { setError("Password is required"); return; }
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      // Fire-and-forget admin notification
+      base44.functions.invoke("notifyAdminLogin", {
+        fullName: email,
+        email: email,
+        role: "user",
+        loginTime: new Date().toISOString(),
+      }).catch(() => {});
+      toast({ title: "Welcome back!", description: "Login successful. Redirecting..." });
+      setTimeout(() => { window.location.href = "/"; }, 600);
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      const msg = err.message || "";
+      if (msg.includes("Invalid login credentials") || msg.includes("invalid")) {
+        setError("Invalid email or password. Please try again.");
+      } else {
+        setError(msg || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -65,8 +81,9 @@ export default function Login() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
+        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
@@ -109,7 +126,7 @@ export default function Login() {
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium bg-cyan-500 hover:bg-cyan-600 text-white" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
