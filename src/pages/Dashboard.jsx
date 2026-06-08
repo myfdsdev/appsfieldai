@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Zap, TrendingUp, Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaaSCard from "@/components/marketplace/SaaSCard";
@@ -55,48 +55,49 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative py-16 px-4 text-center overflow-hidden"
+        className="relative py-20 px-4 text-center overflow-hidden rounded-2xl mb-2"
+        style={{ background: "radial-gradient(ellipse at 50% 60%, rgba(180,60,10,0.35) 0%, rgba(10,6,3,0) 70%)" }}
       >
-        {/* Background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-violet-600/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[200px] bg-cyan-600/10 rounded-full blur-3xl" />
-        </div>
-
         {/* Badge */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-400 text-xs font-medium mb-6"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs font-medium mb-7"
         >
-          <Zap className="w-3 h-3" />
-          Group Buying for Software
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+          The Future of SaaS Ownership
         </motion.div>
 
         {/* Headline */}
         <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-3"
+          className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5"
         >
-          Split the Price.<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-            Own the Software.
-          </span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Own A SaaS.</span>{" "}
+          <span className="text-foreground">Or Own</span><br />
+          <span className="text-foreground">A Piece </span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Of One.</span>
+          <span className="ml-2">🤖</span>
         </motion.h1>
 
         {/* Subheadline */}
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-          className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-6"
+          className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-8"
         >
-          Join group deals on premium SaaS businesses. Lock a slot, split the cost, and own a share for a fraction of the price.
+          Buy complete ownership of profitable SaaS businesses or invest in fractional ownership shares starting from{" "}
+          <strong className="text-foreground">just $100.</strong>
         </motion.p>
 
-        {/* Live badge */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
-          className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+        {/* CTA Buttons */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          className="flex items-center justify-center gap-3 flex-wrap"
         >
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <TrendingUp className="w-3 h-3" />
-            {publicListings.length} active deals live now
-          </span>
+          <button
+            onClick={() => document.getElementById("listings-grid")?.scrollIntoView({ behavior: "smooth" })}
+            className="px-6 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
+          >
+            Explore SaaS Deals
+          </button>
+          <a href="/sell" className="px-6 py-2.5 rounded-full bg-white/5 border border-white/15 text-sm font-semibold hover:bg-white/10 transition-colors">
+            Submit Your SaaS
+          </a>
         </motion.div>
       </motion.div>
 
@@ -148,7 +149,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div id="listings-grid" className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {sorted.map((l, i) => (
               <SaaSCard
                 key={l.id}

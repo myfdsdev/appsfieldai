@@ -1,34 +1,89 @@
-import React from "react";
-import { Bell, Search, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import React, { useState } from "react";
+import { NavLink, Link } from "react-router-dom";
+import { Zap, Store, PieChart, Upload, Wallet, Shield, Gavel, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+  { to: "/marketplace", label: "Marketplace" },
+  { to: "/auctions", label: "Live Auctions" },
+  { to: "/investments", label: "My Deals" },
+  { to: "/wallet", label: "Wallet" },
+  { to: "/admin", label: "Admin" },
+];
 
 export default function Topbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <header className="h-16 border-b border-border/40 bg-card/60 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-30">
-      <div className="relative w-72">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search SaaS listings..."
-          className="pl-9 h-9 bg-secondary/50 border-border/30 text-sm rounded-lg"
-        />
+    <header className="sticky top-0 z-40 border-b border-white/5 bg-background/80 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shrink-0">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-display font-bold text-base">
+            SaaS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Share</span>
+          </span>
+        </Link>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                cn(
+                  "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                  isActive
+                    ? "text-orange-400"
+                    : "text-muted-foreground hover:text-foreground"
+                )
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Right actions */}
+        <div className="hidden md:flex items-center gap-3">
+          <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm">
+            <Link to="/sell">Submit Your SaaS</Link>
+          </Button>
+        </div>
+
+        {/* Mobile toggle */}
+        <button className="md:hidden p-2 rounded-lg hover:bg-secondary/50" onClick={() => setMobileOpen(!mobileOpen)}>
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button className="relative p-2 rounded-lg hover:bg-secondary/50 transition-colors">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-500" />
-        </button>
-        <div className="flex items-center gap-3 pl-4 border-l border-border/30">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">Alex Johnson</p>
-            <p className="text-[11px] text-muted-foreground">Investor</p>
-          </div>
-          <Avatar className="w-9 h-9 border-2 border-violet-500/30">
-            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-cyan-500 text-white text-sm font-bold">AJ</AvatarFallback>
-          </Avatar>
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-white/5 bg-background/95 backdrop-blur-xl px-6 py-4 space-y-1">
+          {navLinks.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                cn(
+                  "block px-4 py-2.5 text-sm font-medium rounded-xl transition-colors",
+                  isActive ? "text-orange-400 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                )
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+          <Link to="/sell" onClick={() => setMobileOpen(false)}>
+            <Button size="sm" className="w-full mt-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl">Submit Your SaaS</Button>
+          </Link>
         </div>
-      </div>
+      )}
     </header>
   );
 }
