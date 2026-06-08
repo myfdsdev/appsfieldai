@@ -31,57 +31,95 @@ function CountdownTimer({ endDate }) {
   );
 }
 
+const DEMO_SLIDES = [
+  { src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop&crop=edges", label: "Dashboard Overview" },
+  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=600&fit=crop&crop=edges", label: "Analytics Screen" },
+  { src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&h=600&fit=crop&crop=edges", label: "Revenue Overview" },
+  { src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=600&fit=crop&crop=edges", label: "Team Dashboard" },
+];
+
 function ImageSlider({ images, gradient, title }) {
   const [current, setCurrent] = useState(0);
-  const hasImages = images && images.length > 0;
+  const slides = (images && images.length > 0) ? images : DEMO_SLIDES.map((s) => s.src);
+  const slideLabels = (images && images.length > 0) ? null : DEMO_SLIDES.map((s) => s.label);
+  const isMulti = slides.length > 1;
 
-  if (!hasImages) {
-    return (
-      <div className={`h-64 rounded-2xl bg-gradient-to-br ${gradient || "from-violet-600 to-purple-700"} flex items-center justify-center relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
-        <div className="relative text-center">
-          <h2 className="text-3xl font-display font-bold text-white drop-shadow-lg">{title}</h2>
-        </div>
-      </div>
-    );
-  }
-
-  const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
-  const next = () => setCurrent((c) => (c + 1) % images.length);
+  const prev = () => setCurrent((c) => (c - 1 + slides.length) % slides.length);
+  const next = () => setCurrent((c) => (c + 1) % slides.length);
 
   return (
-    <div className="relative h-64 rounded-2xl overflow-hidden bg-secondary/40 group">
+    <div className="relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-secondary/40 group">
       <AnimatePresence mode="wait">
         <motion.img
           key={current}
-          src={images[current]}
+          src={slides[current]}
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.97 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.35, ease: "easeInOut" }}
           className="w-full h-full object-cover"
+          alt={slideLabels ? slideLabels[current] : `Slide ${current + 1}`}
         />
       </AnimatePresence>
 
-      {images.length > 1 && (
+      {/* Gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+      {isMulti && (
         <>
-          <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
+          {/* Left Arrow */}
+          <button
+            onClick={prev}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 sm:opacity-0 opacity-60 transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95 border border-white/10"
+          >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
+
+          {/* Right Arrow */}
+          <button
+            onClick={next}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 sm:opacity-0 opacity-60 transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95 border border-white/10"
+          >
             <ChevronRight className="w-5 h-5" />
           </button>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {images.map((_, i) => (
-              <button key={i} onClick={() => setCurrent(i)} className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white scale-125" : "bg-white/40"}`} />
+
+          {/* Pagination Dots */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === current
+                    ? "w-6 h-2 bg-white shadow-lg shadow-white/30"
+                    : "w-2 h-2 bg-white/50 hover:bg-white/70"
+                }`}
+                aria-label={`Go to slide ${i + 1}`}
+              />
             ))}
           </div>
-          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2.5 py-1">
+
+          {/* Slide Counter */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/10">
             <Images className="w-3 h-3 text-white/70" />
-            <span className="text-white text-[11px] font-medium">{current + 1}/{images.length}</span>
+            <span className="text-white text-[11px] font-medium tracking-wide">{current + 1} / {slides.length}</span>
           </div>
+
+          {/* Slide Label */}
+          {slideLabels && (
+            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10">
+              <span className="text-white text-[11px] font-medium">{slideLabels[current]}</span>
+            </div>
+          )}
         </>
+      )}
+
+      {/* Single image - show with counter only */}
+      {!isMulti && (
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/10">
+          <Images className="w-3 h-3 text-white/70" />
+          <span className="text-white text-[11px] font-medium">1 / 1</span>
+        </div>
       )}
     </div>
   );
