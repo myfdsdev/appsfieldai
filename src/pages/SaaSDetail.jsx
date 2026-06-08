@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2, DollarSign, FileText, Users, Wallet } from "lucide-react";
+import { ArrowLeft, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2, DollarSign, FileText, Users, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +27,62 @@ function CountdownTimer({ endDate }) {
     <div className={`flex items-center gap-2 text-sm font-mono font-bold ${urgent ? "text-red-400" : "text-amber-400"}`}>
       <Clock className="w-4 h-4" />
       {days}d {String(hours).padStart(2, "0")}h {String(mins).padStart(2, "0")}m
+    </div>
+  );
+}
+
+function ImageSlider({ images, gradient, title }) {
+  const [current, setCurrent] = useState(0);
+  const hasImages = images && images.length > 0;
+
+  if (!hasImages) {
+    return (
+      <div className={`h-64 rounded-2xl bg-gradient-to-br ${gradient || "from-violet-600 to-purple-700"} flex items-center justify-center relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
+        <div className="relative text-center">
+          <h2 className="text-3xl font-display font-bold text-white drop-shadow-lg">{title}</h2>
+        </div>
+      </div>
+    );
+  }
+
+  const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
+  const next = () => setCurrent((c) => (c + 1) % images.length);
+
+  return (
+    <div className="relative h-64 rounded-2xl overflow-hidden bg-secondary/40 group">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={current}
+          src={images[current]}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.97 }}
+          transition={{ duration: 0.3 }}
+          className="w-full h-full object-cover"
+        />
+      </AnimatePresence>
+
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
+            <ChevronRight className="w-5 h-5" />
+          </button>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, i) => (
+              <button key={i} onClick={() => setCurrent(i)} className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white scale-125" : "bg-white/40"}`} />
+            ))}
+          </div>
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2.5 py-1">
+            <Images className="w-3 h-3 text-white/70" />
+            <span className="text-white text-[11px] font-medium">{current + 1}/{images.length}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -110,18 +166,9 @@ export default function SaaSDetail() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Image */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`h-64 rounded-2xl bg-gradient-to-br ${listing.imageGradient || "from-violet-600 to-purple-700"} flex items-center justify-center relative overflow-hidden`}
-          >
-            <div className="absolute inset-0 bg-black/20" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
-            <div className="relative text-center">
-              <h2 className="text-3xl font-display font-bold text-white drop-shadow-lg">{listing.title}</h2>
-              <p className="text-white/70 mt-1">{listing.category} Solution</p>
-            </div>
+          {/* Image Slider */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <ImageSlider images={listing.images} gradient={listing.imageGradient} title={listing.title} />
           </motion.div>
 
           {/* Description */}
@@ -297,7 +344,7 @@ export default function SaaSDetail() {
                       <DollarSign className="w-4 h-4 mr-2" /> Buy Shares
                     </Button>
                     <Button variant="outline" className="w-full border-violet-500/20 text-violet-400 hover:bg-violet-500/10 rounded-xl h-10 text-sm" onClick={() => setBuyFullListing(listing)}>
-                      <Building2 className="w-4 h-4 mr-2" /> Full Ownership — ${listing.fullPrice?.toLocaleString()}
+                      <Building2 className="w-4 h-4 mr-2" /> Full Ownership
                     </Button>
                     {listing.status === "auction" && (
                       <Button variant="outline" className="w-full border-amber-500/20 text-amber-400 hover:bg-amber-500/10 rounded-xl h-10 text-sm">
@@ -316,7 +363,7 @@ export default function SaaSDetail() {
 
                 <div className="flex items-center gap-2 pt-2">
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[11px] text-muted-foreground">Verified & Secured by SaaSShare</span>
+                  <span className="text-[11px] text-muted-foreground">Verified &amp; Secured by SaaSShare</span>
                 </div>
               </CardContent>
             </Card>
