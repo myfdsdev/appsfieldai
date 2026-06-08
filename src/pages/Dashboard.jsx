@@ -83,7 +83,7 @@ export default function Dashboard() {
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Split the Price.</span>{" "}
           <br />
           <span className="text-foreground">Own the </span>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Of One.</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Software.</span>
         </motion.h1>
 
         {/* Subheadline */}
