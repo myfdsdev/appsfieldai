@@ -114,7 +114,7 @@ export default function Dashboard() {
             className="px-6 py-2.5 rounded-full border border-orange-400/40 text-orange-400 text-sm font-semibold hover:bg-orange-400/10 transition-colors flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
-            List Your SaaS
+            Sell My SaaS
           </button>
 
         </motion.div>
