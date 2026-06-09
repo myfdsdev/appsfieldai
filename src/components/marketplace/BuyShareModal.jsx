@@ -40,7 +40,7 @@ export default function BuyShareModal({ listing, open, onClose, onSuccess }) {
     try {
       const inIframe = window.self !== window.top;
       if (inIframe) {
-        alert("Card payment only works from the published app. Please open the app directly.");
+        setError("Card payment only works from the published app. Please open the app directly.");
         setStripeLoading(false);
         return;
       }
