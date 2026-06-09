@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid } from "lucide-react";
+import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid, Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaaSCard from "@/components/marketplace/SaaSCard";
@@ -20,6 +21,7 @@ const revenueMap = {
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("Newest");
@@ -106,6 +108,13 @@ export default function Dashboard() {
             className="px-6 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
           >
             Active deals live now
+          </button>
+          <button
+            onClick={() => navigate("/sell")}
+            className="px-6 py-2.5 rounded-full border border-orange-400/40 text-orange-400 text-sm font-semibold hover:bg-orange-400/10 transition-colors flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" />
+            Sell My SaaS
           </button>
 
         </motion.div>
