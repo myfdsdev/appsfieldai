@@ -17,6 +17,7 @@ export default function SellMySaaS() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [revenueProofFile, setRevenueProofFile] = useState(null);
+  const [productImageFile, setProductImageFile] = useState(null);
   const [form, setForm] = useState({
     title: "", category: "CRM", description: "", sellerName: "",
     fullPrice: "", sharePrice: "", totalShares: "50",
@@ -38,6 +39,11 @@ export default function SellMySaaS() {
         const { file_url } = await base44.integrations.Core.UploadFile({ file: revenueProofFile });
         proofUrls = [file_url];
       }
+      let productImages = [];
+      if (productImageFile) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: productImageFile });
+        productImages = [file_url];
+      }
 
       await base44.entities.SaaSListing.create({
         title: form.title,
@@ -55,6 +61,7 @@ export default function SellMySaaS() {
         auctionEndsAt,
         ownerUserId: user.id,
         revenueProofFiles: proofUrls,
+        images: productImages,
         imageGradient: "from-violet-600 to-purple-700",
       });
 
@@ -75,7 +82,7 @@ export default function SellMySaaS() {
         </div>
         <h2 className="text-xl font-display font-bold">Listing Submitted!</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-sm">Your SaaS listing is submitted for admin approval. It will appear in the marketplace once approved.</p>
-        <Button className="mt-6 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl" onClick={() => { setSubmitted(false); setStep(1); setForm({ title: "", category: "CRM", description: "", sellerName: "", fullPrice: "", sharePrice: "", totalShares: "50", monthlyRevenue: "", monthlyExpenses: "", growthRate: "", features: "", auctionDuration: "7" }); setRevenueProofFile(null); }}>
+        <Button className="mt-6 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl" onClick={() => { setSubmitted(false); setStep(1); setForm({ title: "", category: "CRM", description: "", sellerName: "", fullPrice: "", sharePrice: "", totalShares: "50", monthlyRevenue: "", monthlyExpenses: "", growthRate: "", features: "", auctionDuration: "7" }); setRevenueProofFile(null); setProductImageFile(null); }}>
           List Another SaaS
         </Button>
       </motion.div>
@@ -131,6 +138,10 @@ export default function SellMySaaS() {
               <div className="space-y-2">
                 <Label className="text-xs">Key Features (comma separated)</Label>
                 <Input value={form.features} onChange={(e) => updateForm("features", e.target.value)} placeholder="Lead Management, Analytics, Email Integration" className="bg-secondary/50 border-border/30 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Product Image / Screenshot</Label>
+                <Input type="file" accept="image/*" onChange={(e) => setProductImageFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-violet-500/20 file:text-violet-400" />
               </div>
               <Button onClick={() => setStep(2)} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
             </CardContent>
