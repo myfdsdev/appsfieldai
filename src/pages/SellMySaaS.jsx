@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import AIValuationTool from "@/components/marketplace/AIValuationTool";
 
 const CATEGORIES = ["CRM", "AI & ML", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance"];
 
@@ -140,7 +141,7 @@ export default function SellMySaaS() {
       {step === 2 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
           <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-            <CardHeader><CardTitle className="text-base font-display">Pricing & Financials</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base font-display">Pricing and Financials</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -176,6 +177,15 @@ export default function SellMySaaS() {
                   <Input type="number" value={form.auctionDuration} onChange={(e) => updateForm("auctionDuration", e.target.value)} placeholder="7" className="bg-secondary/50 border-border/30 rounded-xl" />
                 </div>
               </div>
+              <AIValuationTool
+                formData={form}
+                onApplyValuation={({ fullPrice, sharePrice }) => {
+                  updateForm("fullPrice", Math.round(fullPrice).toString());
+                  updateForm("sharePrice", Math.round(sharePrice).toString());
+                  toast.success("AI suggested prices applied!");
+                }}
+              />
+
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(1)} className="border-border/40 rounded-xl">Back</Button>
                 <Button onClick={() => setStep(3)} className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
@@ -188,7 +198,7 @@ export default function SellMySaaS() {
       {step === 3 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
           <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-            <CardHeader><CardTitle className="text-base font-display">Review & Submit</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base font-display">Review and Submit</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-xl bg-secondary/30 p-4 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Name</span><span className="font-medium">{form.title || "—"}</span></div>
