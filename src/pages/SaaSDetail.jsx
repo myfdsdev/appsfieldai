@@ -12,6 +12,7 @@ import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
 import QnAPanel from "@/components/marketplace/QnAPanel";
 import ChatPanel from "@/components/marketplace/ChatPanel";
+import FinancialCharts from "@/components/marketplace/FinancialCharts";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -317,6 +318,9 @@ export default function SaaSDetail() {
 
           {/* Private Chat */}
           <ChatPanel listing={listing} currentUser={currentUser} />
+
+          {/* Financial Charts */}
+          <FinancialCharts listing={listing} />
 
           {/* Recent Bids */}
           {bids.length > 0 && (
