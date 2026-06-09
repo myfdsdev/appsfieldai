@@ -91,6 +91,12 @@
   }
 }
 
+/* Global input/textarea/select styles */
+input, textarea, select {
+  background-color: #212121 !important;
+  border-color: #2f2f2f !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
