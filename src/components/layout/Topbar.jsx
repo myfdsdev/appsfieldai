@@ -9,8 +9,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 const navLinks = [
   { to: "/marketplace", label: "Marketplace" },
   { to: "/auctions", label: "Live Auctions" },
-  { to: "/investments", label: "My Deals" },
-  { to: "/wallet", label: "Wallet" },
+  { to: "/requests", label: "My Requests" },
   { to: "/admin", label: "Admin" },
 ];
 
