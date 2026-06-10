@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Store, Gavel, PieChart, Upload, Wallet, Shield, Zap, ChevronLeft, ChevronRight
+  LayoutDashboard, Store, Gavel, PieChart, Upload, Shield, Zap, ChevronLeft, ChevronRight, ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,9 +10,8 @@ const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/marketplace", icon: Store, label: "Marketplace" },
   { to: "/auctions", icon: Gavel, label: "Live Auctions" },
-  { to: "/investments", icon: PieChart, label: "My Investments" },
+  { to: "/requests", icon: ClipboardList, label: "My Requests" },
   { to: "/sell", icon: Upload, label: "Sell My SaaS" },
-  { to: "/wallet", icon: Wallet, label: "Wallet" },
   { to: "/admin", icon: Shield, label: "Admin Panel" },
 ];
 

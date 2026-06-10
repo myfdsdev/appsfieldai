@@ -7,8 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaaSCard from "@/components/marketplace/SaaSCard";
-import BuyShareModal from "@/components/marketplace/BuyShareModal";
-import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
+import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
+import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
 
 const CATEGORIES = ["All Categories", "AI & ML", "CRM", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance", "Developer Tools", "Design Tools"];
@@ -27,8 +27,8 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState("Newest");
   const [gridCols, setGridCols] = useState(4);
   const [viewDetailListing, setViewDetailListing] = useState(null);
-  const [buyShareListing, setBuyShareListing] = useState(null);
-  const [buyFullListing, setBuyFullListing] = useState(null);
+  const [reserveSpotListing, setReserveSpotListing] = useState(null);
+  const [requestAcqListing, setRequestAcqListing] = useState(null);
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["saasListings"],
@@ -199,8 +199,8 @@ export default function Dashboard() {
                 listing={l}
                 delay={i * 0.04}
                 onViewDetails={setViewDetailListing}
-                onBuyShare={setBuyShareListing}
-                onBuyFullOwnership={setBuyFullListing}
+                onReserveSpot={setReserveSpotListing}
+                onRequestAcquisition={setRequestAcqListing}
               />
             ))}
           </div>
@@ -214,17 +214,15 @@ export default function Dashboard() {
         </>
       )}
 
-      <BuyShareModal
-        listing={buyShareListing}
-        open={!!buyShareListing}
-        onClose={() => setBuyShareListing(null)}
-        onSuccess={handleBuySuccess}
+      <ReserveSpotModal
+        listing={reserveSpotListing}
+        open={!!reserveSpotListing}
+        onClose={() => setReserveSpotListing(null)}
       />
-      <FullOwnershipModal
-        listing={buyFullListing}
-        open={!!buyFullListing}
-        onClose={() => setBuyFullListing(null)}
-        onSuccess={handleBuySuccess}
+      <RequestAcquisitionModal
+        listing={requestAcqListing}
+        open={!!requestAcqListing}
+        onClose={() => setRequestAcqListing(null)}
       />
       <SaaSDetailModal
         listingId={viewDetailListing?.id}

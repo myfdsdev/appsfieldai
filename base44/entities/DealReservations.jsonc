@@ -1,0 +1,45 @@
+{
+  "name": "DealReservations",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who reserved"
+    },
+    "userName": {
+      "type": "string",
+      "description": "Full name of the user"
+    },
+    "userEmail": {
+      "type": "string",
+      "description": "Email of the user"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes from the user"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Reservation status"
+    }
+  },
+  "required": [
+    "userId",
+    "listingId"
+  ]
+}

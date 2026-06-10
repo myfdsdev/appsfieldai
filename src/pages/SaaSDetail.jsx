@@ -3,13 +3,13 @@ import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2, DollarSign, FileText, Users, ChevronLeft, ChevronRight, Images } from "lucide-react";
+import { ArrowLeft, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2, DollarSign, FileText, Users, ChevronLeft, ChevronRight, Images, CalendarCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import BuyShareModal from "@/components/marketplace/BuyShareModal";
-import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
+import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
+import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import QnAPanel from "@/components/marketplace/QnAPanel";
 import ChatPanel from "@/components/marketplace/ChatPanel";
 import FinancialCharts from "@/components/marketplace/FinancialCharts";
@@ -131,8 +131,8 @@ function ImageSlider({ images, gradient, title }) {
 export default function SaaSDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const [buyShareListing, setBuyShareListing] = useState(null);
-  const [buyFullListing, setBuyFullListing] = useState(null);
+  const [reserveSpotListing, setReserveSpotListing] = useState(null);
+  const [requestAcqListing, setRequestAcqListing] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -404,11 +404,11 @@ export default function SaaSDetail() {
                 {/* Action Buttons */}
                 {!isSold && (
                   <div className="space-y-2 pt-2">
-                    <Button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setBuyShareListing(listing)}>
-                      <DollarSign className="w-4 h-4 mr-2" /> Buy Shares
+                    <Button className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setReserveSpotListing(listing)}>
+                      <CalendarCheck className="w-4 h-4 mr-2" /> Reserve Spot
                     </Button>
-                    <Button variant="outline" className="w-full border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-xl h-10 text-sm" onClick={() => setBuyFullListing(listing)}>
-                      <Building2 className="w-4 h-4 mr-2" /> Full Ownership
+                    <Button variant="outline" className="w-full border-violet-500/60 text-violet-400 hover:bg-violet-500/10 rounded-xl h-10 text-sm" onClick={() => setRequestAcqListing(listing)}>
+                      <Building2 className="w-4 h-4 mr-2" /> Request Acquisition
                     </Button>
                     {listing.status === "auction" && (
                       <Button variant="outline" className="w-full border-amber-500/20 text-amber-400 hover:bg-amber-500/10 rounded-xl h-10 text-sm">
@@ -435,8 +435,8 @@ export default function SaaSDetail() {
         </div>
       </div>
 
-      <BuyShareModal listing={buyShareListing} open={!!buyShareListing} onClose={() => setBuyShareListing(null)} onSuccess={handleSuccess} />
-      <FullOwnershipModal listing={buyFullListing} open={!!buyFullListing} onClose={() => setBuyFullListing(null)} onSuccess={handleSuccess} />
+      <ReserveSpotModal listing={reserveSpotListing} open={!!reserveSpotListing} onClose={() => setReserveSpotListing(null)} />
+      <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
     </div>
   );
 }

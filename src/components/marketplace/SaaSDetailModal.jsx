@@ -4,13 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   X, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2,
-  DollarSign, FileText, Users, ChevronLeft, ChevronRight
+  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import BuyShareModal from "@/components/marketplace/BuyShareModal";
-import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
+import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
+import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -98,8 +98,8 @@ function ImageSlider({ images }) {
 
 export default function SaaSDetailModal({ listingId, open, onClose }) {
   const queryClient = useQueryClient();
-  const [buyShareListing, setBuyShareListing] = useState(null);
-  const [buyFullListing, setBuyFullListing] = useState(null);
+  const [reserveSpotListing, setReserveSpotListing] = useState(null);
+  const [requestAcqListing, setRequestAcqListing] = useState(null);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["saasListing", listingId],
@@ -286,17 +286,17 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                   {!isSold ? (
                     <div className="space-y-2 pt-1">
                       <Button
-                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
-                        onClick={() => setBuyShareListing(listing)}
+                        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-9 font-semibold text-sm text-white border-0"
+                        onClick={() => setReserveSpotListing(listing)}
                       >
-                        <DollarSign className="w-4 h-4 mr-1.5" /> Buy Shares
+                        <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full border-orange-500/50 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
-                        onClick={() => setBuyFullListing(listing)}
+                        className="w-full border-violet-500/50 text-violet-400 hover:bg-violet-500/10 rounded-xl h-9 text-sm"
+                        onClick={() => setRequestAcqListing(listing)}
                       >
-                        <Building2 className="w-4 h-4 mr-1.5" /> Full Ownership
+                        <Building2 className="w-4 h-4 mr-1.5" /> Request Acquisition
                       </Button>
                     </div>
                   ) : (
@@ -318,8 +318,8 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
         </div>
       )}
 
-      <BuyShareModal listing={buyShareListing} open={!!buyShareListing} onClose={() => setBuyShareListing(null)} onSuccess={handleSuccess} />
-      <FullOwnershipModal listing={buyFullListing} open={!!buyFullListing} onClose={() => setBuyFullListing(null)} onSuccess={handleSuccess} />
+      <ReserveSpotModal listing={reserveSpotListing} open={!!reserveSpotListing} onClose={() => setReserveSpotListing(null)} />
+      <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
     </AnimatePresence>
   );
 }

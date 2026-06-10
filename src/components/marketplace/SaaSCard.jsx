@@ -53,7 +53,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwnership, onViewDetails }) {
+export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails }) {
   const navigate = useNavigate();
   const { title, category, fullPrice, sharePrice, totalShares, soldShares, monthlyRevenue, growthRate, rating, imageGradient, status, auctionEndsAt, riskScore, aiScore } = listing;
   const isSold = status === "sold";
@@ -143,11 +143,11 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" onClick={() => onBuyShare?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-            Buy Share
+          <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+            Reserve Spot
           </Button>
-          <Button size="sm" variant="outline" onClick={() => onBuyFullOwnership?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
-            Full Ownership
+          <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-violet-500/60 text-violet-400 hover:bg-violet-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
+            Request Acquisition
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
             <ExternalLink className="w-3 h-3" />

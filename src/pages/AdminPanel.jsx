@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, DollarSign, Clock, CheckCircle, Ban, Eye, Trash2, Pencil, X, Receipt, ArrowDownRight } from "lucide-react";
+import { Users, Store, Gavel, DollarSign, Clock, CheckCircle, Ban, Eye, Trash2, Pencil, X, Receipt, ArrowDownRight, CalendarCheck, Building2 } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,16 @@ export default function AdminPanel() {
   const { data: allTransactions = [] } = useQuery({
     queryKey: ["allTransactions"],
     queryFn: () => base44.entities.Transaction.filter({}, ["-created_date"], 100),
+  });
+
+  const { data: allReservations = [] } = useQuery({
+    queryKey: ["allReservations"],
+    queryFn: () => base44.entities.DealReservations.filter({}, ["-created_date"], 100),
+  });
+
+  const { data: allAcquisitions = [] } = useQuery({
+    queryKey: ["allAcquisitions"],
+    queryFn: () => base44.entities.AcquisitionRequests.filter({}, ["-created_date"], 100),
   });
 
   const enrichedBids = useMemo(() => {
@@ -192,6 +202,87 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <span className="text-sm font-display font-bold text-amber-400 flex-shrink-0 ml-3">${b.bidAmount?.toLocaleString()}</span>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Spot Reservations */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-violet-400" />
+              Spot Reservations
+              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allReservations.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {allReservations.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No reservations yet</p>
+            ) : (
+              allReservations.slice(0, 20).map((r) => (
+                <div key={r.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{r.listingTitle || "Unknown"}</p>
+                      {r.userName && <p className="text-xs text-violet-400">{r.userName}</p>}
+                      {r.userEmail && <p className="text-xs text-muted-foreground">{r.userEmail}</p>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge className={`text-[10px] border ${r.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : r.status === "approved" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : r.status === "rejected" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-muted text-muted-foreground border-border/30"}`}>{r.status}</Badge>
+                      <span className="text-[10px] text-muted-foreground">{new Date(r.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    </div>
+                  </div>
+                  {r.status === "pending" && (
+                    <div className="flex gap-1 shrink-0">
+                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.DealReservations.update(r.id, { status: "approved" }); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation approved"); }} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
+                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.DealReservations.update(r.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation rejected"); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Acquisition Requests */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-violet-400" />
+              Acquisition Requests
+              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allAcquisitions.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {allAcquisitions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p>
+            ) : (
+              allAcquisitions.slice(0, 20).map((a) => (
+                <div key={a.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{a.listingTitle || "Unknown"}</p>
+                      {a.userName && <p className="text-xs text-violet-400">{a.userName}</p>}
+                      {a.userEmail && <p className="text-xs text-muted-foreground">{a.userEmail}</p>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge className={`text-[10px] border ${a.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : a.status === "approved" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : a.status === "rejected" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-muted text-muted-foreground border-border/30"}`}>{a.status}</Badge>
+                      {a.offerAmount > 0 && <span className="text-[10px] text-muted-foreground">${a.offerAmount?.toLocaleString()}</span>}
+                      <span className="text-[10px] text-muted-foreground">{new Date(a.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    </div>
+                  </div>
+                  {a.status === "pending" && (
+                    <div className="flex gap-1 shrink-0">
+                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.AcquisitionRequests.update(a.id, { status: "approved" }); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Request approved"); }} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
+                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.AcquisitionRequests.update(a.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Request rejected"); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
+                    </div>
+                  )}
                 </div>
               ))
             )}

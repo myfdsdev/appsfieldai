@@ -17,9 +17,8 @@ import Dashboard from '@/pages/Dashboard';
 import Marketplace from '@/pages/Marketplace';
 import SaaSDetail from '@/pages/SaaSDetail';
 import LiveAuctions from '@/pages/LiveAuctions';
-import MyInvestments from '@/pages/MyInvestments';
+import MyRequests from '@/pages/MyRequests';
 import SellMySaaS from '@/pages/SellMySaaS';
-import Wallet from '@/pages/Wallet';
 import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
 // Add page imports here
@@ -65,9 +64,8 @@ const AuthenticatedApp = () => {
       {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/investments" element={<MyInvestments />} />
+          <Route path="/requests" element={<MyRequests />} />
           <Route path="/sell" element={<SellMySaaS />} />
-          <Route path="/wallet" element={<Wallet />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
