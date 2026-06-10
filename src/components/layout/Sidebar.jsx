@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Store, Gavel, PieChart, Upload, Shield, Zap, ChevronLeft, ChevronRight, ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/AuthContext";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -12,10 +13,12 @@ const navItems = [
   { to: "/auctions", icon: Gavel, label: "Live Auctions" },
   { to: "/requests", icon: ClipboardList, label: "My Requests" },
   { to: "/sell", icon: Upload, label: "Sell My SaaS" },
-  { to: "/admin", icon: Shield, label: "Admin Panel" },
+  { to: "/admin", icon: Shield, label: "Admin Panel", adminOnly: true },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
+  const { user } = useAuth();
+  const filteredItems = navItems.filter((item) => !item.adminOnly || user?.role === "admin");
   return (
     <motion.aside
       animate={{ width: collapsed ? 72 : 240 }}
@@ -33,7 +36,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {filteredItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}

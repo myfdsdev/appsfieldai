@@ -21,6 +21,7 @@ import MyRequests from '@/pages/MyRequests';
 import SellMySaaS from '@/pages/SellMySaaS';
 import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
+import AdminRoute from '@/components/AdminRoute';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -66,8 +67,14 @@ const AuthenticatedApp = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/requests" element={<MyRequests />} />
           <Route path="/sell" element={<SellMySaaS />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+        </Route>
+      </Route>
+
+      {/* Admin routes — require login + admin role */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
