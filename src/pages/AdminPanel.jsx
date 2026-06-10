@@ -113,6 +113,15 @@ export default function AdminPanel() {
     queryClient.invalidateQueries({ queryKey: ["allReservations"] });
     const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
     toast.success(`Reservation ${labels[status]}`);
+    try {
+      await base44.functions.invoke("notifyUserApproval", {
+        userEmail: r.userEmail,
+        userName: r.userName,
+        listingTitle: r.listingTitle,
+        requestType: "reserve_spot",
+        status,
+      });
+    } catch (e) { console.error("notify user failed", e); }
   };
 
   const handleReservationDelete = async (r) => {
@@ -127,6 +136,15 @@ export default function AdminPanel() {
     queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
     const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
     toast.success(`Request ${labels[status]}`);
+    try {
+      await base44.functions.invoke("notifyUserApproval", {
+        userEmail: a.userEmail,
+        userName: a.userName,
+        listingTitle: a.listingTitle,
+        requestType: "acquisition_request",
+        status,
+      });
+    } catch (e) { console.error("notify user failed", e); }
   };
 
   const handleAcquisitionDelete = async (a) => {
