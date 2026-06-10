@@ -1,20 +1,148 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle, Ban, DollarSign, MessageSquare, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle,
+  Ban, DollarSign, MessageSquare, Loader2, Layers, FileText
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+
+const TABS = [
+  { id: "all", label: "All" },
+  { id: "reserve_spot", label: "Reserve Spots" },
+  { id: "acquisition_request", label: "Acquisitions" },
+  { id: "pending", label: "Pending" },
+  { id: "approved", label: "Approved" },
+];
+
+const statusConfig = {
+  pending:   { color: "bg-amber-500/10 text-amber-400 border-amber-500/20", icon: Clock },
+  approved:  { color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle },
+  rejected:  { color: "bg-red-500/10 text-red-400 border-red-500/20", icon: Ban },
+  contacted: { color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", icon: CheckCircle },
+  cancelled: { color: "bg-muted text-muted-foreground border-border/30", icon: X },
+};
+
+function RequestCard({ item, type, onCancel }) {
+  const isSpot = type === "reserve_spot";
+  const amount = isSpot ? item.budget : item.offerAmount;
+  const note = isSpot ? item.message : item.notes;
+  const cfg = statusConfig[item.status] || statusConfig.pending;
+  const StatusIcon = cfg.icon;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+    >
+      <Card className="border-border/40 bg-card/60 backdrop-blur-xl hover:border-border/60 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <Badge className={`text-[10px] border ${isSpot ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
+                  {isSpot ? (
+                    <><CalendarCheck className="w-3 h-3 mr-1" /> Reserve Spot</>
+                  ) : (
+                    <><Building2 className="w-3 h-3 mr-1" /> Acquisition</>
+                  )}
+                </Badge>
+                <Badge className={`text-[10px] border ${cfg.color}`}>
+                  <StatusIcon className="w-3 h-3 mr-1" />
+                  {item.status}
+                </Badge>
+              </div>
+
+              <p className="text-sm font-medium text-foreground truncate mb-1.5">
+                {item.listingTitle || "Unknown Listing"}
+              </p>
+
+              <div className="flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
+                {amount > 0 && (
+                  <span className="flex items-center gap-0.5 text-amber-400">
+                    <DollarSign className="w-3 h-3" />
+                    ${amount?.toLocaleString()}
+                  </span>
+                )}
+                <span className="flex items-center gap-0.5">
+                  <Clock className="w-3 h-3" />
+                  {new Date(item.created_date).toLocaleDateString("en-US", {
+                    month: "short", day: "numeric", year: "numeric"
+                  })}
+                </span>
+              </div>
+
+              {note && (
+                <div className="mt-2 p-2 rounded-lg bg-secondary/40 border border-border/20">
+                  <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+                    <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
+                    <span className="line-clamp-2">{note}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {item.status === "pending" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onCancel(item)}
+                className="text-red-400/60 hover:text-red-400 h-7 text-[11px] shrink-0"
+              >
+                <X className="w-3 h-3 mr-1" /> Cancel
+              </Button>
+            )}
+            {item.status !== "pending" && (
+              <StatusIcon className={`w-4 h-4 shrink-0 mt-0.5 ${
+                item.status === "approved" ? "text-emerald-400" :
+                item.status === "rejected" ? "text-red-400" :
+                item.status === "contacted" ? "text-cyan-400" : "text-muted-foreground"
+              }`} />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function EmptyState({ tab }) {
+  const messages = {
+    all:               { title: "No requests yet", desc: "Browse the marketplace to reserve a spot or request an acquisition." },
+    reserve_spot:      { title: "No spot reservations", desc: "You haven't reserved any spots yet." },
+    acquisition_request: { title: "No acquisition requests", desc: "You haven't submitted any acquisition requests yet." },
+    pending:           { title: "No pending requests", desc: "All your requests have been processed." },
+    approved:          { title: "No approved requests", desc: "None of your requests have been approved yet." },
+  };
+  const msg = messages[tab] || messages.all;
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <div className="w-12 h-12 rounded-2xl bg-secondary/60 flex items-center justify-center mb-4">
+        <FileText className="w-6 h-6 text-muted-foreground" />
+      </div>
+      <p className="text-sm font-medium text-foreground mb-1">{msg.title}</p>
+      <p className="text-xs text-muted-foreground max-w-xs">{msg.desc}</p>
+    </div>
+  );
+}
 
 export default function MyRequests() {
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
-    base44.auth.me().then((u) => { setUserId(u?.id); }).catch(() => {}).finally(() => setLoadingUser(false));
+    base44.auth.me()
+      .then((u) => setUserId(u?.id))
+      .catch(() => {})
+      .finally(() => setLoadingUser(false));
   }, []);
 
   const { data: reservations = [], isLoading: loadingRes } = useQuery({
@@ -41,21 +169,37 @@ export default function MyRequests() {
     toast.success("Request cancelled");
   };
 
-  const statusBadge = (s) => {
-    const configs = {
-      pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      approved: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      rejected: "bg-red-500/10 text-red-400 border-red-500/20",
-      contacted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-      cancelled: "bg-muted text-muted-foreground border-border/30",
-    };
-    return <Badge className={`text-[10px] border ${configs[s] || configs.pending}`}>{s}</Badge>;
-  };
+  const allItems = useMemo(() => {
+    return [
+      ...reservations.map((r) => ({ ...r, _type: "reserve_spot" })),
+      ...acquisitions.map((a) => ({ ...a, _type: "acquisition_request" })),
+    ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  }, [reservations, acquisitions]);
+
+  const filteredItems = useMemo(() => {
+    return allItems.filter((item) => {
+      if (activeTab === "all") return true;
+      if (activeTab === "reserve_spot") return item._type === "reserve_spot";
+      if (activeTab === "acquisition_request") return item._type === "acquisition_request";
+      if (activeTab === "pending") return item.status === "pending";
+      if (activeTab === "approved") return item.status === "approved";
+      return true;
+    });
+  }, [allItems, activeTab]);
+
+  const tabCounts = useMemo(() => ({
+    all: allItems.length,
+    reserve_spot: allItems.filter((i) => i._type === "reserve_spot").length,
+    acquisition_request: allItems.filter((i) => i._type === "acquisition_request").length,
+    pending: allItems.filter((i) => i.status === "pending").length,
+    approved: allItems.filter((i) => i.status === "approved").length,
+  }), [allItems]);
 
   const isLoading = loadingUser || loadingRes || loadingAcq;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
@@ -68,112 +212,60 @@ export default function MyRequests() {
         </div>
       </motion.div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 rounded-xl bg-secondary/40 w-fit overflow-x-auto max-w-full">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+              activeTab === tab.id
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {tab.label}
+            {tabCounts[tab.id] > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                activeTab === tab.id
+                  ? "bg-violet-500/20 text-violet-400"
+                  : "bg-secondary/60 text-muted-foreground"
+              }`}>
+                {tabCounts[tab.id]}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Reservations */}
-          <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-base font-display flex items-center gap-2">
-                <CalendarCheck className="w-4 h-4 text-violet-400" />
-                Spot Reservations
-                <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{reservations.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="divide-y divide-border/30">
-              {reservations.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">No reservations yet</p>
-              ) : (
-                reservations.map((r) => (
-                  <div key={r.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{r.listingTitle || "Unknown Listing"}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        {statusBadge(r.status)}
-                        {r.budget > 0 && (
-                          <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
-                            <DollarSign className="w-3 h-3" /> ${r.budget?.toLocaleString()}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-muted-foreground">
-                          <Clock className="w-3 h-3 inline mr-0.5" />
-                          {new Date(r.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </span>
-                      </div>
-                      {r.message && (
-                        <p className="text-[11px] text-muted-foreground mt-1 flex items-start gap-1">
-                          <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
-                          <span className="line-clamp-2">{r.message}</span>
-                        </p>
-                      )}
-                    </div>
-                    {r.status === "pending" && (
-                      <Button size="sm" variant="ghost" onClick={() => handleCancelReservation(r)} className="text-red-400/60 hover:text-red-400 h-7 text-[11px] shrink-0">
-                        <X className="w-3 h-3 mr-1" /> Cancel
-                      </Button>
-                    )}
-                    {r.status === "approved" && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
-                    {r.status === "rejected" && <Ban className="w-4 h-4 text-red-400 shrink-0" />}
-                    {r.status === "contacted" && <CheckCircle className="w-4 h-4 text-cyan-400 shrink-0" />}
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Acquisition Requests */}
-          <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-base font-display flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-violet-400" />
-                Acquisition Requests
-                <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{acquisitions.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="divide-y divide-border/30">
-              {acquisitions.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">No requests yet</p>
-              ) : (
-                acquisitions.map((a) => (
-                  <div key={a.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{a.listingTitle || "Unknown Listing"}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        {statusBadge(a.status)}
-                        {a.offerAmount > 0 && (
-                          <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
-                            <DollarSign className="w-3 h-3" /> ${a.offerAmount?.toLocaleString()}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-muted-foreground">
-                          <Clock className="w-3 h-3 inline mr-0.5" />
-                          {new Date(a.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </span>
-                      </div>
-                      {a.notes && (
-                        <p className="text-[11px] text-muted-foreground mt-1 flex items-start gap-1">
-                          <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
-                          <span className="line-clamp-2">{a.notes}</span>
-                        </p>
-                      )}
-                    </div>
-                    {a.status === "pending" && (
-                      <Button size="sm" variant="ghost" onClick={() => handleCancelAcquisition(a)} className="text-red-400/60 hover:text-red-400 h-7 text-[11px] shrink-0">
-                        <X className="w-3 h-3 mr-1" /> Cancel
-                      </Button>
-                    )}
-                    {a.status === "approved" && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
-                    {a.status === "rejected" && <Ban className="w-4 h-4 text-red-400 shrink-0" />}
-                    {a.status === "contacted" && <CheckCircle className="w-4 h-4 text-cyan-400 shrink-0" />}
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        <AnimatePresence mode="wait">
+          {filteredItems.length === 0 ? (
+            <EmptyState tab={activeTab} />
+          ) : (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="space-y-3"
+            >
+              {filteredItems.map((item) => (
+                <RequestCard
+                  key={`${item._type}-${item.id}`}
+                  item={item}
+                  type={item._type}
+                  onCancel={item._type === "reserve_spot" ? handleCancelReservation : handleCancelAcquisition}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       )}
     </div>
   );
