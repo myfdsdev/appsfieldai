@@ -20,7 +20,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
     setError("");
     try {
       const user = await base44.auth.me();
-      await base44.entities.DealReservations.create({
+      const reservation = await base44.entities.DealReservations.create({
         userId: user.id,
         userName: user.full_name || "",
         userEmail: user.email || "",
@@ -32,7 +32,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
         requestType: "reserve_spot",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminReservation", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, phone, budget, message }); } catch (_) {}
+      try { await base44.functions.invoke("notifyAdminReservation", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, listingId: listing.id, requestId: reservation.id, phone, budget, message }); } catch (_) {}
       toast.success("Spot reserved! The admin will contact you soon.");
       onClose();
     } catch (e) {

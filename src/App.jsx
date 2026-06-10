@@ -22,6 +22,7 @@ import SellMySaaS from '@/pages/SellMySaaS';
 import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminRoute from '@/components/AdminRoute';
+import NotificationsPage from '@/pages/NotificationsPage';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/requests" element={<MyRequests />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/sell" element={<SellMySaaS />} />
         </Route>
       </Route>

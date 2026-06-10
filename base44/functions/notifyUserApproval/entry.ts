@@ -1,5 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+async function notifyAdmins(base44, type, title, message, listingId, relatedRequestId) {
+  try {
+    const admins = await base44.asServiceRole.entities.User.filter({ role: "admin" });
+    for (const admin of admins) {
+      await base44.asServiceRole.entities.Notification.create({
+        userId: admin.id,
+        role: "admin",
+        type,
+        title,
+        message,
+        listingId: listingId || "",
+        relatedRequestId: relatedRequestId || "",
+        isRead: false,
+      });
+    }
+  } catch (e) {
+    console.error("notifyAdmins failed:", e);
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,6 +33,7 @@ Deno.serve(async (req) => {
     const {
       userEmail, userName, listingTitle, requestType, status,
       listingId, userId, phone, budget, offerAmount, message, notes,
+      requestId,
     } = body;
 
     if (!userEmail) {
@@ -26,6 +47,9 @@ Deno.serve(async (req) => {
 
     let subject = "";
     let bodyHtml = "";
+    let notifType = "";
+    let notifTitle = "";
+    let notifMsg = "";
 
     if (status === "approved") {
       subject = `Your ${typeLabel} has been Approved! ✅`;
@@ -37,6 +61,9 @@ Deno.serve(async (req) => {
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;
+      notifType = "request_approved";
+      notifTitle = "Request Approved!";
+      notifMsg = `Your ${typeLabel.toLowerCase()} for "${listingTitle}" has been approved.`;
 
       // --- Create Lead record for seller dashboard ---
       if (listingId && userId) {
@@ -67,9 +94,7 @@ Deno.serve(async (req) => {
       // --- Notify seller ---
       if (listingId) {
         try {
-          const listings = listingId
-            ? await base44.asServiceRole.entities.SaaSListing.filter({ id: listingId })
-            : [];
+          const listings = await base44.asServiceRole.entities.SaaSListing.filter({ id: listingId });
           const listing = listings[0];
           if (listing && listing.ownerUserId) {
             const seller = await base44.asServiceRole.entities.User.get(listing.ownerUserId);
@@ -112,6 +137,10 @@ Deno.serve(async (req) => {
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;
+      notifType = "request_contacted";
+      notifTitle = "Request Update";
+      notifMsg = `You've been contacted regarding your ${typeLabel.toLowerCase()} for "${listingTitle}".`;
+
     } else if (status === "rejected") {
       subject = `Update on your ${typeLabel}`;
       bodyHtml = `
@@ -122,6 +151,10 @@ Deno.serve(async (req) => {
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;
+      notifType = "request_rejected";
+      notifTitle = "Request Update";
+      notifMsg = `Your ${typeLabel.toLowerCase()} for "${listingTitle}" was not accepted.`;
+
     } else if (status === "deal_in_progress") {
       subject = `Your ${typeLabel} deal is in progress! 🚀`;
       bodyHtml = `
@@ -132,6 +165,10 @@ Deno.serve(async (req) => {
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;
+      notifType = "request_in_progress";
+      notifTitle = "Deal In Progress";
+      notifMsg = `Your ${typeLabel.toLowerCase()} for "${listingTitle}" is now in progress.`;
+
     } else if (status === "deal_closed") {
       subject = `Your ${typeLabel} deal is closed! 🎊`;
       bodyHtml = `
@@ -142,16 +179,38 @@ Deno.serve(async (req) => {
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;
+      notifType = "deal_closed";
+      notifTitle = "Deal Closed!";
+      notifMsg = `Your ${typeLabel.toLowerCase()} for "${listingTitle}" has been successfully closed.`;
     }
 
     if (!subject) return Response.json({ success: true });
 
+    // Send email
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: userEmail,
       subject,
       body: bodyHtml,
       isHtml: true,
     });
+
+    // Create in-app notification for the user
+    if (notifType && userId) {
+      try {
+        await base44.asServiceRole.entities.Notification.create({
+          userId,
+          role: "user",
+          type: notifType,
+          title: notifTitle,
+          message: notifMsg,
+          listingId: listingId || "",
+          relatedRequestId: requestId || "",
+          isRead: false,
+        });
+      } catch (e) {
+        console.error("User notification creation failed:", e);
+      }
+    }
 
     console.log(`Sent ${status} notification to ${userEmail}`);
     return Response.json({ success: true });

@@ -1,27 +1,47 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bell, Gavel, DollarSign, Building2, Users } from "lucide-react";
+import { Bell, Gavel, DollarSign, Building2, Users, CalendarCheck, CheckCircle, Ban, Phone, TrendingUp, BadgeCheck, Store, XCircle, FileText, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 
-const typeIcons = {
-  outbid: Gavel,
-  dividend: DollarSign,
-  share_purchased: Users,
-  ownership_sold: Building2,
+const typeConfig = {
+  outbid:              { icon: Gavel, color: "bg-amber-500/10 text-amber-400" },
+  dividend:            { icon: DollarSign, color: "bg-emerald-500/10 text-emerald-400" },
+  share_purchased:     { icon: Users, color: "bg-violet-500/10 text-violet-400" },
+  ownership_sold:      { icon: Building2, color: "bg-cyan-500/10 text-cyan-400" },
+  reserve_submitted:   { icon: CalendarCheck, color: "bg-violet-500/10 text-violet-400" },
+  acquisition_submitted:{ icon: Building2, color: "bg-blue-500/10 text-blue-400" },
+  request_approved:    { icon: CheckCircle, color: "bg-emerald-500/10 text-emerald-400" },
+  request_rejected:    { icon: Ban, color: "bg-red-500/10 text-red-400" },
+  request_contacted:   { icon: Phone, color: "bg-cyan-500/10 text-cyan-400" },
+  request_in_progress: { icon: TrendingUp, color: "bg-blue-500/10 text-blue-400" },
+  deal_closed:         { icon: BadgeCheck, color: "bg-purple-500/10 text-purple-400" },
+  listing_submitted:   { icon: Store, color: "bg-violet-500/10 text-violet-400" },
+  request_cancelled:   { icon: XCircle, color: "bg-red-500/10 text-red-400" },
+  new_reservation:     { icon: CalendarCheck, color: "bg-violet-500/10 text-violet-400" },
+  new_acquisition:     { icon: Building2, color: "bg-blue-500/10 text-blue-400" },
 };
 
-const typeColors = {
-  outbid: "text-amber-400 bg-amber-500/10",
-  dividend: "text-emerald-400 bg-emerald-500/10",
-  share_purchased: "text-violet-400 bg-violet-500/10",
-  ownership_sold: "text-cyan-400 bg-cyan-500/10",
-};
+function timeAgo(dateStr) {
+  const now = new Date();
+  const d = new Date(dateStr);
+  const diff = now - d;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: notifications = [] } = useQuery({
     queryKey: ["myNotifications"],
@@ -33,7 +53,7 @@ export default function NotificationBell() {
         return base44.entities.Notification.filter(
           { userId: user.id },
           ["-created_date"],
-          20
+          30
         );
       } catch {
         return [];
@@ -42,9 +62,8 @@ export default function NotificationBell() {
     refetchInterval: 15000,
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !(n.isRead || n.read)).length;
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -54,11 +73,24 @@ export default function NotificationBell() {
   }, []);
 
   const markAllRead = async () => {
-    const unread = notifications.filter((n) => !n.read);
+    const unread = notifications.filter((n) => !(n.isRead || n.read));
     for (const n of unread) {
-      await base44.entities.Notification.update(n.id, { read: true });
+      await base44.entities.Notification.update(n.id, { isRead: true, read: true });
     }
     queryClient.invalidateQueries({ queryKey: ["myNotifications"] });
+  };
+
+  const markReadAndNavigate = async (n) => {
+    setOpen(false);
+    if (!(n.isRead || n.read)) {
+      await base44.entities.Notification.update(n.id, { isRead: true, read: true });
+      queryClient.invalidateQueries({ queryKey: ["myNotifications"] });
+    }
+    if (n.listingId) {
+      navigate(`/saas/${n.listingId}`);
+    } else if (n.relatedRequestId) {
+      navigate("/requests");
+    }
   };
 
   return (
@@ -69,58 +101,66 @@ export default function NotificationBell() {
       >
         <Bell className="w-5 h-5 text-muted-foreground" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
-            {unreadCount > 9 ? "9+" : unreadCount}
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse px-1">
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl bg-card border border-border/40 shadow-2xl shadow-black/50 z-50">
-          <div className="flex items-center justify-between p-3 border-b border-border/30">
+        <div className="absolute right-0 top-full mt-2 w-80 max-h-[420px] overflow-hidden rounded-xl bg-card/95 backdrop-blur-xl border border-border/40 shadow-2xl shadow-black/50 z-50 flex flex-col">
+          <div className="flex items-center justify-between p-3 border-b border-border/30 shrink-0">
             <span className="text-sm font-display font-bold">Notifications</span>
-            {unreadCount > 0 && (
-              <button onClick={markAllRead} className="text-[11px] text-orange-400 hover:text-orange-300 transition-colors">
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="text-[11px] text-orange-400 hover:text-orange-300 transition-colors">
+                  Mark all read
+                </button>
+              )}
+              <Link
+                to="/notifications"
+                onClick={() => setOpen(false)}
+                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                View all
+              </Link>
+            </div>
           </div>
 
-          {notifications.length === 0 ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">
-              <Bell className="w-6 h-6 mx-auto mb-2 opacity-30" />
-              No notifications yet
-            </div>
-          ) : (
-            notifications.map((n) => {
-              const Icon = typeIcons[n.type] || Bell;
-              return (
-                <Link
-                  key={n.id}
-                  to={n.listingId ? `/saas/${n.listingId}` : "#"}
-                  onClick={() => {
-                    setOpen(false);
-                    base44.entities.Notification.update(n.id, { read: true });
-                  }}
-                  className={`flex items-start gap-3 p-3 hover:bg-secondary/30 transition-colors border-b border-border/20 last:border-0 ${!n.read ? "bg-orange-500/5" : ""}`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${typeColors[n.type] || "bg-secondary/50 text-muted-foreground"}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium truncate">{n.title}</p>
-                      {!n.read && <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />}
+          <div className="overflow-y-auto flex-1">
+            {notifications.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                <Bell className="w-8 h-8 mx-auto mb-3 opacity-20" />
+                No notifications yet
+              </div>
+            ) : (
+              notifications.slice(0, 15).map((n) => {
+                const cfg = typeConfig[n.type] || { icon: Bell, color: "bg-secondary/50 text-muted-foreground" };
+                const Icon = cfg.icon;
+                return (
+                  <button
+                    key={n.id}
+                    onClick={() => markReadAndNavigate(n)}
+                    className={`w-full flex items-start gap-3 p-3 hover:bg-secondary/30 transition-colors border-b border-border/20 last:border-0 text-left ${!(n.isRead || n.read) ? "bg-orange-500/5" : ""}`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${cfg.color}`}>
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {new Date(n.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })
-          )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className={`text-sm truncate ${!(n.isRead || n.read) ? "font-medium text-foreground" : "text-muted-foreground"}`}>
+                          {n.title}
+                        </p>
+                        {!(n.isRead || n.read) && <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(n.created_date)}</p>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
     </div>

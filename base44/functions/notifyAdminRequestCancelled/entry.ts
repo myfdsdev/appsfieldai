@@ -24,35 +24,22 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { userName, userEmail, listingTitle, listingId, requestId } = body;
+    const { userName, userEmail, listingTitle, requestType, listingId, requestId } = body;
 
-    const adminEmail = Deno.env.get("ADMIN_EMAIL") || "";
+    const typeLabel = requestType === "reserve_spot" ? "spot reservation" : "acquisition request";
 
-    // Email notification
-    if (adminEmail) {
-      try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: adminEmail,
-          subject: `New Spot Reservation: ${listingTitle}`,
-          body: `<p><strong>${userName || "A user"}</strong> (${userEmail}) has reserved a spot for <strong>${listingTitle}</strong>.</p><p>Review it in the Admin Panel.</p>`,
-          isHtml: true,
-        });
-      } catch (e) { console.error("Admin email failed:", e.message); }
-    }
-
-    // In-app notification for admins
     await notifyAdmins(
       base44,
-      "new_reservation",
-      "New Spot Reservation",
-      `${userName || "A user"} reserved a spot for "${listingTitle}"`,
+      "request_cancelled",
+      "Request Cancelled",
+      `${userName || "A user"} cancelled their ${typeLabel} for "${listingTitle}".`,
       listingId || "",
       requestId || ""
     );
 
     return Response.json({ success: true });
   } catch (error) {
-    console.error("notifyAdminReservation error:", error);
+    console.error("notifyAdminRequestCancelled error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

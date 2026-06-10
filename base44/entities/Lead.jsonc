@@ -1,0 +1,64 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "buyerUserId": {
+      "type": "string",
+      "description": "ID of the interested buyer"
+    },
+    "buyerName": {
+      "type": "string",
+      "description": "Name of the buyer"
+    },
+    "buyerEmail": {
+      "type": "string",
+      "description": "Email of the buyer"
+    },
+    "buyerPhone": {
+      "type": "string",
+      "description": "Phone of the buyer"
+    },
+    "sellerUserId": {
+      "type": "string",
+      "description": "ID of the listing owner/seller"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
+    },
+    "requestType": {
+      "type": "string",
+      "description": "reserve_spot or acquisition_request"
+    },
+    "offerAmount": {
+      "type": "number",
+      "description": "Budget or offer amount"
+    },
+    "message": {
+      "type": "string",
+      "description": "Buyer's message or notes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "contacted",
+        "deal_in_progress",
+        "deal_closed",
+        "rejected"
+      ],
+      "default": "approved",
+      "description": "Lead status"
+    }
+  },
+  "required": [
+    "buyerUserId",
+    "listingId",
+    "sellerUserId"
+  ]
+}

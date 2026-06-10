@@ -24,35 +24,21 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { userName, userEmail, listingTitle, listingId, requestId } = body;
-
-    const adminEmail = Deno.env.get("ADMIN_EMAIL") || "";
-
-    // Email notification
-    if (adminEmail) {
-      try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: adminEmail,
-          subject: `New Spot Reservation: ${listingTitle}`,
-          body: `<p><strong>${userName || "A user"}</strong> (${userEmail}) has reserved a spot for <strong>${listingTitle}</strong>.</p><p>Review it in the Admin Panel.</p>`,
-          isHtml: true,
-        });
-      } catch (e) { console.error("Admin email failed:", e.message); }
-    }
+    const { listingTitle, listingId, sellerName } = body;
 
     // In-app notification for admins
     await notifyAdmins(
       base44,
-      "new_reservation",
-      "New Spot Reservation",
-      `${userName || "A user"} reserved a spot for "${listingTitle}"`,
+      "listing_submitted",
+      "New SaaS Listing Submitted",
+      `${sellerName || "A user"} submitted "${listingTitle}" for review.`,
       listingId || "",
-      requestId || ""
+      ""
     );
 
     return Response.json({ success: true });
   } catch (error) {
-    console.error("notifyAdminReservation error:", error);
+    console.error("notifyAdminNewListing error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

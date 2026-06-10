@@ -84,7 +84,7 @@ export default function SellMySaaS() {
         productImages = [file_url];
       }
 
-      await base44.entities.SaaSListing.create({
+      const listing = await base44.entities.SaaSListing.create({
         title: form.title,
         category: form.category,
         description: form.description,
@@ -108,6 +108,16 @@ export default function SellMySaaS() {
         ? "Your SaaS listing is now live on the marketplace!"
         : "Your SaaS listing is submitted for admin approval."
       );
+      // Notify admins of new listing
+      if (status === "pending") {
+        try {
+          await base44.functions.invoke("notifyAdminNewListing", {
+            listingTitle: form.title,
+            listingId: listing.id,
+            sellerName: form.sellerName,
+          });
+        } catch (_) {}
+      }
       navigate("/investments");
     } catch (err) {
       toast.error("Failed to submit listing. Please try again.");

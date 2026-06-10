@@ -218,12 +218,26 @@ export default function MyRequests() {
     await base44.entities.DealReservations.update(r.id, { status: "cancelled" });
     queryClient.invalidateQueries({ queryKey: ["myReservations"] });
     toast.success("Reservation cancelled");
+    try {
+      await base44.functions.invoke("notifyAdminRequestCancelled", {
+        userName: r.userName, userEmail: r.userEmail,
+        listingTitle: r.listingTitle, requestType: "reserve_spot",
+        listingId: r.listingId, requestId: r.id,
+      });
+    } catch (_) {}
   };
 
   const handleCancelAcquisition = async (a) => {
     await base44.entities.AcquisitionRequests.update(a.id, { status: "cancelled" });
     queryClient.invalidateQueries({ queryKey: ["myAcquisitions"] });
     toast.success("Request cancelled");
+    try {
+      await base44.functions.invoke("notifyAdminRequestCancelled", {
+        userName: a.userName, userEmail: a.userEmail,
+        listingTitle: a.listingTitle, requestType: "acquisition_request",
+        listingId: a.listingId, requestId: a.id,
+      });
+    } catch (_) {}
   };
 
   const allItems = useMemo(() => {

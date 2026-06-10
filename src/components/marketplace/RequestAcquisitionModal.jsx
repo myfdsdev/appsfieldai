@@ -20,7 +20,7 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
     setError("");
     try {
       const user = await base44.auth.me();
-      await base44.entities.AcquisitionRequests.create({
+      const request = await base44.entities.AcquisitionRequests.create({
         userId: user.id,
         userName: user.full_name || "",
         userEmail: user.email || "",
@@ -32,7 +32,7 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
         requestType: "acquisition_request",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, phone, offerAmount: parseFloat(offerAmount) || listing.fullPrice }); } catch (_) {}
+      try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, listingId: listing.id, requestId: request.id, phone, offerAmount: parseFloat(offerAmount) || listing.fullPrice }); } catch (_) {}
       toast.success("Acquisition request submitted! The admin will review and contact you.");
       onClose();
     } catch (e) {

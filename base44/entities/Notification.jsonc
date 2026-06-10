@@ -6,13 +6,31 @@
       "type": "string",
       "description": "User who receives the notification"
     },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "default": "user",
+      "description": "Target audience role"
+    },
     "type": {
       "type": "string",
       "enum": [
         "outbid",
         "dividend",
         "share_purchased",
-        "ownership_sold"
+        "ownership_sold",
+        "reserve_submitted",
+        "acquisition_submitted",
+        "request_approved",
+        "request_rejected",
+        "request_contacted",
+        "request_in_progress",
+        "deal_closed",
+        "listing_submitted",
+        "request_cancelled"
       ],
       "description": "Type of notification"
     },
@@ -28,7 +46,11 @@
       "type": "string",
       "description": "Related SaaS listing ID"
     },
-    "read": {
+    "relatedRequestId": {
+      "type": "string",
+      "description": "Related reservation or acquisition request ID"
+    },
+    "isRead": {
       "type": "boolean",
       "default": false,
       "description": "Whether the notification has been read"
