@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Bell, Gavel, DollarSign, Building2, Users, CalendarCheck, CheckCircle, Ban, Phone, TrendingUp, BadgeCheck, Store, XCircle, Loader2, ChevronLeft, CheckCheck } from "lucide-react";
+import { Bell, Gavel, DollarSign, Building2, Users, CalendarCheck, CheckCircle, Ban, Phone, TrendingUp, BadgeCheck, Store, XCircle, Loader2, CheckCheck, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const typeConfig = {
@@ -40,25 +40,30 @@ function timeAgo(dateStr) {
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
 
+  const [filter, setFilter] = useState("all");
+  const queryKey = ["myNotificationsPage"];
+
   const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ["myNotifications"],
+    queryKey,
     queryFn: async () => {
-      try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) return [];
-        const user = await base44.auth.me();
-        return base44.entities.Notification.filter(
-          { userId: user.id },
-          "-created_date",
-          100
-        );
-      } catch {
-        return [];
-      }
+      const authed = await base44.auth.isAuthenticated();
+      if (!authed) return [];
+      const user = await base44.auth.me();
+      return base44.entities.Notification.filter(
+        { userId: user.id },
+        "-created_date",
+        100
+      );
     },
     refetchInterval: 30000,
     staleTime: 0,
   });
+
+  const filtered = useMemo(() => {
+    if (filter === "unread") return notifications.filter((n) => !(n.isRead || n.read));
+    if (filter === "read") return notifications.filter((n) => n.isRead || n.read);
+    return notifications;
+  }, [notifications, filter]);
 
   const unreadCount = notifications.filter((n) => !(n.isRead || n.read)).length;
 
@@ -67,13 +72,13 @@ export default function NotificationsPage() {
     for (const n of unread) {
       await base44.entities.Notification.update(n.id, { isRead: true, read: true });
     }
-    queryClient.invalidateQueries({ queryKey: ["myNotifications"] });
+    queryClient.invalidateQueries({ queryKey });
   };
 
   const markRead = async (n) => {
     if (!(n.isRead || n.read)) {
       await base44.entities.Notification.update(n.id, { isRead: true, read: true });
-      queryClient.invalidateQueries({ queryKey: ["myNotifications"] });
+      queryClient.invalidateQueries({ queryKey });
     }
   };
 
@@ -101,11 +106,29 @@ export default function NotificationsPage() {
         </div>
       </motion.div>
 
+      {/* Filter tabs */}
+      <div className="flex gap-1 p-1 bg-secondary/40 rounded-xl w-fit">
+        {["all", "unread", "read"].map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors capitalize ${
+              filter === f ? "bg-orange-500 text-white" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {f === "all" ? "All" : f}
+            {f === "unread" && unreadCount > 0 && (
+              <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px]">{unreadCount}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
         </div>
-      ) : notifications.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
           <Bell className="w-12 h-12 mx-auto mb-4 opacity-20" />
           <p className="text-muted-foreground">No notifications yet</p>
@@ -113,7 +136,7 @@ export default function NotificationsPage() {
         </motion.div>
       ) : (
         <div className="space-y-2">
-          {notifications.map((n, i) => {
+          {filtered.map((n, i) => {
             const cfg = typeConfig[n.type] || { icon: Bell, color: "bg-secondary/50 text-muted-foreground" };
             const Icon = cfg.icon;
             return (

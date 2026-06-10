@@ -44,7 +44,7 @@ export default function NotificationBell() {
   const navigate = useNavigate();
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ["myNotifications"],
+    queryKey: ["myNotificationsBell"],
     queryFn: async () => {
       const authed = await base44.auth.isAuthenticated();
       if (!authed) return [];
@@ -74,14 +74,16 @@ export default function NotificationBell() {
     for (const n of unread) {
       await base44.entities.Notification.update(n.id, { isRead: true, read: true });
     }
-    queryClient.invalidateQueries({ queryKey: ["myNotifications"] });
+    queryClient.invalidateQueries({ queryKey: ["myNotificationsBell"] });
+    queryClient.invalidateQueries({ queryKey: ["myNotificationsPage"] });
   };
 
   const markReadAndNavigate = async (n) => {
     setOpen(false);
     if (!(n.isRead || n.read)) {
       await base44.entities.Notification.update(n.id, { isRead: true, read: true });
-      queryClient.invalidateQueries({ queryKey: ["myNotifications"] });
+      queryClient.invalidateQueries({ queryKey: ["myNotificationsBell"] });
+      queryClient.invalidateQueries({ queryKey: ["myNotificationsPage"] });
     }
     if (n.listingId) {
       navigate(`/saas/${n.listingId}`);
