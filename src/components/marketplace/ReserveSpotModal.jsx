@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { CalendarCheck, Loader2 } from "lucide-react";
 
 export default function ReserveSpotModal({ listing, open, onClose }) {
-  const [notes, setNotes] = useState("");
+  const [phone, setPhone] = useState("");
+  const [budget, setBudget] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,10 +26,13 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
         userEmail: user.email || "",
         listingId: listing.id,
         listingTitle: listing.title,
-        notes,
+        phone,
+        budget: parseFloat(budget) || 0,
+        message,
+        requestType: "reserve_spot",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminReservation", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title }); } catch (_) {}
+      try { await base44.functions.invoke("notifyAdminReservation", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, phone, budget, message }); } catch (_) {}
       toast.success("Spot reserved! The admin will contact you soon.");
       onClose();
     } catch (e) {
@@ -40,7 +46,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
+      <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-lg flex items-center gap-2">
             <CalendarCheck className="w-5 h-5 text-violet-400" />
@@ -58,12 +64,33 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
           </div>
 
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Notes (optional)</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Phone Number</label>
+            <Input
+              placeholder="+1 234 567 8900"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="bg-secondary/50 border-border/30 rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Budget ($)</label>
+            <Input
+              type="number"
+              placeholder="5000"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="bg-secondary/50 border-border/30 rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Message (optional)</label>
             <Textarea
               placeholder="Any specific number of shares or questions..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="bg-secondary/50 border-border/30 rounded-xl h-24 resize-none"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="bg-secondary/50 border-border/30 rounded-xl h-20 resize-none"
             />
           </div>
 

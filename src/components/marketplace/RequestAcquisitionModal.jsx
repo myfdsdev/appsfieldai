@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { Building2, Loader2 } from "lucide-react";
 
 export default function RequestAcquisitionModal({ listing, open, onClose }) {
+  const [phone, setPhone] = useState("");
   const [offerAmount, setOfferAmount] = useState(listing?.fullPrice?.toString() || "");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,11 +26,13 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
         userEmail: user.email || "",
         listingId: listing.id,
         listingTitle: listing.title,
+        phone,
         offerAmount: parseFloat(offerAmount) || listing.fullPrice || 0,
         notes,
+        requestType: "acquisition_request",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, offerAmount: parseFloat(offerAmount) || listing.fullPrice }); } catch (_) {}
+      try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, phone, offerAmount: parseFloat(offerAmount) || listing.fullPrice }); } catch (_) {}
       toast.success("Acquisition request submitted! The admin will review and contact you.");
       onClose();
     } catch (e) {
@@ -43,7 +46,7 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
+      <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-lg flex items-center gap-2">
             <Building2 className="w-5 h-5 text-violet-400" />
@@ -58,6 +61,16 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
               <span>{listing.category}</span>
               <span>Full price: ${listing.fullPrice?.toLocaleString()}</span>
             </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Phone Number</label>
+            <Input
+              placeholder="+1 234 567 8900"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="bg-secondary/50 border-border/30 rounded-xl"
+            />
           </div>
 
           <div>
@@ -77,7 +90,7 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
               placeholder="Any questions or details about your acquisition..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="bg-secondary/50 border-border/30 rounded-xl h-24 resize-none"
+              className="bg-secondary/50 border-border/30 rounded-xl h-20 resize-none"
             />
           </div>
 

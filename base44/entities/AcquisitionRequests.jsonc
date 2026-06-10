@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Title of the SaaS listing"
     },
+    "phone": {
+      "type": "string",
+      "description": "Phone number of the user"
+    },
     "offerAmount": {
       "type": "number",
       "description": "Offered amount for acquisition"
@@ -30,12 +34,18 @@
       "type": "string",
       "description": "Optional notes from the user"
     },
+    "requestType": {
+      "type": "string",
+      "default": "acquisition_request",
+      "description": "Type of request"
+    },
     "status": {
       "type": "string",
       "enum": [
         "pending",
         "approved",
         "rejected",
+        "contacted",
         "cancelled"
       ],
       "default": "pending",

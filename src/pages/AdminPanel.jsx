@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, DollarSign, Clock, CheckCircle, Ban, Eye, Trash2, Pencil, X, Receipt, ArrowDownRight, CalendarCheck, Building2 } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +107,45 @@ export default function AdminPanel() {
     toast.success("Listing updated");
   };
 
+  // Reservation actions
+  const handleReservationAction = async (r, status) => {
+    await base44.entities.DealReservations.update(r.id, { status });
+    queryClient.invalidateQueries({ queryKey: ["allReservations"] });
+    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
+    toast.success(`Reservation ${labels[status]}`);
+  };
+
+  const handleReservationDelete = async (r) => {
+    await base44.entities.DealReservations.delete(r.id);
+    queryClient.invalidateQueries({ queryKey: ["allReservations"] });
+    toast.success("Reservation deleted");
+  };
+
+  // Acquisition actions
+  const handleAcquisitionAction = async (a, status) => {
+    await base44.entities.AcquisitionRequests.update(a.id, { status });
+    queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
+    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
+    toast.success(`Request ${labels[status]}`);
+  };
+
+  const handleAcquisitionDelete = async (a) => {
+    await base44.entities.AcquisitionRequests.delete(a.id);
+    queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
+    toast.success("Acquisition request deleted");
+  };
+
+  const statusBadge = (s) => {
+    const configs = {
+      pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      approved: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+      contacted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+      cancelled: "bg-muted text-muted-foreground border-border/30",
+    };
+    return <Badge className={`text-[10px] border ${configs[s] || configs.pending}`}>{s}</Badge>;
+  };
+
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -176,6 +215,130 @@ export default function AdminPanel() {
         </Card>
       </motion.div>
 
+      {/* Spot Reservations */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-violet-400" />
+              Spot Reservations
+              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allReservations.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {allReservations.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No reservations yet</p>
+            ) : (
+              allReservations.map((r) => (
+                <div key={r.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{r.userName || "Unknown"}</p>
+                      <span className="text-xs text-muted-foreground">{r.userEmail}</span>
+                    </div>
+                    <p className="text-xs text-violet-400">{r.listingTitle || "Unknown Listing"}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {r.phone && (
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {r.phone}
+                        </span>
+                      )}
+                      {r.budget > 0 && (
+                        <span className="text-[11px] text-amber-400 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" /> ${r.budget?.toLocaleString()}
+                        </span>
+                      )}
+                      {statusBadge(r.status)}
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(r.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    </div>
+                    {r.message && (
+                      <div className="flex items-start gap-1 text-[11px] text-muted-foreground">
+                        <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
+                        <span className="line-clamp-2">{r.message}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                    {r.status === "pending" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "approved")} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
+                      </>
+                    )}
+                    <Button size="sm" variant="ghost" onClick={() => handleReservationDelete(r)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Acquisition Requests */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-violet-400" />
+              Acquisition Requests
+              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allAcquisitions.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {allAcquisitions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p>
+            ) : (
+              allAcquisitions.map((a) => (
+                <div key={a.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{a.userName || "Unknown"}</p>
+                      <span className="text-xs text-muted-foreground">{a.userEmail}</span>
+                    </div>
+                    <p className="text-xs text-violet-400">{a.listingTitle || "Unknown Listing"}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {a.phone && (
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {a.phone}
+                        </span>
+                      )}
+                      {a.offerAmount > 0 && (
+                        <span className="text-[11px] text-amber-400 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" /> ${a.offerAmount?.toLocaleString()}
+                        </span>
+                      )}
+                      {statusBadge(a.status)}
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(a.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    </div>
+                    {a.notes && (
+                      <div className="flex items-start gap-1 text-[11px] text-muted-foreground">
+                        <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
+                        <span className="line-clamp-2">{a.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                    {a.status === "pending" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "approved")} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
+                      </>
+                    )}
+                    <Button size="sm" variant="ghost" onClick={() => handleAcquisitionDelete(a)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Recent Bids */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
         <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
@@ -202,87 +365,6 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <span className="text-sm font-display font-bold text-amber-400 flex-shrink-0 ml-3">${b.bidAmount?.toLocaleString()}</span>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Spot Reservations */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <CalendarCheck className="w-4 h-4 text-violet-400" />
-              Spot Reservations
-              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allReservations.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allReservations.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No reservations yet</p>
-            ) : (
-              allReservations.slice(0, 20).map((r) => (
-                <div key={r.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium">{r.listingTitle || "Unknown"}</p>
-                      {r.userName && <p className="text-xs text-violet-400">{r.userName}</p>}
-                      {r.userEmail && <p className="text-xs text-muted-foreground">{r.userEmail}</p>}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Badge className={`text-[10px] border ${r.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : r.status === "approved" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : r.status === "rejected" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-muted text-muted-foreground border-border/30"}`}>{r.status}</Badge>
-                      <span className="text-[10px] text-muted-foreground">{new Date(r.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                    </div>
-                  </div>
-                  {r.status === "pending" && (
-                    <div className="flex gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.DealReservations.update(r.id, { status: "approved" }); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation approved"); }} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
-                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.DealReservations.update(r.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation rejected"); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Acquisition Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-violet-400" />
-              Acquisition Requests
-              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allAcquisitions.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allAcquisitions.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p>
-            ) : (
-              allAcquisitions.slice(0, 20).map((a) => (
-                <div key={a.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium">{a.listingTitle || "Unknown"}</p>
-                      {a.userName && <p className="text-xs text-violet-400">{a.userName}</p>}
-                      {a.userEmail && <p className="text-xs text-muted-foreground">{a.userEmail}</p>}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Badge className={`text-[10px] border ${a.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : a.status === "approved" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : a.status === "rejected" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-muted text-muted-foreground border-border/30"}`}>{a.status}</Badge>
-                      {a.offerAmount > 0 && <span className="text-[10px] text-muted-foreground">${a.offerAmount?.toLocaleString()}</span>}
-                      <span className="text-[10px] text-muted-foreground">{new Date(a.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                    </div>
-                  </div>
-                  {a.status === "pending" && (
-                    <div className="flex gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.AcquisitionRequests.update(a.id, { status: "approved" }); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Request approved"); }} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
-                      <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.AcquisitionRequests.update(a.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Request rejected"); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
-                    </div>
-                  )}
                 </div>
               ))
             )}
