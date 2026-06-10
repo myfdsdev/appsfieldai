@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,13 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
   const [editListing, setEditListing] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [copied, setCopied] = useState({});
+
+  const doCopy = (key, text) => {
+    navigator.clipboard.writeText(text);
+    setCopied((prev) => ({ ...prev, [key]: true }));
+    setTimeout(() => setCopied((prev) => ({ ...prev, [key]: false })), 1500);
+  };
 
   const { data: allListings = [], isLoading } = useQuery({
     queryKey: ["allListings"],
@@ -269,6 +276,20 @@ export default function AdminPanel() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-medium">{r.userName || "Unknown"}</p>
                       <span className="text-xs text-muted-foreground">{r.userEmail}</span>
+                      <div className="flex items-center gap-0.5 ml-1">
+                        {r.userEmail && (
+                          <>
+                            <a href={`mailto:${r.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Email user"><Mail className="w-3 h-3" /></a>
+                            <button onClick={() => doCopy(`res-email-${r.id}`, r.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy email">{copied[`res-email-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
+                          </>
+                        )}
+                        {r.phone && (
+                          <>
+                            <a href={`tel:${r.phone}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Call user"><Phone className="w-3 h-3" /></a>
+                            <button onClick={() => doCopy(`res-phone-${r.id}`, r.phone)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy phone">{copied[`res-phone-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs text-violet-400">{r.listingTitle || "Unknown Listing"}</p>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -346,6 +367,20 @@ export default function AdminPanel() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-medium">{a.userName || "Unknown"}</p>
                       <span className="text-xs text-muted-foreground">{a.userEmail}</span>
+                      <div className="flex items-center gap-0.5 ml-1">
+                        {a.userEmail && (
+                          <>
+                            <a href={`mailto:${a.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Email user"><Mail className="w-3 h-3" /></a>
+                            <button onClick={() => doCopy(`acq-email-${a.id}`, a.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy email">{copied[`acq-email-${a.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
+                          </>
+                        )}
+                        {a.phone && (
+                          <>
+                            <a href={`tel:${a.phone}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Call user"><Phone className="w-3 h-3" /></a>
+                            <button onClick={() => doCopy(`acq-phone-${a.id}`, a.phone)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy phone">{copied[`acq-phone-${a.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs text-violet-400">{a.listingTitle || "Unknown Listing"}</p>
                     <div className="flex items-center gap-3 flex-wrap">

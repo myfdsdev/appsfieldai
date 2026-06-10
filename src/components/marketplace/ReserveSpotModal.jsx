@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,31 +9,57 @@ import { base44 } from "@/api/base44Client";
 import { CalendarCheck, Loader2 } from "lucide-react";
 
 export default function ReserveSpotModal({ listing, open, onClose }) {
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [budget, setBudget] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (open) {
+      base44.auth.me().then((u) => {
+        if (u) {
+          setUserName(u.full_name || "");
+          setUserEmail(u.email || "");
+        }
+      }).catch(() => {});
+    }
+  }, [open]);
+
+  const validate = () => {
+    const errs = {};
+    if (!userName.trim()) errs.userName = "Full name is required";
+    if (!userEmail.trim()) {
+      errs.userEmail = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      errs.userEmail = "Enter a valid email address";
+    }
+    if (!phone.trim()) errs.phone = "Phone number is required";
+    if (!budget.trim() || isNaN(parseFloat(budget))) errs.budget = "Budget is required";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleReserve = async () => {
+    if (!validate()) return;
     setLoading(true);
-    setError("");
     try {
       const user = await base44.auth.me();
       const reservation = await base44.entities.DealReservations.create({
         userId: user.id,
-        userName: user.full_name || "",
-        userEmail: user.email || "",
+        userName: userName.trim(),
+        userEmail: userEmail.trim(),
         listingId: listing.id,
         listingTitle: listing.title,
-        phone,
+        phone: phone.trim(),
         budget: parseFloat(budget) || 0,
-        message,
+        message: message.trim(),
         requestType: "reserve_spot",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminReservation", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, listingId: listing.id, requestId: reservation.id, phone, budget, message }); } catch (_) {}
-      // Create user notification
+      try { await base44.functions.invoke("notifyAdminReservation", { userName: userName.trim(), userEmail: userEmail.trim(), listingTitle: listing.title, listingId: listing.id, requestId: reservation.id, phone: phone.trim(), budget: parseFloat(budget) || 0, message: message.trim() }); } catch (_) {}
       try {
         await base44.entities.Notification.create({
           userId: user.id, role: "user", type: "reserve_submitted",
@@ -45,7 +71,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
       toast.success("Spot reserved! The admin will contact you soon.");
       onClose();
     } catch (e) {
-      setError(e?.message || "Something went wrong. Please try again.");
+      setErrors({ form: e?.message || "Something went wrong. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -73,24 +99,49 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
           </div>
 
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Phone Number</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Full Name <span className="text-red-400">*</span></label>
             <Input
-              placeholder="+1 234 567 8900"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="bg-secondary/50 border-border/30 rounded-xl"
+              placeholder="John Doe"
+              value={userName}
+              onChange={(e) => { setUserName(e.target.value); setErrors((prev) => ({ ...prev, userName: "" })); }}
+              className={`bg-secondary/50 border-border/30 rounded-xl ${errors.userName ? "border-red-500/50" : ""}`}
             />
+            {errors.userName && <p className="text-xs text-red-400 mt-1">{errors.userName}</p>}
           </div>
 
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Budget ($)</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Email Address <span className="text-red-400">*</span></label>
+            <Input
+              type="email"
+              placeholder="john@example.com"
+              value={userEmail}
+              onChange={(e) => { setUserEmail(e.target.value); setErrors((prev) => ({ ...prev, userEmail: "" })); }}
+              className={`bg-secondary/50 border-border/30 rounded-xl ${errors.userEmail ? "border-red-500/50" : ""}`}
+            />
+            {errors.userEmail && <p className="text-xs text-red-400 mt-1">{errors.userEmail}</p>}
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Phone Number <span className="text-red-400">*</span></label>
+            <Input
+              placeholder="+1 234 567 8900"
+              value={phone}
+              onChange={(e) => { setPhone(e.target.value); setErrors((prev) => ({ ...prev, phone: "" })); }}
+              className={`bg-secondary/50 border-border/30 rounded-xl ${errors.phone ? "border-red-500/50" : ""}`}
+            />
+            {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Budget ($) <span className="text-red-400">*</span></label>
             <Input
               type="number"
               placeholder="5000"
               value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              className="bg-secondary/50 border-border/30 rounded-xl"
+              onChange={(e) => { setBudget(e.target.value); setErrors((prev) => ({ ...prev, budget: "" })); }}
+              className={`bg-secondary/50 border-border/30 rounded-xl ${errors.budget ? "border-red-500/50" : ""}`}
             />
+            {errors.budget && <p className="text-xs text-red-400 mt-1">{errors.budget}</p>}
           </div>
 
           <div>
@@ -103,9 +154,9 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
             />
           </div>
 
-          {error && (
+          {errors.form && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-red-400 bg-red-500/10 rounded-lg p-2 text-center">
-              {error}
+              {errors.form}
             </motion.p>
           )}
 
