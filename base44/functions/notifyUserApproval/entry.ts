@@ -10,7 +10,10 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { userEmail, userName, listingTitle, requestType, status } = body;
+    const {
+      userEmail, userName, listingTitle, requestType, status,
+      listingId, userId, phone, budget, offerAmount, message, notes,
+    } = body;
 
     if (!userEmail) {
       console.log("No userEmail provided, skipping notification");
@@ -19,6 +22,7 @@ Deno.serve(async (req) => {
 
     const isReservation = requestType === "reserve_spot";
     const typeLabel = isReservation ? "Spot Reservation" : "Acquisition Request";
+    const buyerNote = message || notes || "";
 
     let subject = "";
     let bodyHtml = "";
@@ -33,6 +37,71 @@ Deno.serve(async (req) => {
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;
+
+      // --- Create Lead record for seller dashboard ---
+      if (listingId && userId) {
+        try {
+          const listings = await base44.asServiceRole.entities.SaaSListing.filter({ id: listingId });
+          const listing = listings[0];
+          if (listing && listing.ownerUserId) {
+            await base44.asServiceRole.entities.Lead.create({
+              buyerUserId: userId,
+              buyerName: userName || "Unknown",
+              buyerEmail: userEmail,
+              buyerPhone: phone || "",
+              sellerUserId: listing.ownerUserId,
+              listingId,
+              listingTitle: listingTitle || listing.title,
+              requestType: requestType || "reserve_spot",
+              offerAmount: budget || offerAmount || 0,
+              message: buyerNote,
+              status: "approved",
+            });
+            console.log(`Lead created for listing ${listingId}, buyer ${userId}`);
+          }
+        } catch (e) {
+          console.error("Lead creation failed:", e);
+        }
+      }
+
+      // --- Notify seller ---
+      if (listingId) {
+        try {
+          const listings = listingId
+            ? await base44.asServiceRole.entities.SaaSListing.filter({ id: listingId })
+            : [];
+          const listing = listings[0];
+          if (listing && listing.ownerUserId) {
+            const seller = await base44.asServiceRole.entities.User.get(listing.ownerUserId);
+            if (seller && seller.email) {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: seller.email,
+                subject: `New ${typeLabel} Lead for "${listingTitle || listing.title}"`,
+                body: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #0a0a0a; color: #f0f0f0; border-radius: 12px;">
+                    <h2 style="color: #f97316;">📩 New Lead Alert!</h2>
+                    <p>A buyer has shown interest in your listing <strong style="color: #a78bfa;">${listingTitle || listing.title}</strong>.</p>
+                    <div style="background: #1a1a1a; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                      <p style="margin: 4px 0;"><strong>Buyer:</strong> ${userName || "Unknown"}</p>
+                      <p style="margin: 4px 0;"><strong>Email:</strong> ${userEmail}</p>
+                      ${phone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${phone}</p>` : ""}
+                      ${(budget || offerAmount) ? `<p style="margin: 4px 0;"><strong>Offer:</strong> $${(budget || offerAmount)?.toLocaleString()}</p>` : ""}
+                      ${buyerNote ? `<p style="margin: 4px 0;"><strong>Message:</strong> ${buyerNote}</p>` : ""}
+                    </div>
+                    <p>The admin team has approved this lead. They will coordinate the next steps.</p>
+                    <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
+                  </div>
+                `,
+                isHtml: true,
+              });
+              console.log(`Seller notified at ${seller.email}`);
+            }
+          }
+        } catch (e) {
+          console.error("Seller notification failed:", e);
+        }
+      }
+
     } else if (status === "contacted") {
       subject = `We've reached out regarding your ${typeLabel}`;
       bodyHtml = `
@@ -50,6 +119,26 @@ Deno.serve(async (req) => {
           <h2 style="color: #f97316;">Hello ${userName || "there"},</h2>
           <p>Unfortunately, your <strong>${typeLabel}</strong> for <strong style="color: #a78bfa;">${listingTitle}</strong> could not be processed at this time.</p>
           <p>Feel free to browse other listings on our marketplace or reach out if you have any questions.</p>
+          <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
+        </div>
+      `;
+    } else if (status === "deal_in_progress") {
+      subject = `Your ${typeLabel} deal is in progress! 🚀`;
+      bodyHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #0a0a0a; color: #f0f0f0; border-radius: 12px;">
+          <h2 style="color: #f97316;">Hello ${userName || "there"},</h2>
+          <p>Great news! Your <strong>${typeLabel}</strong> for <strong style="color: #a78bfa;">${listingTitle}</strong> is now <strong style="color: #60a5fa;">in progress</strong>.</p>
+          <p>The deal is actively being worked on. We'll keep you updated as things move forward.</p>
+          <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
+        </div>
+      `;
+    } else if (status === "deal_closed") {
+      subject = `Your ${typeLabel} deal is closed! 🎊`;
+      bodyHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #0a0a0a; color: #f0f0f0; border-radius: 12px;">
+          <h2 style="color: #f97316;">Congratulations, ${userName || "there"}!</h2>
+          <p>Your <strong>${typeLabel}</strong> for <strong style="color: #a78bfa;">${listingTitle}</strong> has been <strong style="color: #8b5cf6;">successfully closed</strong>.</p>
+          <p>Thank you for using SaaSShare! We hope you enjoy your new investment.</p>
           <p style="margin-top: 24px; color: #888;">— The SaaSShare Team</p>
         </div>
       `;

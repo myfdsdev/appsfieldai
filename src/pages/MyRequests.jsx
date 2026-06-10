@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle,
-  Ban, DollarSign, MessageSquare, Loader2, Layers, FileText
+  Ban, DollarSign, MessageSquare, Loader2, FileText, TrendingUp, BadgeCheck
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +20,64 @@ const TABS = [
 ];
 
 const statusConfig = {
-  pending:   { color: "bg-amber-500/10 text-amber-400 border-amber-500/20", icon: Clock },
-  approved:  { color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle },
-  rejected:  { color: "bg-red-500/10 text-red-400 border-red-500/20", icon: Ban },
-  contacted: { color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", icon: CheckCircle },
-  cancelled: { color: "bg-muted text-muted-foreground border-border/30", icon: X },
+  pending:          { color: "bg-amber-500/10 text-amber-400 border-amber-500/20", icon: Clock, label: "Pending" },
+  approved:         { color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle, label: "Approved" },
+  rejected:         { color: "bg-red-500/10 text-red-400 border-red-500/20", icon: Ban, label: "Rejected" },
+  contacted:        { color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", icon: CheckCircle, label: "Contacted" },
+  cancelled:        { color: "bg-muted text-muted-foreground border-border/30", icon: X, label: "Cancelled" },
+  deal_in_progress: { color: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: TrendingUp, label: "In Progress" },
+  deal_closed:      { color: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: BadgeCheck, label: "Closed" },
 };
+
+const STATUS_STEPS = ["pending", "approved", "contacted", "deal_in_progress", "deal_closed"];
+
+function StatusTimeline({ currentStatus }) {
+  if (currentStatus === "rejected" || currentStatus === "cancelled") {
+    const cfg = statusConfig[currentStatus];
+    const Icon = cfg.icon;
+    return (
+      <div className="mt-3 pt-3 border-t border-border/20">
+        <div className={`flex items-center gap-2 text-xs ${currentStatus === "rejected" ? "text-red-400" : "text-muted-foreground"}`}>
+          <Icon className="w-3.5 h-3.5" />
+          <span className="font-medium">{cfg.label}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const currentIdx = STATUS_STEPS.indexOf(currentStatus);
+  if (currentIdx < 0) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border/20">
+      <div className="flex items-center gap-0.5">
+        {STATUS_STEPS.map((step, i) => {
+          const sc = statusConfig[step];
+          const Icon = sc.icon;
+          const isDone = i <= currentIdx;
+          const isCurrent = i === currentIdx;
+          return (
+            <React.Fragment key={step}>
+              <div className="flex flex-col items-center">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] transition-colors ${
+                  isDone ? "bg-violet-500/20 text-violet-400" : "bg-secondary/60 text-muted-foreground"
+                } ${isCurrent ? "ring-1 ring-violet-500/40" : ""}`}>
+                  <Icon className="w-3 h-3" />
+                </div>
+                <span className={`text-[9px] mt-1 whitespace-nowrap ${
+                  isCurrent ? "text-violet-400 font-medium" : isDone ? "text-muted-foreground" : "text-muted-foreground/40"
+                }`}>{sc.label}</span>
+              </div>
+              {i < STATUS_STEPS.length - 1 && (
+                <div className={`flex-1 h-px mb-4 ${i < currentIdx ? "bg-violet-500/40" : "bg-border/40"}`} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function RequestCard({ item, type, onCancel }) {
   const isSpot = type === "reserve_spot";
@@ -55,7 +107,7 @@ function RequestCard({ item, type, onCancel }) {
                 </Badge>
                 <Badge className={`text-[10px] border ${cfg.color}`}>
                   <StatusIcon className="w-3 h-3 mr-1" />
-                  {item.status}
+                  {cfg.label || item.status}
                 </Badge>
               </div>
 
@@ -98,14 +150,19 @@ function RequestCard({ item, type, onCancel }) {
                 <X className="w-3 h-3 mr-1" /> Cancel
               </Button>
             )}
-            {item.status !== "pending" && (
+            {item.status !== "pending" && item.status !== "cancelled" && (
               <StatusIcon className={`w-4 h-4 shrink-0 mt-0.5 ${
                 item.status === "approved" ? "text-emerald-400" :
                 item.status === "rejected" ? "text-red-400" :
-                item.status === "contacted" ? "text-cyan-400" : "text-muted-foreground"
+                item.status === "contacted" ? "text-cyan-400" :
+                item.status === "deal_in_progress" ? "text-blue-400" :
+                item.status === "deal_closed" ? "text-purple-400" :
+                "text-muted-foreground"
               }`} />
             )}
           </div>
+
+          <StatusTimeline currentStatus={item.status} />
         </CardContent>
       </Card>
     </motion.div>
@@ -182,7 +239,7 @@ export default function MyRequests() {
       if (activeTab === "reserve_spot") return item._type === "reserve_spot";
       if (activeTab === "acquisition_request") return item._type === "acquisition_request";
       if (activeTab === "pending") return item.status === "pending";
-      if (activeTab === "approved") return item.status === "approved";
+      if (activeTab === "approved") return ["approved", "contacted", "deal_in_progress", "deal_closed"].includes(item.status);
       return true;
     });
   }, [allItems, activeTab]);
@@ -192,7 +249,7 @@ export default function MyRequests() {
     reserve_spot: allItems.filter((i) => i._type === "reserve_spot").length,
     acquisition_request: allItems.filter((i) => i._type === "acquisition_request").length,
     pending: allItems.filter((i) => i.status === "pending").length,
-    approved: allItems.filter((i) => i.status === "approved").length,
+    approved: allItems.filter((i) => ["approved", "contacted", "deal_in_progress", "deal_closed"].includes(i.status)).length,
   }), [allItems]);
 
   const isLoading = loadingUser || loadingRes || loadingAcq;

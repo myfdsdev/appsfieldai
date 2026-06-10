@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -111,7 +111,7 @@ export default function AdminPanel() {
   const handleReservationAction = async (r, status) => {
     await base44.entities.DealReservations.update(r.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allReservations"] });
-    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
+    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted", deal_in_progress: "marked in progress", deal_closed: "marked as closed" };
     toast.success(`Reservation ${labels[status]}`);
     try {
       await base44.functions.invoke("notifyUserApproval", {
@@ -120,6 +120,11 @@ export default function AdminPanel() {
         listingTitle: r.listingTitle,
         requestType: "reserve_spot",
         status,
+        listingId: r.listingId,
+        userId: r.userId,
+        phone: r.phone,
+        budget: r.budget,
+        message: r.message,
       });
     } catch (e) { console.error("notify user failed", e); }
   };
@@ -134,7 +139,7 @@ export default function AdminPanel() {
   const handleAcquisitionAction = async (a, status) => {
     await base44.entities.AcquisitionRequests.update(a.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
-    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
+    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted", deal_in_progress: "marked in progress", deal_closed: "marked as closed" };
     toast.success(`Request ${labels[status]}`);
     try {
       await base44.functions.invoke("notifyUserApproval", {
@@ -143,6 +148,11 @@ export default function AdminPanel() {
         listingTitle: a.listingTitle,
         requestType: "acquisition_request",
         status,
+        listingId: a.listingId,
+        userId: a.userId,
+        phone: a.phone,
+        offerAmount: a.offerAmount,
+        notes: a.notes,
       });
     } catch (e) { console.error("notify user failed", e); }
   };
@@ -160,8 +170,14 @@ export default function AdminPanel() {
       rejected: "bg-red-500/10 text-red-400 border-red-500/20",
       contacted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
       cancelled: "bg-muted text-muted-foreground border-border/30",
+      deal_in_progress: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      deal_closed: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     };
-    return <Badge className={`text-[10px] border ${configs[s] || configs.pending}`}>{s}</Badge>;
+    const labels = {
+      deal_in_progress: "In Progress",
+      deal_closed: "Closed",
+    };
+    return <Badge className={`text-[10px] border ${configs[s] || configs.pending}`}>{labels[s] || s}</Badge>;
   };
 
   return (
@@ -286,6 +302,21 @@ export default function AdminPanel() {
                         <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
                       </>
                     )}
+                    {r.status === "approved" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
+                      </>
+                    )}
+                    {r.status === "contacted" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
+                      </>
+                    )}
+                    {r.status === "deal_in_progress" && (
+                      <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
+                    )}
                     <Button size="sm" variant="ghost" onClick={() => handleReservationDelete(r)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
                   </div>
                 </div>
@@ -347,6 +378,21 @@ export default function AdminPanel() {
                         <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
                         <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
                       </>
+                    )}
+                    {a.status === "approved" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
+                      </>
+                    )}
+                    {a.status === "contacted" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
+                      </>
+                    )}
+                    {a.status === "deal_in_progress" && (
+                      <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => handleAcquisitionDelete(a)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
                   </div>
