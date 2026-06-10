@@ -6,16 +6,16 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
-const navLinks = [
+const publicNavLinks = [
   { to: "/marketplace", label: "Marketplace" },
   { to: "/auctions", label: "Live Auctions" },
   { to: "/requests", label: "My Requests" },
-  { to: "/admin", label: "Admin" },
 ];
 
 export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  const navLinks = [...publicNavLinks, ...(user?.role === "admin" ? [{ to: "/admin", label: "Admin" }] : [])];
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/80 backdrop-blur-xl">
