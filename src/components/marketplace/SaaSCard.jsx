@@ -47,7 +47,7 @@ function RiskBadge({ score }) {
 
 function AIScoreBadge({ score }) {
   return (
-    <Badge className="text-[10px] border bg-violet-500/10 text-violet-400 border-violet-500/20 flex items-center gap-1">
+    <Badge className="text-[10px] border bg-orange-500/10 text-orange-400 border-orange-500/20 flex items-center gap-1">
       <Bot className="w-3 h-3" /> AI Score {score}%
     </Badge>
   );
@@ -65,7 +65,7 @@ export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestA
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="group rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 flex flex-col"
+      className="group rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5 transition-all duration-300 flex flex-col"
     >
       {/* Image / Header */}
       <div
@@ -143,10 +143,10 @@ export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestA
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+          <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
             Reserve Spot
           </Button>
-          <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-violet-500/60 text-violet-400 hover:bg-violet-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
+          <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Request Acquisition
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">

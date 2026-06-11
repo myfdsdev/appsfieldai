@@ -174,7 +174,7 @@ export default function SaaSDetail() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -226,7 +226,7 @@ export default function SaaSDetail() {
 
           {/* Description */}
           <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-            <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><FileText className="w-4 h-4 text-violet-400" /> About This SaaS</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><FileText className="w-4 h-4 text-orange-400" /> About This SaaS</CardTitle></CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground leading-relaxed">{listing.description || "No description provided."}</p>
               {(listing.tags?.length > 0) && (
@@ -268,7 +268,7 @@ export default function SaaSDetail() {
                 <div className="grid sm:grid-cols-2 gap-3">
                   {listing.features.map((f, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm">
-                      <div className="w-6 h-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><Zap className="w-3 h-3 text-violet-400" /></div>
+                      <div className="w-6 h-6 rounded-lg bg-orange-500/10 flex items-center justify-center"><Zap className="w-3 h-3 text-orange-400" /></div>
                       {f}
                     </div>
                   ))}
@@ -296,7 +296,7 @@ export default function SaaSDetail() {
           {/* Recent Share Purchases */}
           {sharePurchases.length > 0 && (
             <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-              <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Users className="w-4 h-4 text-violet-400" /> Recent Share Purchases</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Users className="w-4 h-4 text-orange-400" /> Recent Share Purchases</CardTitle></CardHeader>
               <CardContent className="divide-y divide-border/30">
                 {sharePurchases.map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
@@ -344,14 +344,14 @@ export default function SaaSDetail() {
         {/* Sidebar */}
         <div className="space-y-4">
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <Card className="border-violet-500/20 bg-card/60 backdrop-blur-xl sticky top-24">
+            <Card className="border-orange-500/20 bg-card/60 backdrop-blur-xl sticky top-24">
               <CardContent className="p-6 space-y-5">
                 {/* Scores */}
                 <div className="flex items-center gap-3">
                   <Badge className={`text-[10px] border ${listing.riskScore <= 3 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : listing.riskScore <= 6 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"} flex items-center gap-1`}>
                     <Shield className="w-3 h-3" /> Risk: {listing.riskScore}/10
                   </Badge>
-                  <Badge className="text-[10px] border bg-violet-500/10 text-violet-400 border-violet-500/20 flex items-center gap-1">
+                  <Badge className="text-[10px] border bg-orange-500/10 text-orange-400 border-orange-500/20 flex items-center gap-1">
                     <Bot className="w-3 h-3" /> AI: {listing.aiScore}%
                   </Badge>
                 </div>
@@ -404,10 +404,10 @@ export default function SaaSDetail() {
                 {/* Action Buttons */}
                 {!isSold && (
                   <div className="space-y-2 pt-2">
-                    <Button className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setReserveSpotListing(listing)}>
+                    <Button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setReserveSpotListing(listing)}>
                       <CalendarCheck className="w-4 h-4 mr-2" /> Reserve Spot
                     </Button>
-                    <Button variant="outline" className="w-full border-violet-500/60 text-violet-400 hover:bg-violet-500/10 rounded-xl h-10 text-sm" onClick={() => setRequestAcqListing(listing)}>
+                    <Button variant="outline" className="w-full border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-xl h-10 text-sm" onClick={() => setRequestAcqListing(listing)}>
                       <Building2 className="w-4 h-4 mr-2" /> Request Acquisition
                     </Button>
                     {listing.status === "auction" && (

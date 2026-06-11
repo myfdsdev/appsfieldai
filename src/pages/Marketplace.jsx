@@ -86,7 +86,7 @@ export default function Marketplace() {
 
       {isLoading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
         </div>
       ) : (
         <>

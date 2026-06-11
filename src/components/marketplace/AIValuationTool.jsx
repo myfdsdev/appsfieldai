@@ -76,11 +76,11 @@ Respond with this exact JSON structure only, no other text:
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-      <Card className="border-violet-500/20 bg-violet-500/5 overflow-hidden">
+      <Card className="border-orange-500/20 bg-orange-500/5 overflow-hidden">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -92,7 +92,7 @@ Respond with this exact JSON structure only, no other text:
               onClick={getValuation}
               disabled={loading || (!formData.monthlyRevenue && !formData.monthlyExpenses)}
               size="sm"
-              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl text-xs h-8"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl text-xs h-8"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 mr-1.5" />}
               {valuation ? "Re-Analyze" : "Get Valuation"}
@@ -109,7 +109,7 @@ Respond with this exact JSON structure only, no other text:
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-4 pt-4 border-t border-violet-500/20">
+                <div className="mt-4 pt-4 border-t border-orange-500/20">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     <div className="bg-secondary/40 rounded-xl p-3 text-center">
                       <DollarSign className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
@@ -127,7 +127,7 @@ Respond with this exact JSON structure only, no other text:
                       <p className="text-[10px] text-muted-foreground">MRR Multiple</p>
                     </div>
                     <div className="bg-secondary/40 rounded-xl p-3 text-center">
-                      <Target className="w-4 h-4 text-violet-400 mx-auto mb-1" />
+                      <Target className="w-4 h-4 text-orange-400 mx-auto mb-1" />
                       <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium border ${confidenceColors[valuation.confidence]}`}>
                         {valuation.confidence?.toUpperCase()}
                       </span>
@@ -135,7 +135,7 @@ Respond with this exact JSON structure only, no other text:
                     </div>
                   </div>
 
-                  <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 mb-2">
+                  <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 mb-2">
                     {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     {expanded ? "Hide" : "Show"} Analysis
                   </button>
@@ -156,7 +156,7 @@ Respond with this exact JSON structure only, no other text:
                     })}
                     size="sm"
                     variant="outline"
-                    className="mt-3 border-violet-500/30 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-xl text-xs h-8"
+                    className="mt-3 border-orange-500/30 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 rounded-xl text-xs h-8"
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                     Apply Suggested Prices

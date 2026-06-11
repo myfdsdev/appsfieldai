@@ -32,7 +32,7 @@ const IMAGE_GRADIENTS = [
   "from-emerald-600 to-green-700",
   "from-rose-600 to-pink-700",
   "from-cyan-600 to-blue-700",
-  "from-violet-600 to-purple-700",
+  "from-orange-600 to-amber-600",
   "from-amber-600 to-orange-700",
   "from-indigo-600 to-blue-700",
 ];

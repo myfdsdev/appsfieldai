@@ -101,7 +101,7 @@ export default function SellMySaaS() {
         ownerUserId: user.id,
         revenueProofFiles: proofUrls,
         images: productImages,
-        imageGradient: "from-violet-600 to-purple-700",
+        imageGradient: "from-orange-600 to-amber-600",
       });
 
       toast.success(status === "active"
@@ -140,11 +140,11 @@ export default function SellMySaaS() {
         {[1, 2, 3].map((s) => (
           <React.Fragment key={s}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-              step >= s ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white" : "bg-secondary/50 text-muted-foreground"
+              step >= s ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white" : "bg-secondary/50 text-muted-foreground"
             }`}>
               {step > s ? <CheckCircle className="w-4 h-4" /> : s}
             </div>
-            {s < 3 && <div className={`flex-1 h-0.5 rounded ${step > s ? "bg-violet-500" : "bg-secondary/50"}`} />}
+            {s < 3 && <div className={`flex-1 h-0.5 rounded ${step > s ? "bg-orange-500" : "bg-secondary/50"}`} />}
           </React.Fragment>
         ))}
       </div>
@@ -183,9 +183,9 @@ export default function SellMySaaS() {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Product Image / Screenshot</Label>
-                <Input type="file" accept="image/*" onChange={(e) => setProductImageFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-violet-500/20 file:text-violet-400" />
+                <Input type="file" accept="image/*" onChange={(e) => setProductImageFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-orange-500/20 file:text-orange-400" />
               </div>
-              <Button onClick={() => handleNext(2)} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
+              <Button onClick={() => handleNext(2)} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl">Next Step</Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -247,7 +247,7 @@ export default function SellMySaaS() {
 
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(1)} className="border-border/40 rounded-xl">Back</Button>
-                <Button onClick={() => handleNext(3)} className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
+                <Button onClick={() => handleNext(3)} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl">Next Step</Button>
               </div>
             </CardContent>
           </Card>
@@ -270,7 +270,7 @@ export default function SellMySaaS() {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Revenue Proof File</Label>
-                <Input type="file" onChange={(e) => setRevenueProofFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-violet-500/20 file:text-violet-400" />
+                <Input type="file" onChange={(e) => setRevenueProofFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-orange-500/20 file:text-orange-400" />
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(2)} className="border-border/40 rounded-xl">Back</Button>
@@ -284,8 +284,8 @@ export default function SellMySaaS() {
         </motion.div>
       )}
 
-      <div className="flex items-start gap-3 p-4 rounded-xl border border-violet-500/20 bg-violet-500/5">
-        <Info className="w-5 h-5 text-violet-400 shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-orange-500/20 bg-orange-500/5">
+        <Info className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
         <div className="text-xs text-muted-foreground">
           <p className="font-medium text-foreground mb-1">Listing Guidelines</p>
           All SaaS listings are reviewed within 24 hours. You must verify revenue through bank statements or payment processor screenshots. SaaSShare charges a 5% commission on completed sales.

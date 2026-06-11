@@ -84,7 +84,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
       <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-lg flex items-center gap-2">
-            <CalendarCheck className="w-5 h-5 text-violet-400" />
+            <CalendarCheck className="w-5 h-5 text-orange-400" />
             Reserve a Spot
           </DialogTitle>
         </DialogHeader>
@@ -160,7 +160,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
             </motion.p>
           )}
 
-          <Button onClick={handleReserve} disabled={loading} className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-10 text-white border-0">
+          <Button onClick={handleReserve} disabled={loading} className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-10 text-white border-0">
             {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CalendarCheck className="w-4 h-4 mr-2" />}
             Confirm Reservation
           </Button>
