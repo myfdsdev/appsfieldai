@@ -13,15 +13,40 @@ export default function ChatPanel({ listing, currentUser, style }) {
   const [newMsg, setNewMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
   const scrollRef = useRef(null);
 
   const ownerId = listing.ownerUserId;
   const isOwner = currentUser?.id === ownerId;
 
+  // Fetch messages when expanded
   useEffect(() => {
-    if (!expanded || !currentUser || !listing.id) return;
+    if (!expanded || !currentUser?.id || !listing.id) return;
     fetchMessages();
-  }, [expanded, currentUser, listing.id]);
+  }, [expanded, currentUser?.id, listing.id]);
+
+  // Subscribe to real-time message updates
+  useEffect(() => {
+    if (!expanded || !currentUser?.id || !listing.id) return;
+
+    const unsubscribe = base44.entities.Message.subscribe((event) => {
+      if (event.type === "create") {
+        const msg = event.data;
+        // Only show messages related to this conversation
+        if (msg.listingId === listing.id &&
+            (msg.senderId === currentUser.id || msg.receiverId === currentUser.id)) {
+          setMessages((prev) => {
+            if (prev.find((m) => m.id === msg.id)) return prev;
+            return [...prev, msg].sort(
+              (a, b) => new Date(a.created_date) - new Date(b.created_date)
+            );
+          });
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [expanded, currentUser?.id, listing.id]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -31,23 +56,27 @@ export default function ChatPanel({ listing, currentUser, style }) {
 
   const fetchMessages = async () => {
     setLoading(true);
+    setFetchError(null);
     try {
-      const sent = await base44.entities.Message.filter(
-        { senderId: currentUser.id, listingId: listing.id },
-        "created_date",
-        100
-      );
-      const received = await base44.entities.Message.filter(
-        { receiverId: currentUser.id, listingId: listing.id },
-        "created_date",
-        100
-      );
+      const [sent, received] = await Promise.all([
+        base44.entities.Message.filter(
+          { senderId: currentUser.id, listingId: listing.id },
+          "created_date",
+          100
+        ),
+        base44.entities.Message.filter(
+          { receiverId: currentUser.id, listingId: listing.id },
+          "created_date",
+          100
+        ),
+      ]);
       const all = [...sent, ...received].sort(
         (a, b) => new Date(a.created_date) - new Date(b.created_date)
       );
       setMessages(all);
     } catch (err) {
       console.error("Failed to fetch messages:", err);
+      setFetchError("Could not load messages. Try again.");
     } finally {
       setLoading(false);
     }
@@ -55,6 +84,11 @@ export default function ChatPanel({ listing, currentUser, style }) {
 
   const sendMessage = async () => {
     if (!newMsg.trim() || sending) return;
+    if (!currentUser?.id) {
+      toast.error("Please log in to send messages.");
+      return;
+    }
+
     setSending(true);
     try {
       const receiver = isOwner
@@ -63,6 +97,7 @@ export default function ChatPanel({ listing, currentUser, style }) {
 
       if (!receiver) {
         toast.error("No recipient found. Wait for a buyer to message first.");
+        setSending(false);
         return;
       }
 
@@ -73,9 +108,10 @@ export default function ChatPanel({ listing, currentUser, style }) {
         content: newMsg.trim(),
       });
       setNewMsg("");
-      fetchMessages();
+      // Subscription will handle adding the message to state
     } catch (err) {
       console.error("Failed to send:", err);
+      toast.error("Failed to send message. Please try again.");
     } finally {
       setSending(false);
     }
@@ -88,7 +124,7 @@ export default function ChatPanel({ listing, currentUser, style }) {
     }
   };
 
-  if (!currentUser) return null;
+  if (!currentUser?.id) return null;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={style}>
@@ -125,6 +161,11 @@ export default function ChatPanel({ listing, currentUser, style }) {
                   {loading ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
+                    </div>
+                  ) : fetchError ? (
+                    <div className="text-center py-8">
+                      <p className="text-xs text-red-400">{fetchError}</p>
+                      <Button variant="link" size="sm" onClick={fetchMessages} className="text-xs mt-1">Retry</Button>
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="text-center py-8">
