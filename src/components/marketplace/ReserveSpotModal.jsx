@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
-import { CalendarCheck } from "lucide-react";
-import Loader from "@/components/Loader";
+import { CalendarCheck, Loader2 } from "lucide-react";
 
 export default function ReserveSpotModal({ listing, open, onClose }) {
   const [userName, setUserName] = useState("");
@@ -162,7 +161,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
           )}
 
           <Button onClick={handleReserve} disabled={loading} className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-10 text-white border-0">
-            {loading ? <Loader type="button" className="mr-2" /> : <CalendarCheck className="w-4 h-4 mr-2" />}
+            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CalendarCheck className="w-4 h-4 mr-2" />}
             Confirm Reservation
           </Button>
           <Button variant="ghost" onClick={onClose} className="w-full rounded-xl">Cancel</Button>

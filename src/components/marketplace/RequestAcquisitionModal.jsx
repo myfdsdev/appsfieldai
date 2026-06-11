@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
-import { Building2 } from "lucide-react";
-import Loader from "@/components/Loader";
+import { Building2, Loader2 } from "lucide-react";
 
 export default function RequestAcquisitionModal({ listing, open, onClose }) {
   const [userName, setUserName] = useState("");
@@ -164,7 +163,7 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
           )}
 
           <Button onClick={handleRequest} disabled={loading} className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-10 text-white border-0">
-            {loading ? <Loader type="button" className="mr-2" /> : <Building2 className="w-4 h-4 mr-2" />}
+            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Building2 className="w-4 h-4 mr-2" />}
             Submit Request
           </Button>
           <Button variant="ghost" onClick={onClose} className="w-full rounded-xl">Cancel</Button>
