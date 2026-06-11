@@ -169,7 +169,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
         });
       } catch (_) {}
 
-      toast.success(`Bid of $${amount.toLocaleString()} placed successfully!`);
+      toast.success("Your bid has been submitted. Admin will review and contact you if shortlisted.");
       onSuccess?.();
       onClose();
       setBidAmount("");
