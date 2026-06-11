@@ -23,7 +23,7 @@ import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
-import ChatsPage from '@/pages/Chats';
+import AiChatPage from '@/pages/AiChat';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -69,7 +69,7 @@ const AuthenticatedApp = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/requests" element={<MyRequests />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/chats" element={<ChatsPage />} />
+          <Route path="/chats" element={<AiChatPage />} />
           <Route path="/sell" element={<SellMySaaS />} />
         </Route>
       </Route>
