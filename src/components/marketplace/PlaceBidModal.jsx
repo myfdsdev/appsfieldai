@@ -55,6 +55,16 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
     }).catch(() => {});
   }, [listing?.id, open]);
 
+  // Reset form fields when modal opens for a new listing
+  useEffect(() => {
+    if (open) {
+      setBidAmount("");
+      setMessage("");
+      setConfirmed(false);
+      setErrors({});
+    }
+  }, [open, listing?.id]);
+
   const sharePrice = listing?.sharePrice || 10;
   const fullPrice = listing?.fullPrice || 0;
   const minBid = sharePrice * 0.5;
