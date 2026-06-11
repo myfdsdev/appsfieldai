@@ -2,10 +2,12 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
+import PlatformOverview from "@/components/admin/PlatformOverview";
+import PlanManager from "@/components/admin/PlanManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,21 @@ export default function AdminPanel() {
   const [editListing, setEditListing] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [copied, setCopied] = useState({});
+  const [activeTab, setActiveTab] = useState("listings");
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => base44.auth.me(),
+  });
+  const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin";
+
+  const tabs = [
+    ...(isSuperAdmin ? [
+      { id: "platform", label: "Platform Overview", icon: Globe },
+      { id: "plans", label: "Subscription Plans", icon: Ticket },
+    ] : []),
+    { id: "listings", label: "Listings & Requests", icon: Layers },
+  ];
 
   const doCopy = (key, text) => {
     navigator.clipboard.writeText(text);
@@ -121,7 +138,6 @@ export default function AdminPanel() {
     toast.success("Listing updated");
   };
 
-  // Reservation actions
   const handleReservationAction = async (r, status) => {
     await base44.entities.DealReservations.update(r.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allReservations"] });
@@ -129,16 +145,9 @@ export default function AdminPanel() {
     toast.success(`Reservation ${labels[status]}`);
     try {
       await base44.functions.invoke("notifyUserApproval", {
-        userEmail: r.userEmail,
-        userName: r.userName,
-        listingTitle: r.listingTitle,
-        requestType: "reserve_spot",
-        status,
-        listingId: r.listingId,
-        userId: r.userId,
-        phone: r.phone,
-        budget: r.budget,
-        message: r.message,
+        userEmail: r.userEmail, userName: r.userName, listingTitle: r.listingTitle,
+        requestType: "reserve_spot", status, listingId: r.listingId, userId: r.userId,
+        phone: r.phone, budget: r.budget, message: r.message,
       });
     } catch (e) { console.error("notify user failed", e); }
   };
@@ -149,7 +158,6 @@ export default function AdminPanel() {
     toast.success("Reservation deleted");
   };
 
-  // Acquisition actions
   const handleAcquisitionAction = async (a, status) => {
     await base44.entities.AcquisitionRequests.update(a.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
@@ -157,16 +165,9 @@ export default function AdminPanel() {
     toast.success(`Request ${labels[status]}`);
     try {
       await base44.functions.invoke("notifyUserApproval", {
-        userEmail: a.userEmail,
-        userName: a.userName,
-        listingTitle: a.listingTitle,
-        requestType: "acquisition_request",
-        status,
-        listingId: a.listingId,
-        userId: a.userId,
-        phone: a.phone,
-        offerAmount: a.offerAmount,
-        notes: a.notes,
+        userEmail: a.userEmail, userName: a.userName, listingTitle: a.listingTitle,
+        requestType: "acquisition_request", status, listingId: a.listingId, userId: a.userId,
+        phone: a.phone, offerAmount: a.offerAmount, notes: a.notes,
       });
     } catch (e) { console.error("notify user failed", e); }
   };
@@ -177,7 +178,6 @@ export default function AdminPanel() {
     toast.success("Acquisition request deleted");
   };
 
-  // Bid Request actions
   const handleBidRequestAction = async (br, status) => {
     await base44.entities.BidRequests.update(br.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
@@ -185,15 +185,9 @@ export default function AdminPanel() {
     toast.success(`Bid request ${labels[status]}`);
     try {
       await base44.functions.invoke("notifyBidStatus", {
-        userId: br.userId,
-        userEmail: br.userEmail,
-        userName: br.userName,
-        listingTitle: br.listingTitle,
-        listingId: br.listingId,
-        requestType: "bid_request",
-        status,
-        requestId: br.id,
-        bidAmount: br.bidAmount,
+        userId: br.userId, userEmail: br.userEmail, userName: br.userName,
+        listingTitle: br.listingTitle, listingId: br.listingId,
+        requestType: "bid_request", status, requestId: br.id, bidAmount: br.bidAmount,
       });
     } catch (e) { console.error("notify bid status failed", e); }
   };
@@ -214,10 +208,7 @@ export default function AdminPanel() {
       deal_in_progress: "bg-blue-500/10 text-blue-400 border-blue-500/20",
       deal_closed: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     };
-    const labels = {
-      deal_in_progress: "In Progress",
-      deal_closed: "Closed",
-    };
+    const labels = { deal_in_progress: "In Progress", deal_closed: "Closed" };
     return <Badge className={`text-[10px] border ${configs[s] || configs.pending}`}>{labels[s] || s}</Badge>;
   };
 
@@ -233,8 +224,24 @@ export default function AdminPanel() {
             <p className="text-sm text-muted-foreground mt-1">Manage listings and platform operations.</p>
           </div>
         </div>
+        <div className="flex gap-2 flex-wrap mt-4">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id ? "bg-gradient-to-r from-violet-600 to-cyan-600 text-white shadow-lg" : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                <Icon className="w-4 h-4" />{tab.label}
+              </button>
+            );
+          })}
+        </div>
       </motion.div>
 
+      {activeTab === "platform" && <PlatformOverview />}
+      {activeTab === "plans" && <PlanManager />}
+
+      {activeTab === "listings" && (
+      <>
       {/* Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => (
@@ -289,423 +296,8 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Spot Reservations */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <CalendarCheck className="w-4 h-4 text-violet-400" />
-              Spot Reservations
-              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allReservations.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allReservations.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No reservations yet</p>
-            ) : (
-              allReservations.map((r) => (
-                <div key={r.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium">{r.userName || "Unknown"}</p>
-                      <span className="text-xs text-muted-foreground">{r.userEmail}</span>
-                      <div className="flex items-center gap-0.5 ml-1">
-                        {r.userEmail && (
-                          <>
-                            <a href={`mailto:${r.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Email user"><Mail className="w-3 h-3" /></a>
-                            <button onClick={() => doCopy(`res-email-${r.id}`, r.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy email">{copied[`res-email-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
-                          </>
-                        )}
-                        {r.phone && (
-                          <>
-                            <a href={`tel:${r.phone}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Call user"><Phone className="w-3 h-3" /></a>
-                            <button onClick={() => doCopy(`res-phone-${r.id}`, r.phone)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy phone">{copied[`res-phone-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-xs text-violet-400">{r.listingTitle || "Unknown Listing"}</p>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {r.phone && (
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {r.phone}
-                        </span>
-                      )}
-                      {r.budget > 0 && (
-                        <span className="text-[11px] text-amber-400 flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" /> ${r.budget?.toLocaleString()}
-                        </span>
-                      )}
-                      {statusBadge(r.status)}
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(r.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </span>
-                    </div>
-                    {r.message && (
-                      <div className="flex items-start gap-1 text-[11px] text-muted-foreground">
-                        <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
-                        <span className="line-clamp-2">{r.message}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                    {r.status === "pending" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "approved")} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
-                      </>
-                    )}
-                    {r.status === "approved" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
-                      </>
-                    )}
-                    {r.status === "contacted" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
-                      </>
-                    )}
-                    {r.status === "deal_in_progress" && (
-                      <Button size="sm" variant="ghost" onClick={() => handleReservationAction(r, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
-                    )}
-                    <Button size="sm" variant="ghost" onClick={() => handleReservationDelete(r)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Acquisition Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-violet-400" />
-              Acquisition Requests
-              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allAcquisitions.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allAcquisitions.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p>
-            ) : (
-              allAcquisitions.map((a) => (
-                <div key={a.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium">{a.userName || "Unknown"}</p>
-                      <span className="text-xs text-muted-foreground">{a.userEmail}</span>
-                      <div className="flex items-center gap-0.5 ml-1">
-                        {a.userEmail && (
-                          <>
-                            <a href={`mailto:${a.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Email user"><Mail className="w-3 h-3" /></a>
-                            <button onClick={() => doCopy(`acq-email-${a.id}`, a.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy email">{copied[`acq-email-${a.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
-                          </>
-                        )}
-                        {a.phone && (
-                          <>
-                            <a href={`tel:${a.phone}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Call user"><Phone className="w-3 h-3" /></a>
-                            <button onClick={() => doCopy(`acq-phone-${a.id}`, a.phone)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy phone">{copied[`acq-phone-${a.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-xs text-violet-400">{a.listingTitle || "Unknown Listing"}</p>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {a.phone && (
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {a.phone}
-                        </span>
-                      )}
-                      {a.offerAmount > 0 && (
-                        <span className="text-[11px] text-amber-400 flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" /> ${a.offerAmount?.toLocaleString()}
-                        </span>
-                      )}
-                      {statusBadge(a.status)}
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(a.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </span>
-                    </div>
-                    {a.notes && (
-                      <div className="flex items-start gap-1 text-[11px] text-muted-foreground">
-                        <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
-                        <span className="line-clamp-2">{a.notes}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                    {a.status === "pending" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "approved")} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
-                      </>
-                    )}
-                    {a.status === "approved" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
-                      </>
-                    )}
-                    {a.status === "contacted" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_in_progress")} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 text-[11px]"><TrendingUp className="w-3 h-3 mr-1" /> In Progress</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
-                      </>
-                    )}
-                    {a.status === "deal_in_progress" && (
-                      <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
-                    )}
-                    <Button size="sm" variant="ghost" onClick={() => handleAcquisitionDelete(a)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Bid Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <Gavel className="w-4 h-4 text-amber-400" />
-              Bid Requests
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{allBidRequests.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allBidRequests.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p>
-            ) : (
-              allBidRequests.map((br) => (
-                <div key={br.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium">{br.userName || "Unknown"}</p>
-                      <span className="text-xs text-muted-foreground">{br.userEmail}</span>
-                      <div className="flex items-center gap-0.5 ml-1">
-                        {br.userEmail && (
-                          <>
-                            <a href={`mailto:${br.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Email user"><Mail className="w-3 h-3" /></a>
-                            <button onClick={() => doCopy(`bid-email-${br.id}`, br.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy email">{copied[`bid-email-${br.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
-                          </>
-                        )}
-                        {br.userPhone && (
-                          <>
-                            <a href={`tel:${br.userPhone}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Call user"><Phone className="w-3 h-3" /></a>
-                            <button onClick={() => doCopy(`bid-phone-${br.id}`, br.userPhone)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy phone">{copied[`bid-phone-${br.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {br.userPhone && (
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {br.userPhone}
-                        </span>
-                      )}
-                      {br.bidAmount > 0 && (
-                        <span className="text-[11px] text-amber-400 flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" /> ${br.bidAmount?.toLocaleString()}
-                        </span>
-                      )}
-                      {statusBadge(br.status)}
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(br.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </span>
-                    </div>
-                    {br.message && (
-                      <div className="flex items-start gap-1 text-[11px] text-muted-foreground">
-                        <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
-                        <span className="line-clamp-2">{br.message}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                    {br.status === "pending" && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
-                      </>
-                    )}
-                    {br.status !== "pending" && br.status !== "cancelled" && (
-                      <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
-                    )}
-                    <Button size="sm" variant="ghost" onClick={() => handleBidRequestDelete(br)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Recent Bids */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <Gavel className="w-4 h-4 text-amber-400" />
-              All Bids
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{enrichedBids.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {enrichedBids.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No bids placed yet</p>
-            ) : (
-              enrichedBids.map((b) => (
-                <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                      <Gavel className="w-4 h-4 text-amber-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{b.bidderName}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-display font-bold text-amber-400 flex-shrink-0 ml-3">${b.bidAmount?.toLocaleString()}</span>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Transaction History */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-violet-400" />
-              Transaction History
-              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allTransactions.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allTransactions.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p>
-            ) : (
-              allTransactions.slice(0, 30).map((t) => {
-                const isPositive = t.amount > 0;
-                const typeLabel = {
-                  share_purchase: "Share Purchase",
-                  full_ownership_purchase: "Full Ownership",
-                  deposit: "Deposit", withdrawal: "Withdrawal",
-                  dividend: "Dividend", sale_revenue: "Sale Revenue",
-                }[t.type] || t.type;
-                return (
-                  <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0">
-                        <ArrowDownRight className={`w-4 h-4 ${isPositive ? "text-emerald-400" : "text-red-400"}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-medium">{typeLabel}</p>
-                          {t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}
-                          {t.userEmail && <p className="text-xs text-muted-foreground">{t.userEmail}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}
-                          <Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : t.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{t.status}</Badge>
-                          <span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className={`text-sm font-display font-bold shrink-0 ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-                      {isPositive ? "+" : ""}{t.type === "share_purchase" || t.type === "full_ownership_purchase" ? "-" : ""}${Math.abs(t.amount).toLocaleString()}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* All Listings */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-base font-display flex items-center gap-2">
-              <Store className="w-4 h-4 text-violet-400" />
-              All Listings
-              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allListings.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/30">
-            {allListings.map((l) => (
-              <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center">
-                    <Store className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{l.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{l.category} · ${l.fullPrice?.toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={`text-[10px] border ${
-                    l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                    l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                    l.status === "auction" ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" :
-                    l.status === "sold" ? "bg-red-500/10 text-red-400 border-red-500/20" :
-                    "bg-red-500/10 text-red-400 border-red-500/20"
-                  }`}>{l.status}</Badge>
-                  <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Q&A Manager */}
-      <QnAManager />
-
-      {/* Chat Monitor */}
-      <ChatMonitor />
-
-      {/* Dividend Panel */}
-      <DividendPanel />
-
-      {/* Edit Modal */}
-      <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
-        <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
-          <DialogHeader><DialogTitle className="font-display">Edit Listing</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><label className="text-xs text-muted-foreground">Title</label><Input value={editForm.title || ""} onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Full Price</label><Input type="number" value={editForm.fullPrice || ""} onChange={(e) => setEditForm((f) => ({ ...f, fullPrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Share Price</label><Input type="number" value={editForm.sharePrice || ""} onChange={(e) => setEditForm((f) => ({ ...f, sharePrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Monthly Revenue</label><Input type="number" value={editForm.monthlyRevenue || ""} onChange={(e) => setEditForm((f) => ({ ...f, monthlyRevenue: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Monthly Expenses</label><Input type="number" value={editForm.monthlyExpenses || ""} onChange={(e) => setEditForm((f) => ({ ...f, monthlyExpenses: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-            </div>
-            <div><label className="text-xs text-muted-foreground">Description</label><Input value={editForm.description || ""} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditListing(null)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleEditSave} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </>
+      )}
     </div>
   );
 }

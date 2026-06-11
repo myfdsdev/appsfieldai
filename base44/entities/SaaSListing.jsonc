@@ -2,6 +2,10 @@
   "name": "SaaSListing",
   "type": "object",
   "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The ID of the marketplace this listing belongs to (multi-tenant isolation)"
+    },
     "title": {
       "type": "string",
       "description": "The title of the SaaS listing"

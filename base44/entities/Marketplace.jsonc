@@ -1,0 +1,104 @@
+{
+  "name": "Marketplace",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Marketplace name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique slug"
+    },
+    "ownerId": {
+      "type": "string",
+      "description": "User ID of the marketplace owner"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "single_vendor",
+        "multi_vendor"
+      ],
+      "default": "single_vendor",
+      "description": "Marketplace type"
+    },
+    "subdomain": {
+      "type": "string",
+      "description": "Custom subdomain"
+    },
+    "customDomain": {
+      "type": "string",
+      "description": "Custom domain URL"
+    },
+    "domainStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Domain verification status"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "suspended"
+      ],
+      "default": "draft",
+      "description": "Marketplace status"
+    },
+    "planId": {
+      "type": "string",
+      "description": "Linked SubscriptionPlan ID"
+    },
+    "branding": {
+      "type": "object",
+      "description": "Branding settings",
+      "properties": {
+        "logo": {
+          "type": "string"
+        },
+        "favicon": {
+          "type": "string"
+        },
+        "primaryColor": {
+          "type": "string"
+        },
+        "accentColor": {
+          "type": "string"
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "description": "Marketplace settings",
+      "properties": {
+        "requireListingApproval": {
+          "type": "boolean",
+          "default": true
+        },
+        "allowAuctions": {
+          "type": "boolean",
+          "default": false
+        },
+        "allowBidding": {
+          "type": "boolean",
+          "default": true
+        },
+        "commissionRate": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "slug",
+    "ownerId"
+  ]
+}

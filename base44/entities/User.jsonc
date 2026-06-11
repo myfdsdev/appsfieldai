@@ -5,10 +5,13 @@
     "role": {
       "type": "string",
       "enum": [
+        "super_admin",
         "admin",
-        "user"
+        "user",
+        "marketplace_owner"
       ],
-      "default": "user"
+      "default": "user",
+      "description": "User role"
     },
     "requireListingApproval": {
       "type": "boolean",
@@ -19,6 +22,45 @@
       "type": "number",
       "default": 0,
       "description": "User's wallet balance"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "businessName": {
+      "type": "string",
+      "description": "Business name (for marketplace owners)"
+    },
+    "billingStatus": {
+      "type": "string",
+      "enum": [
+        "active",
+        "past_due",
+        "cancelled",
+        "trial"
+      ],
+      "default": "trial",
+      "description": "Subscription billing status"
+    },
+    "planId": {
+      "type": "string",
+      "description": "Active SubscriptionPlan ID"
+    },
+    "marketplaceCount": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of marketplaces owned"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "suspended",
+        "cancelled"
+      ],
+      "default": "active",
+      "description": "Account status"
     }
   }
 }
