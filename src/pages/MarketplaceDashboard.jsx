@@ -3,18 +3,17 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Store, Settings, Globe, TrendingUp, Users, ShoppingBag, Zap, Plus, Pencil, ExternalLink } from "lucide-react";
+import { Store, Settings, Globe, Zap, Plus, Rocket, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import SetupWizard from "@/components/marketplace/SetupWizard";
+import MarketplaceSettings from "@/components/marketplace/MarketplaceSettings";
 
 export default function MarketplaceDashboard() {
   const queryClient = useQueryClient();
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: "", slug: "", type: "single_vendor", planId: "" });
+  const [view, setView] = useState("list");
+  const [selectedMarketplace, setSelectedMarketplace] = useState(null);
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const { data: marketplaces = [], isLoading } = useQuery({
@@ -27,29 +26,35 @@ export default function MarketplaceDashboard() {
     queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
   });
 
-  const handleCreate = async () => {
-    if (!form.name || !form.slug) { toast.error("Name and slug required"); return; }
-    await base44.entities.Marketplace.create({
-      ...form, ownerId: currentUser.id, status: "draft",
-    });
-    queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
-    setShowCreate(false);
-    setForm({ name: "", slug: "", type: "single_vendor", planId: "" });
-    toast.success("Marketplace created!");
-  };
+  if (view === "wizard") {
+    return (
+      <div className="p-6">
+        <SetupWizard marketplace={selectedMarketplace} onComplete={() => { setView("list"); setSelectedMarketplace(null); }} onCancel={() => { setView("list"); setSelectedMarketplace(null); }} />
+      </div>
+    );
+  }
+
+  if (view === "settings" && selectedMarketplace) {
+    return (
+      <div className="p-6">
+        <MarketplaceSettings marketplace={selectedMarketplace} onBack={() => { setView("list"); setSelectedMarketplace(null); }} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">My Marketplaces</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage your marketplace sites.</p>
+          <p className="text-sm text-muted-foreground mt-1">Build and manage your SaaS marketplace sites.</p>
         </div>
         <div className="flex gap-2">
           <Link to="/pricing">
             <Button variant="outline" className="border-border/40 rounded-xl gap-1.5"><Zap className="w-4 h-4" /> Plans</Button>
           </Link>
-          <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Plus className="w-4 h-4" /> Create Marketplace</Button>
+          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> Setup Wizard</Button>
+          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl gap-1.5"><Plus className="w-4 h-4" /> Quick Create</Button>
         </div>
       </motion.div>
 
@@ -57,12 +62,12 @@ export default function MarketplaceDashboard() {
         <div className="text-center py-12 text-muted-foreground">Loading your marketplaces...</div>
       ) : marketplaces.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-          <div className="w-16 h-16 rounded-2xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4"><Store className="w-8 h-8 text-violet-400" /></div>
-          <h2 className="text-lg font-display font-semibold">No marketplaces yet</h2>
-          <p className="text-sm text-muted-foreground mt-1 mb-4">Create your first marketplace to start listing SaaS products.</p>
-          <div className="flex gap-2 justify-center">
+          <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4"><Store className="w-10 h-10 text-violet-400" /></div>
+          <h2 className="text-xl font-display font-semibold">Launch Your First Marketplace</h2>
+          <p className="text-sm text-muted-foreground mt-2 mb-6 max-w-md mx-auto">Create your own branded SaaS marketplace in minutes. Choose a plan, pick a template, and start listing.</p>
+          <div className="flex gap-3 justify-center">
             <Link to="/pricing"><Button variant="outline" className="border-border/40 rounded-xl"><Zap className="w-4 h-4 mr-1.5" />View Plans</Button></Link>
-            <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Plus className="w-4 h-4 mr-1.5" />Create Marketplace</Button>
+            <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Rocket className="w-4 h-4 mr-1.5" />Launch Setup Wizard</Button>
           </div>
         </motion.div>
       ) : (
@@ -81,16 +86,26 @@ export default function MarketplaceDashboard() {
                           <p className="text-[11px] text-muted-foreground">{m.slug}.yourdomain.com</p>
                         </div>
                       </div>
-                      <Badge className={`text-[10px] border ${m.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : m.status === "draft" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{m.status}</Badge>
+                      <div className="flex gap-1">
+                        <Badge className={`text-[10px] border ${m.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : m.status === "draft" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{m.status}</Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
                       <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{m.type === "multi_vendor" ? "Multi-Vendor" : "Single Vendor"}</span>
                       {plan && <span className="flex items-center gap-1 text-violet-400"><Zap className="w-3 h-3" />{plan.name}</span>}
+                      {m.template && <span className="capitalize">{m.template}</span>}
                     </div>
+                    {m.categories?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {m.categories.slice(0, 3).map(c => <Badge key={c} variant="secondary" className="text-[9px]">{c}</Badge>)}
+                        {m.categories.length > 3 && <Badge variant="secondary" className="text-[9px]">+{m.categories.length - 3}</Badge>}
+                      </div>
+                    )}
                     <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 text-xs"><Settings className="w-3 h-3 mr-1" />Settings</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("settings"); }} className="h-8 text-xs"><Settings className="w-3 h-3 mr-1" />Settings</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("wizard"); }} className="h-8 text-xs"><Rocket className="w-3 h-3 mr-1" />Setup</Button>
                       <Button size="sm" variant="ghost" className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
                     </div>
                   </CardContent>
@@ -100,32 +115,6 @@ export default function MarketplaceDashboard() {
           })}
         </div>
       )}
-
-      {/* Create Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
-          <DialogHeader><DialogTitle className="font-display">Create Marketplace</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><label className="text-xs text-muted-foreground">Marketplace Name</label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="My SaaS Store" /></div>
-            <div><label className="text-xs text-muted-foreground">URL Slug</label><Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="my-saas-store" /></div>
-            <div><label className="text-xs text-muted-foreground">Type</label>
-              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
-                <option value="single_vendor">Single Vendor (Solo)</option><option value="multi_vendor">Multi-Vendor</option>
-              </select>
-            </div>
-            <div><label className="text-xs text-muted-foreground">Plan</label>
-              <select value={form.planId} onChange={e => setForm(f => ({ ...f, planId: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
-                <option value="">No plan (free trial)</option>
-                {plans.map(p => <option key={p.id} value={p.id}>{p.name} — ${p.monthlyPrice}/mo</option>)}
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl">Create Marketplace</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -23,6 +23,38 @@
       "default": "single_vendor",
       "description": "Marketplace type"
     },
+    "template": {
+      "type": "string",
+      "enum": [
+        "default",
+        "minimal",
+        "bold",
+        "enterprise"
+      ],
+      "default": "default",
+      "description": "Chosen design template"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Product categories for this marketplace"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "Currency code (e.g. USD, INR, EUR)"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "Timezone (e.g. Asia/Calcutta)"
+    },
+    "supportEmail": {
+      "type": "string",
+      "description": "Support contact email"
+    },
     "subdomain": {
       "type": "string",
       "description": "Custom subdomain"
@@ -66,10 +98,12 @@
           "type": "string"
         },
         "primaryColor": {
-          "type": "string"
+          "type": "string",
+          "default": "#7c3aed"
         },
         "accentColor": {
-          "type": "string"
+          "type": "string",
+          "default": "#06b6d4"
         }
       }
     },
@@ -80,6 +114,18 @@
         "requireListingApproval": {
           "type": "boolean",
           "default": true
+        },
+        "requireVendorApproval": {
+          "type": "boolean",
+          "default": true
+        },
+        "requireSoftwareApproval": {
+          "type": "boolean",
+          "default": true
+        },
+        "requireReviewApproval": {
+          "type": "boolean",
+          "default": false
         },
         "allowAuctions": {
           "type": "boolean",
@@ -92,6 +138,33 @@
         "commissionRate": {
           "type": "number",
           "default": 0
+        },
+        "termsPage": {
+          "type": "string",
+          "description": "Terms & Conditions page content"
+        },
+        "privacyPage": {
+          "type": "string",
+          "description": "Privacy Policy page content"
+        },
+        "refundPolicy": {
+          "type": "string",
+          "description": "Refund Policy page content"
+        },
+        "homepageSections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Enabled homepage sections"
+        },
+        "seoTitle": {
+          "type": "string",
+          "description": "SEO meta title"
+        },
+        "seoDescription": {
+          "type": "string",
+          "description": "SEO meta description"
         }
       }
     }
