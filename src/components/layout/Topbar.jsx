@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -16,7 +16,12 @@ const publicNavLinks = [
 export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
-  const navLinks = [...publicNavLinks, { to: "/dashboard", label: "My Marketplaces" }, ...(user?.role === "admin" || user?.role === "super_admin" ? [{ to: "/admin", label: "Admin" }] : [])];
+  const navLinks = [
+    ...publicNavLinks,
+    { to: "/dashboard", label: "My Marketplaces" },
+    { to: "/vendor/dashboard", label: "Vendor", icon: Store },
+    ...(user?.role === "admin" || user?.role === "super_admin" ? [{ to: "/admin", label: "Admin" }] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/80 backdrop-blur-xl">

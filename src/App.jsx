@@ -27,6 +27,8 @@ import AiChatPage from '@/pages/AiChat';
 import MyInvestments from '@/pages/MyInvestments';
 import Pricing from '@/pages/Pricing';
 import MarketplaceDashboard from '@/pages/MarketplaceDashboard';
+import VendorRegister from '@/pages/VendorRegister';
+import VendorDashboard from '@/pages/VendorDashboard';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -73,6 +75,8 @@ const AuthenticatedApp = () => {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/chats" element={<AiChatPage />} />
           <Route path="/sell" element={<SellMySaaS />} />
+          <Route path="/vendor/register" element={<VendorRegister />} />
+          <Route path="/vendor/dashboard" element={<VendorDashboard />} />
           <Route path="/investments" element={<MyInvestments />} />
         </Route>
       </Route>

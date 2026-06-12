@@ -6,6 +6,10 @@
       "type": "string",
       "description": "The ID of the marketplace this listing belongs to (multi-tenant isolation)"
     },
+    "vendorId": {
+      "type": "string",
+      "description": "The ID of the approved vendor who listed this (for multi-vendor mode)"
+    },
     "title": {
       "type": "string",
       "description": "The title of the SaaS listing"

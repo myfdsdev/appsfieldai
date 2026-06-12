@@ -1,0 +1,60 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "ID of the marketplace this vendor applies to"
+    },
+    "userId": {
+      "type": "string",
+      "description": "User ID of the vendor"
+    },
+    "vendorName": {
+      "type": "string",
+      "description": "Business or brand name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Contact email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of the vendor's business"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Approval status"
+    },
+    "appliedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the vendor applied"
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the application was reviewed"
+    },
+    "reviewNotes": {
+      "type": "string",
+      "description": "Notes from the marketplace owner during review"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "userId",
+    "vendorName",
+    "email"
+  ]
+}

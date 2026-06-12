@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, Info, CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Upload, Info, CheckCircle, Loader2, AlertCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import AIValuationTool from "@/components/marketplace/AIValuationTool";
@@ -20,11 +22,23 @@ export default function SellMySaaS() {
   const [errors, setErrors] = useState({});
   const [revenueProofFile, setRevenueProofFile] = useState(null);
   const [productImageFile, setProductImageFile] = useState(null);
+  const [marketplaceId, setMarketplaceId] = useState("");
   const [form, setForm] = useState({
     title: "", category: "CRM", description: "", sellerName: "",
     fullPrice: "", sharePrice: "", totalShares: "50",
     monthlyRevenue: "", monthlyExpenses: "", growthRate: "",
     features: "", auctionDuration: "7",
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: approvedVendors = [] } = useQuery({
+    queryKey: ["myApprovedVendors"],
+    queryFn: () => base44.entities.Vendor.filter({ userId: currentUser?.id, status: "approved" }),
+    enabled: !!currentUser?.id,
   });
 
   const updateForm = (key, value) => {
@@ -84,6 +98,19 @@ export default function SellMySaaS() {
         productImages = [file_url];
       }
 
+      // Determine vendor and marketplace context
+      let vendorId = null;
+      let listingMarketplaceId = marketplaceId || null;
+      if (approvedVendors.length > 0) {
+        const vendor = listingMarketplaceId
+          ? approvedVendors.find(v => v.marketplaceId === listingMarketplaceId)
+          : approvedVendors[0];
+        if (vendor) {
+          vendorId = vendor.id;
+          listingMarketplaceId = vendor.marketplaceId;
+        }
+      }
+
       const listing = await base44.entities.SaaSListing.create({
         title: form.title,
         category: form.category,
@@ -99,6 +126,8 @@ export default function SellMySaaS() {
         status,
         auctionEndsAt,
         ownerUserId: user.id,
+        marketplaceId: listingMarketplaceId,
+        vendorId,
         revenueProofFiles: proofUrls,
         images: productImages,
         imageGradient: "from-orange-600 to-amber-600",
@@ -134,6 +163,33 @@ export default function SellMySaaS() {
         <h1 className="text-2xl font-display font-bold">Sell My SaaS</h1>
         <p className="text-sm text-muted-foreground mt-1">List your SaaS business for full sale or fractional ownership.</p>
       </motion.div>
+
+      {/* Multi-vendor marketplace selector */}
+      {approvedVendors.length > 0 && (
+        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center gap-3">
+          <Store className="w-5 h-5 text-violet-400 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-violet-400">Approved Vendor</p>
+            <p className="text-[11px] text-muted-foreground">
+              {approvedVendors.length === 1
+                ? `Listing on: ${approvedVendors[0].vendorName}`
+                : "Select marketplace for this listing:"}
+            </p>
+          </div>
+          {approvedVendors.length > 1 && (
+            <select
+              value={marketplaceId}
+              onChange={(e) => setMarketplaceId(e.target.value)}
+              className="bg-secondary/50 border border-border/30 rounded-lg px-2 py-1 text-xs"
+            >
+              <option value="">-- Select --</option>
+              {approvedVendors.map((v) => (
+                <option key={v.id} value={v.marketplaceId}>{v.vendorName}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
 
       {/* Steps */}
       <div className="flex items-center gap-2">
