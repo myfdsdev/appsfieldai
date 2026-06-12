@@ -31,7 +31,8 @@
       "enum": [
         "pending",
         "approved",
-        "rejected"
+        "rejected",
+        "suspended"
       ],
       "default": "pending",
       "description": "Approval status"
@@ -49,6 +50,25 @@
     "reviewNotes": {
       "type": "string",
       "description": "Notes from the marketplace owner during review"
+    },
+    "suspendedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the vendor was suspended"
+    },
+    "suspendedReason": {
+      "type": "string",
+      "description": "Reason for suspension"
+    },
+    "payoutBalance": {
+      "type": "number",
+      "default": 0,
+      "description": "Current payout balance owed to vendor"
+    },
+    "totalSales": {
+      "type": "number",
+      "default": 0,
+      "description": "Total lifetime sales amount"
     }
   },
   "required": [
