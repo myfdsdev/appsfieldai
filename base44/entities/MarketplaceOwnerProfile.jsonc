@@ -1,0 +1,75 @@
+{
+  "name": "MarketplaceOwnerProfile",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "User ID linked to this profile"
+    },
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID this profile belongs to"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Public display name"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short bio"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "Avatar image URL"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "website": {
+      "type": "string",
+      "description": "Personal or business website"
+    },
+    "socialLinks": {
+      "type": "object",
+      "description": "Social media links",
+      "properties": {
+        "twitter": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        },
+        "github": {
+          "type": "string"
+        }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "description": "Owner preferences",
+      "properties": {
+        "emailNotifications": {
+          "type": "boolean",
+          "default": true
+        },
+        "newListingAlert": {
+          "type": "boolean",
+          "default": true
+        },
+        "newOrderAlert": {
+          "type": "boolean",
+          "default": true
+        },
+        "weeklyReport": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  },
+  "required": [
+    "userId",
+    "marketplaceId"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "CustomerProfile",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Display name in this marketplace"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "Avatar image URL"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "company": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "jobTitle": {
+      "type": "string",
+      "description": "Job title"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short bio"
+    },
+    "totalOrders": {
+      "type": "number",
+      "default": 0,
+      "description": "Total orders in this marketplace"
+    },
+    "totalSpent": {
+      "type": "number",
+      "default": 0,
+      "description": "Total spent in this marketplace"
+    },
+    "joinedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When joined this marketplace"
+    }
+  },
+  "required": [
+    "userId",
+    "marketplaceId"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "PlatformSubscription",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "planId": {
+      "type": "string",
+      "description": "Linked SubscriptionPlan ID"
+    },
+    "planName": {
+      "type": "string",
+      "description": "Plan name at time of subscription"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "expired",
+        "past_due",
+        "trialing"
+      ],
+      "default": "active",
+      "description": "Subscription status"
+    },
+    "billingCycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly",
+      "description": "Billing cycle"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount paid"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Subscription start date"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Subscription end/renewal date"
+    },
+    "cancelledAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When cancelled"
+    },
+    "stripeSubscriptionId": {
+      "type": "string",
+      "description": "Stripe subscription ID"
+    },
+    "stripeCustomerId": {
+      "type": "string",
+      "description": "Stripe customer ID"
+    },
+    "autoRenew": {
+      "type": "boolean",
+      "default": true,
+      "description": "Auto-renew at end of period"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "planId"
+  ]
+}
