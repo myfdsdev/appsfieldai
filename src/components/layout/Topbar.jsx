@@ -25,7 +25,7 @@ export default function Topbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-9xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <img
