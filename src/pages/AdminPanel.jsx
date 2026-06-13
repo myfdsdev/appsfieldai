@@ -55,6 +55,10 @@ export default function AdminPanel() {
     return allBids.map(b => ({ ...b, listingTitle: lm[b.listingId] || "Unknown", bidderName: um[b.userId] || "Unknown" }));
   }, [allBids, allListings, allUsers]);
 
+  const pendingListings = allListings.filter(l => l.status === "pending");
+  const auctionListings = allListings.filter(l => l.status === "auction");
+  const rejectedListings = allListings.filter(l => l.status === "rejected");
+
   const auctionListingsWithBids = useMemo(() => {
     return auctionListings.map(l => ({
       ...l,
@@ -62,10 +66,6 @@ export default function AdminPanel() {
       highestBid: enrichedBids.filter(b => b.listingId === l.id).reduce((max, b) => Math.max(max, b.bidAmount), 0),
     }));
   }, [auctionListings, enrichedBids]);
-
-  const pendingListings = allListings.filter(l => l.status === "pending");
-  const auctionListings = allListings.filter(l => l.status === "auction");
-  const rejectedListings = allListings.filter(l => l.status === "rejected");
 
   const stats = [
     { icon: Store, label: "Total Listings", value: allListings.length, color: "from-violet-500 to-purple-500" },
