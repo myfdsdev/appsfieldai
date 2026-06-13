@@ -65,7 +65,7 @@ export default function Marketplace() {
   const now = Date.now();
   const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
-  const publicListings = listings.filter((l) => l.status === "active" || l.status === "auction" || l.status === "sold");
+  const publicListings = listings.filter((l) => l.status === "active" || l.status === "sold");
 
   const fullPrice = (l) => (l.sharePrice || 0) * (l.totalShares || 0);
   const searchLower = (search || "").toLowerCase();
