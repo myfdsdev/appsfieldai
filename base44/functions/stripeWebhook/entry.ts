@@ -92,12 +92,57 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.SaaSListing.update(listingId, { soldShares: (listing.soldShares || 0) + qty });
       await base44.asServiceRole.entities.SharePurchase.create({ userId: listing.ownerUserId || 'guest', listingId, sharesBought: qty, pricePerShare: listing.sharePrice, totalAmount: amountPaid });
       await base44.asServiceRole.entities.Transaction.create({ userId: listing.ownerUserId || 'guest', type: 'share_purchase', amount: amountPaid, listingId, status: 'completed' });
-      console.log(`Share purchase: ${qty} shares of ${listing.title} for $${amountPaid}`);
+      console.log(`Share purchase: ${qty} shares of ${listing.softwareName} for $${amountPaid}`);
     } else if (type === 'ownership') {
       await base44.asServiceRole.entities.SaaSListing.update(listingId, { status: 'sold', soldShares: listing.totalShares });
       await base44.asServiceRole.entities.OwnershipPurchase.create({ userId: listing.ownerUserId || 'guest', listingId, fullPrice: amountPaid });
       await base44.asServiceRole.entities.Transaction.create({ userId: listing.ownerUserId || 'guest', type: 'ownership_purchase', amount: amountPaid, listingId, status: 'completed' });
-      console.log(`Full ownership: ${listing.title} for $${amountPaid}`);
+      console.log(`Full ownership: ${listing.softwareName} for $${amountPaid}`);
+    }
+
+    // ═══ Commission & Payout Logic ═══
+    const marketplaceId = listing.marketplaceId;
+    const vendorId = listing.vendorId;
+    if (marketplaceId) {
+      const marketplaces = await base44.asServiceRole.entities.Marketplace.filter({ id: marketplaceId });
+      const marketplace = marketplaces[0];
+      if (marketplace) {
+        let commissionRate = marketplace.settings?.commissionRate || 0;
+        let vendorName = 'Unknown';
+        if (vendorId) {
+          const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
+          const vendor = vendors[0];
+          if (vendor) {
+            vendorName = vendor.vendorName || 'Unknown';
+            if (vendor.commissionRate !== undefined && vendor.commissionRate !== null) {
+              commissionRate = vendor.commissionRate;
+            }
+          }
+        }
+        const commissionAmount = (amountPaid * commissionRate) / 100;
+        const vendorEarning = amountPaid - commissionAmount;
+        await base44.asServiceRole.entities.Order.create({
+          marketplaceId, customerId: userId || 'guest', vendorId: vendorId || '',
+          vendorName, softwareId: listingId, softwareName: listing.softwareName || '',
+          amount: amountPaid, commissionRate, commissionAmount, vendorEarning,
+          paymentGateway: 'stripe', paymentStatus: 'paid', orderStatus: 'completed',
+        });
+        await base44.asServiceRole.entities.Payout.create({
+          marketplaceId, vendorId: vendorId || '', vendorName,
+          amount: vendorEarning, status: 'pending',
+        });
+        if (vendorId) {
+          const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
+          const vendor = vendors[0];
+          if (vendor) {
+            await base44.asServiceRole.entities.Vendor.update(vendorId, {
+              payoutBalance: (vendor.payoutBalance || 0) + vendorEarning,
+              totalSales: (vendor.totalSales || 0) + amountPaid,
+            });
+          }
+        }
+        console.log(`Commission: $${commissionAmount} (${commissionRate}%), Vendor earning: $${vendorEarning}`);
+      }
     }
 
     return Response.json({ received: true });
