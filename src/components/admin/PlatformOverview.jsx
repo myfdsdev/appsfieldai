@@ -1,13 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Globe, Users, Building2, CreditCard, DollarSign, TrendingUp, Activity, BarChart3 } from "lucide-react";
+import { Globe, Users, Building2, CreditCard, DollarSign, TrendingUp, Activity, BarChart3, Pencil, Ban, CheckCircle, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function PlatformOverview() {
+  const queryClient = useQueryClient();
+  const [editMP, setEditMP] = useState(null);
+  const [editMPForm, setEditMPForm] = useState({});
+
   const { data: marketplaces = [], isLoading: mpLoading } = useQuery({
     queryKey: ["platformMarketplaces"],
     queryFn: () => base44.entities.Marketplace.list(),
@@ -115,8 +123,14 @@ export default function PlatformOverview() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] text-muted-foreground">{new Date(mp.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button size="sm" variant="ghost" onClick={() => { setEditMP(mp); setEditMPForm({ name: mp.name, status: mp.status, type: mp.type, commissionRate: mp.settings?.commissionRate || 0 }); }} className="h-7 text-[11px]"><Pencil className="w-3 h-3 mr-1" />Edit</Button>
+                      {mp.status === "active" ? (
+                        <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.Marketplace.update(mp.id, { status: "suspended" }); queryClient.invalidateQueries({ queryKey: ["platformMarketplaces"] }); toast.success(`"${mp.name}" suspended`); }} className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Suspend</Button>
+                      ) : mp.status === "suspended" ? (
+                        <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.Marketplace.update(mp.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["platformMarketplaces"] }); toast.success(`"${mp.name}" reactivated`); }} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Activate</Button>
+                      ) : null}
+                      <span className="text-[10px] text-muted-foreground ml-1">{new Date(mp.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                     </div>
                   </div>
                 );
@@ -174,6 +188,55 @@ export default function PlatformOverview() {
           </div>
         </Card>
       </motion.div>
+
+      {/* Edit Marketplace Dialog */}
+      <Dialog open={!!editMP} onOpenChange={() => setEditMP(null)}>
+        <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
+          <DialogHeader><DialogTitle className="font-display flex items-center gap-2"><Settings className="w-4 h-4 text-violet-400" />Edit Marketplace</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><label className="text-xs text-muted-foreground">Name</label><Input value={editMPForm.name || ""} onChange={e => setEditMPForm(f => ({ ...f, name: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Status</label>
+                <Select value={editMPForm.status || ""} onValueChange={v => setEditMPForm(f => ({ ...f, status: v }))}>
+                  <SelectTrigger className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Type</label>
+                <Select value={editMPForm.type || ""} onValueChange={v => setEditMPForm(f => ({ ...f, type: v }))}>
+                  <SelectTrigger className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single_vendor">Single Vendor</SelectItem>
+                    <SelectItem value="multi_vendor">Multi Vendor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><label className="text-xs text-muted-foreground">Commission Rate (%)</label><Input type="number" value={editMPForm.commissionRate || 0} onChange={e => setEditMPForm(f => ({ ...f, commissionRate: parseFloat(e.target.value) || 0 }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditMP(null)} className="border-border/40 rounded-xl">Cancel</Button>
+            <Button onClick={async () => {
+              if (!editMP) return;
+              await base44.entities.Marketplace.update(editMP.id, {
+                name: editMPForm.name,
+                status: editMPForm.status,
+                type: editMPForm.type,
+                settings: { ...editMP.settings, commissionRate: editMPForm.commissionRate }
+              });
+              queryClient.invalidateQueries({ queryKey: ["platformMarketplaces"] });
+              setEditMP(null);
+              toast.success(`"${editMPForm.name}" updated`);
+            }} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -19,6 +19,8 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
   const [editListing, setEditListing] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [editBid, setEditBid] = useState(null);
+  const [editBidForm, setEditBidForm] = useState({});
   const [copied, setCopied] = useState({});
   const [activeTab, setActiveTab] = useState("listings");
 
@@ -69,6 +71,14 @@ export default function AdminPanel() {
     await base44.entities.SaaSListing.update(editListing.id, { ...editForm, fullPrice: parseFloat(editForm.fullPrice) || 0, sharePrice: parseFloat(editForm.sharePrice) || 0, monthlyRevenue: parseFloat(editForm.monthlyRevenue) || 0, monthlyExpenses: parseFloat(editForm.monthlyExpenses) || 0 });
     queryClient.invalidateQueries({ queryKey: ["allListings"] }); setEditListing(null); toast.success("Listing updated");
   };
+
+  const openBidEdit = (b) => { setEditBid(b); setEditBidForm({ bidAmount: b.bidAmount, autoBid: b.autoBid, maxAutoBid: b.maxAutoBid || "" }); };
+  const handleBidEditSave = async () => {
+    if (!editBid) return;
+    await base44.entities.Bid.update(editBid.id, { bidAmount: parseFloat(editBidForm.bidAmount) || 0, autoBid: editBidForm.autoBid, maxAutoBid: editBidForm.maxAutoBid ? parseFloat(editBidForm.maxAutoBid) : null });
+    queryClient.invalidateQueries({ queryKey: ["allBids"] }); setEditBid(null); toast.success("Bid updated");
+  };
+  const handleBidDelete = async (b) => { await base44.entities.Bid.delete(b.id); queryClient.invalidateQueries({ queryKey: ["allBids"] }); toast.success("Bid deleted"); };
 
   const handleReservationAction = async (r, status) => {
     await base44.entities.DealReservations.update(r.id, { status });
@@ -244,9 +254,13 @@ export default function AdminPanel() {
           <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />All Bids<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{enrichedBids.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/30">
             {enrichedBids.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bids yet</p> : enrichedBids.map(b => (
-              <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3 min-w-0"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div><div className="min-w-0"><p className="text-sm font-medium truncate">{b.bidderName}</p><p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p></div></div>
-                <span className="text-sm font-display font-bold text-amber-400 ml-3">${b.bidAmount?.toLocaleString()}</span>
+              <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-2">
+                <div className="flex items-center gap-3 min-w-0 flex-1"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div><div className="min-w-0"><p className="text-sm font-medium truncate">{b.bidderName}</p><p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p></div></div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-sm font-display font-bold text-amber-400">${b.bidAmount?.toLocaleString()}</span>
+                  <Button size="sm" variant="ghost" onClick={() => openBidEdit(b)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleBidDelete(b)} className="h-7 text-[11px] text-red-400/60 hover:text-red-400"><Trash2 className="w-3 h-3" /></Button>
+                </div>
               </div>
             ))}
           </CardContent>
@@ -319,7 +333,7 @@ export default function AdminPanel() {
       {activeTab === "plans" && <PlanManager />}
       {activeTab === "listings" && listingContent}
 
-      {/* Edit Modal */}
+      {/* Edit Listing Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
         <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
           <DialogHeader><DialogTitle className="font-display">Edit Listing</DialogTitle></DialogHeader>
@@ -338,6 +352,21 @@ export default function AdminPanel() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditListing(null)} className="border-border/40 rounded-xl">Cancel</Button>
             <Button onClick={handleEditSave} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Bid Modal */}
+      <Dialog open={!!editBid} onOpenChange={() => setEditBid(null)}>
+        <DialogContent className="bg-card border-border/40 max-w-sm rounded-2xl">
+          <DialogHeader><DialogTitle className="font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />Edit Bid</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            {editBid && <p className="text-xs text-muted-foreground">Bidder: <span className="text-foreground">{editBid.bidderName}</span> · Listing: <span className="text-violet-400">{editBid.listingTitle}</span></p>}
+            <div><label className="text-xs text-muted-foreground">Bid Amount ($)</label><Input type="number" value={editBidForm.bidAmount || ""} onChange={e => setEditBidForm(f => ({ ...f, bidAmount: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditBid(null)} className="border-border/40 rounded-xl">Cancel</Button>
+            <Button onClick={handleBidEditSave} className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-xl">Save Bid</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
