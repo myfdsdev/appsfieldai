@@ -65,7 +65,7 @@ export default function MyInvestments() {
         holdings.map(async (h) => {
           try {
             const items = await base44.entities.SaaSListing.filter({ id: h.listingId });
-            if (items[0]) titles[h.listingId] = items[0].title;
+            if (items[0]) titles[h.listingId] = items[0].softwareName;
           } catch { /* listing may be deleted */ }
         })
       );

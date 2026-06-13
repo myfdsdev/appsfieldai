@@ -204,7 +204,7 @@ export default function SaaSDetail() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-display font-bold">{listing.title}</h1>
+          <h1 className="text-2xl font-display font-bold">{listing.softwareName || "Untitled"}</h1>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             <Badge variant="outline" className="text-[10px] border-border/40">{listing.category}</Badge>
             <div className="flex items-center gap-1 text-sm">
@@ -226,14 +226,14 @@ export default function SaaSDetail() {
         <div className="lg:col-span-2 space-y-6">
           {/* Image Slider */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <ImageSlider images={listing.images} gradient={listing.imageGradient} title={listing.title} />
+            <ImageSlider images={listing.screenshots} gradient={listing.imageGradient} title={listing.softwareName} />
           </motion.div>
 
           {/* Description */}
           <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
             <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><FileText className="w-4 h-4 text-orange-400" /> About This SaaS</CardTitle></CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">{listing.description || "No description provided."}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{listing.fullDescription || "No description provided."}</p>
               {(listing.tags?.length > 0) && (
                 <div className="flex flex-wrap gap-2 mt-4">
                   {listing.tags.map((t) => (
@@ -421,7 +421,7 @@ export default function SaaSDetail() {
                 <div className="grid grid-cols-2 gap-3 text-center">
                   <div className="rounded-xl bg-secondary/40 p-3">
                     <p className="text-[10px] text-muted-foreground uppercase">Full Price</p>
-                    <p className="text-xl font-display font-bold mt-1">${listing.fullPrice?.toLocaleString()}</p>
+                    <p className="text-xl font-display font-bold mt-1">${((listing.sharePrice || 0) * (listing.totalShares || 0)).toLocaleString()}</p>
                   </div>
                   <div className="rounded-xl bg-secondary/40 p-3">
                     <p className="text-[10px] text-muted-foreground uppercase">Per Share</p>

@@ -39,7 +39,7 @@ export default function Dashboard() {
 
   const filtered = publicListings.filter((l) => {
     const catMatch = selectedCategory === "All Categories" || l.category === selectedCategory;
-    const searchMatch = !search || l.title.toLowerCase().includes(search.toLowerCase());
+    const searchMatch = !search || (l.softwareName || "").toLowerCase().includes(search.toLowerCase());
     return catMatch && searchMatch;
   });
 
@@ -47,8 +47,10 @@ export default function Dashboard() {
     if (sortBy === "Newest") return new Date(b.created_date) - new Date(a.created_date);
     if (sortBy === "Oldest") return new Date(a.created_date) - new Date(b.created_date);
     if (sortBy === "Highest Revenue") return (b.monthlyRevenue || 0) - (a.monthlyRevenue || 0);
-    if (sortBy === "Highest Price") return (b.fullPrice || 0) - (a.fullPrice || 0);
-    if (sortBy === "Lowest Price") return (a.fullPrice || 0) - (b.fullPrice || 0);
+    const fpA = (a.sharePrice || 0) * (a.totalShares || 0);
+    const fpB = (b.sharePrice || 0) * (b.totalShares || 0);
+    if (sortBy === "Highest Price") return fpB - fpA;
+    if (sortBy === "Lowest Price") return fpA - fpB;
     return 0;
   });
 

@@ -58,7 +58,9 @@ function AIScoreBadge({ score }) {
 export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails, onFavoriteToggle, isFavorited }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
-  const { title, category, fullPrice = 0, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
+  const { softwareName, category, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
+  const title = softwareName || "Untitled";
+  const fullPrice = (sharePrice || 0) * (totalShares || 0);
   const isSold = status === "sold";
   const sharesLeft = totalShares - soldShares;
   const sharePercent = totalShares > 0 ? (soldShares / totalShares) * 100 : 0;
