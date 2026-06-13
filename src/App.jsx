@@ -49,7 +49,7 @@ const AuthenticatedApp = () => {
     } else if (authError.type === 'auth_required') {
       // Redirect to login automatically
       navigateToLogin();
-      return null;
+      return <PageLoader />;
     }
   }
 

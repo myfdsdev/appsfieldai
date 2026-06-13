@@ -49,7 +49,8 @@ export default function AiChatWidget() {
   // Initialize agent conversation on first open
   const initConversation = async () => {
     if (initialized) return;
-    const authed = await base44.auth.isAuthenticated();
+    let authed = false;
+    try { authed = await base44.auth.isAuthenticated(); } catch {}
     if (!authed) {
       base44.auth.redirectToLogin();
       return;
