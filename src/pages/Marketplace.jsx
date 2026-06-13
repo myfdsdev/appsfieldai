@@ -67,19 +67,23 @@ export default function Marketplace() {
 
   const publicListings = listings.filter((l) => l.status === "active" || l.status === "auction" || l.status === "sold");
 
+  const fullPrice = (l) => (l.sharePrice || 0) * (l.totalShares || 0);
+  const searchLower = (search || "").toLowerCase();
+
   const filtered = publicListings.filter((l) => {
+    const title = (l.softwareName || "").toLowerCase();
     const catMatch = selectedCategory === "All" || l.category === selectedCategory;
-    const searchMatch = l.title.toLowerCase().includes(search.toLowerCase());
+    const searchMatch = !search || title.includes(searchLower);
     const revenueMatch = revenueMap[revenueFilter](l.monthlyRevenue);
-    const priceMatch = priceMap[priceFilter](l.fullPrice);
+    const priceMatch = priceMap[priceFilter](fullPrice(l));
     const riskMatch = riskMap[riskFilter](l.riskScore);
     const auctionMatch = !auctionEndingSoon || (l.status === "auction" && l.auctionEndsAt && new Date(l.auctionEndsAt).getTime() - now < SEVEN_DAYS);
     return catMatch && searchMatch && revenueMatch && priceMatch && riskMatch && auctionMatch;
   });
 
   const sorted = [...filtered].sort((a, b) => {
-    if (sortBy === "price-low") return a.fullPrice - b.fullPrice;
-    if (sortBy === "price-high") return b.fullPrice - a.fullPrice;
+    if (sortBy === "price-low") return fullPrice(a) - fullPrice(b);
+    if (sortBy === "price-high") return fullPrice(b) - fullPrice(a);
     if (sortBy === "revenue") return (b.monthlyRevenue || 0) - (a.monthlyRevenue || 0);
     if (sortBy === "growth") return (b.growthRate || 0) - (a.growthRate || 0);
     return new Date(b.created_date) - new Date(a.created_date);
