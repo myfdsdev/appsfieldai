@@ -66,7 +66,8 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
   }, [open, listing?.id]);
 
   const sharePrice = Number(listing?.sharePrice) || 10;
-  const fullPrice = Number(listing?.fullPrice) || 0;
+  const totalShares = Number(listing?.totalShares) || 0;
+  const fullPrice = sharePrice * totalShares;
   const MIN_INCREMENT = 50;
   const MAX_BID_MULTIPLIER = 10;
   const minBid = sharePrice * 0.5;
