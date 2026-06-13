@@ -73,7 +73,7 @@ export default function AdminAuctionsManager() {
   const openManager = (l) => {
     setSelectedListing(l);
     setEditForm({
-      title: l.title || "",
+      softwareName: l.softwareName || l.title || "",
       fullPrice: l.fullPrice || 0,
       sharePrice: l.sharePrice || 0,
       monthlyRevenue: l.monthlyRevenue || 0,
@@ -225,7 +225,7 @@ export default function AdminAuctionsManager() {
             {/* Listing Edit Fields */}
             <div className="space-y-3">
               <p className="text-xs font-medium text-amber-400">Listing Details</p>
-              <div><label className="text-xs text-muted-foreground">Title</label><Input value={editForm.title || ""} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Title</label><Input value={editForm.softwareName || ""} onChange={e => setEditForm(f => ({ ...f, softwareName: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
               <div className="grid grid-cols-3 gap-3">
                 <div><label className="text-xs text-muted-foreground">Full Price</label><Input type="number" value={editForm.fullPrice || ""} onChange={e => setEditForm(f => ({ ...f, fullPrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
                 <div><label className="text-xs text-muted-foreground">Share Price</label><Input type="number" value={editForm.sharePrice || ""} onChange={e => setEditForm(f => ({ ...f, sharePrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
