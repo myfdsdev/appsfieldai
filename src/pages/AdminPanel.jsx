@@ -37,6 +37,7 @@ export default function AdminPanel() {
     { id: "users", label: "Users", icon: Users },
     { id: "marketplaces", label: "Marketplaces", icon: Store },
     { id: "listings", label: "Listings & Requests", icon: Layers },
+    { id: "auctions", label: "Live Auctions", icon: Gavel },
   ];
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
@@ -50,7 +51,7 @@ export default function AdminPanel() {
   const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 100) });
 
   const enrichedBids = useMemo(() => {
-    const lm = {}; allListings.forEach(l => lm[l.id] = l.title);
+    const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Untitled");
     const um = {}; allUsers.forEach(u => um[u.id] = u.full_name || u.email);
     return allBids.map(b => ({ ...b, listingTitle: lm[b.listingId] || "Unknown", bidderName: um[b.userId] || "Unknown" }));
   }, [allBids, allListings, allUsers]);
@@ -66,14 +67,14 @@ export default function AdminPanel() {
     { icon: Ban, label: "Rejected", value: rejectedListings.length, color: "from-red-500 to-rose-500" },
   ];
 
-  const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" approved`); };
-  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" is now live on auction - 7 days`); };
-  const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" rejected`); };
-  const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" deleted`); };
-  const openEdit = (l) => { setEditListing(l); setEditForm({ title: l.title, category: l.category, fullPrice: l.fullPrice, sharePrice: l.sharePrice, monthlyRevenue: l.monthlyRevenue, monthlyExpenses: l.monthlyExpenses, description: l.description || "", auctionEndsAt: l.auctionEndsAt || "" }); };
+  const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); };
+  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); };
+  const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" rejected`); };
+  const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" deleted`); };
+  const openEdit = (l) => { setEditListing(l); setEditForm({ softwareName: l.softwareName || "", category: l.category || "", sharePrice: l.sharePrice || 0, totalShares: l.totalShares || 0, monthlyRevenue: l.monthlyRevenue || 0, monthlyExpenses: l.monthlyExpenses || 0, growthRate: l.growthRate || 0, shortDescription: l.shortDescription || "", fullDescription: l.fullDescription || "", auctionEndsAt: l.auctionEndsAt || "", status: l.status || "pending", features: l.features || [] }); };
   const handleEditSave = async () => {
     if (!editListing) return;
-    await base44.entities.SaaSListing.update(editListing.id, { ...editForm, fullPrice: parseFloat(editForm.fullPrice) || 0, sharePrice: parseFloat(editForm.sharePrice) || 0, monthlyRevenue: parseFloat(editForm.monthlyRevenue) || 0, monthlyExpenses: parseFloat(editForm.monthlyExpenses) || 0 });
+    await base44.entities.SaaSListing.update(editListing.id, { ...editForm, sharePrice: parseFloat(editForm.sharePrice) || 0, totalShares: parseInt(editForm.totalShares) || 0, monthlyRevenue: parseFloat(editForm.monthlyRevenue) || 0, monthlyExpenses: parseFloat(editForm.monthlyExpenses) || 0, growthRate: parseFloat(editForm.growthRate) || 0, rating: parseFloat(editForm.rating) || 5 });
     queryClient.invalidateQueries({ queryKey: ["allListings"] }); setEditListing(null); toast.success("Listing updated");
   };
 
@@ -143,7 +144,7 @@ export default function AdminPanel() {
               <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center"><Store className="w-4 h-4 text-violet-400" /></div>
-                  <div><p className="text-sm font-medium">{l.title}</p><p className="text-[11px] text-muted-foreground">{l.sellerName || "Unknown"} · {l.category} · ${l.fullPrice?.toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div>
+                  <div><p className="text-sm font-medium">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.sellerName || "Unknown"} · {l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div>
                 </div>
                 <div className="flex gap-1">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="text-muted-foreground hover:text-foreground h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
@@ -302,7 +303,7 @@ export default function AdminPanel() {
           <CardContent className="divide-y divide-border/30">
             {allListings.map(l => (
               <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium">{l.title}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${l.fullPrice?.toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
                 <div className="flex items-center gap-2">
                   <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
                   {l.status !== "auction" && <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="h-8 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>}
@@ -318,6 +319,43 @@ export default function AdminPanel() {
       <QnAManager />
       <ChatMonitor />
       <DividendPanel />
+    </>
+  );
+
+  const auctionContent = (
+    <>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />Live Auctions<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{auctionListings.length}</Badge></CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {auctionListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No active auctions</p> : auctionListings.map(l => {
+              const fullVal = ((l.sharePrice || 0) * (l.totalShares || 0));
+              return (
+                <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${l.imageGradient || 'from-amber-600 to-orange-600'} flex items-center justify-center`}><Gavel className="w-5 h-5 text-white" /></div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{l.softwareName || "Untitled"}</p>
+                      <p className="text-[11px] text-muted-foreground">{l.category} · ${fullVal.toLocaleString()} valuation · {l.soldShares || 0}/{l.totalShares || 0} shares · +{l.growthRate || 0}% growth</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="text-right mr-2">
+                      <p className="text-xs font-display font-bold text-amber-400">${l.sharePrice || 0}/share</p>
+                      <p className="text-[10px] text-muted-foreground">{l.auctionEndsAt ? new Date(l.auctionEndsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "No end date"}</p>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs text-muted-foreground hover:text-foreground"><Pencil className="w-3.5 h-3.5" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleApprove(l)} className="h-8 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"><CheckCircle className="w-3.5 h-3.5 mr-1" />End Auction</Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="h-8 text-xs text-red-400/60 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></Button>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </motion.div>
     </>
   );
 
@@ -341,23 +379,32 @@ export default function AdminPanel() {
       {activeTab === "users" && <UserManager />}
       {activeTab === "marketplaces" && <MarketplaceManager />}
       {activeTab === "listings" && listingContent}
+      {activeTab === "auctions" && auctionContent}
 
       {/* Edit Listing Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
         <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
           <DialogHeader><DialogTitle className="font-display">Edit Listing</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><label className="text-xs text-muted-foreground">Title</label><Input value={editForm.title || ""} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Software Name</label><Input value={editForm.softwareName || ""} onChange={e => setEditForm(f => ({ ...f, softwareName: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Full Price</label><Input type="number" value={editForm.fullPrice || ""} onChange={e => setEditForm(f => ({ ...f, fullPrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Share Price</label><Input type="number" value={editForm.sharePrice || ""} onChange={e => setEditForm(f => ({ ...f, sharePrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Category</label><Input value={editForm.category || ""} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Status</label><Input value={editForm.status || ""} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Monthly Revenue</label><Input type="number" value={editForm.monthlyRevenue || ""} onChange={e => setEditForm(f => ({ ...f, monthlyRevenue: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Monthly Expenses</label><Input type="number" value={editForm.monthlyExpenses || ""} onChange={e => setEditForm(f => ({ ...f, monthlyExpenses: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Share Price ($)</label><Input type="number" value={editForm.sharePrice || ""} onChange={e => setEditForm(f => ({ ...f, sharePrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Total Shares</label><Input type="number" value={editForm.totalShares || ""} onChange={e => setEditForm(f => ({ ...f, totalShares: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
             </div>
-            <div><label className="text-xs text-muted-foreground">Description</label><Input value={editForm.description || ""} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-            <div><label className="text-xs text-muted-foreground">Auction End Date (ISO)</label><Input value={editForm.auctionEndsAt || ""} onChange={e => setEditForm(f => ({ ...f, auctionEndsAt: e.target.value }))} placeholder="2026-06-20T00:00:00.000Z" className="bg-secondary/50 border-border/30 rounded-xl mt-1 text-xs" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="text-xs text-muted-foreground">Monthly Revenue ($)</label><Input type="number" value={editForm.monthlyRevenue || ""} onChange={e => setEditForm(f => ({ ...f, monthlyRevenue: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Monthly Expenses ($)</label><Input type="number" value={editForm.monthlyExpenses || ""} onChange={e => setEditForm(f => ({ ...f, monthlyExpenses: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="text-xs text-muted-foreground">Growth Rate (%)</label><Input type="number" value={editForm.growthRate || ""} onChange={e => setEditForm(f => ({ ...f, growthRate: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Rating</label><Input type="number" step="0.1" min="1" max="5" value={editForm.rating || ""} onChange={e => setEditForm(f => ({ ...f, rating: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            </div>
+            <div><label className="text-xs text-muted-foreground">Short Description</label><Input value={editForm.shortDescription || ""} onChange={e => setEditForm(f => ({ ...f, shortDescription: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Auction End Date</label><Input type="datetime-local" value={editForm.auctionEndsAt ? new Date(editForm.auctionEndsAt).toISOString().slice(0, 16) : ""} onChange={e => setEditForm(f => ({ ...f, auctionEndsAt: e.target.value ? new Date(e.target.value).toISOString() : "" }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 text-xs" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditListing(null)} className="border-border/40 rounded-xl">Cancel</Button>
