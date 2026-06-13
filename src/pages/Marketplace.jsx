@@ -69,7 +69,7 @@ export default function Marketplace() {
 
   const filtered = publicListings.filter((l) => {
     const catMatch = selectedCategory === "All" || l.category === selectedCategory;
-    const searchMatch = (l.softwareName || "").toLowerCase().includes(search.toLowerCase());
+    const searchMatch = l.title.toLowerCase().includes(search.toLowerCase());
     const revenueMatch = revenueMap[revenueFilter](l.monthlyRevenue);
     const priceMatch = priceMap[priceFilter](l.fullPrice);
     const riskMatch = riskMap[riskFilter](l.riskScore);

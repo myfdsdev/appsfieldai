@@ -83,7 +83,7 @@ export default function LiveAuctions() {
                 <Card className="border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-amber-500/30 transition-all group">
                   <div className={`h-28 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}>
                     <div className="absolute inset-0 bg-black/20" />
-                    <h3 className="relative text-white font-display font-bold text-lg px-4 text-center">{listing.softwareName}</h3>
+                    <h3 className="relative text-white font-display font-bold text-lg px-4 text-center">{listing.title}</h3>
                     <div className="absolute top-3 left-3 flex items-center gap-2">
                       <Badge className="bg-amber-500/90 text-white text-[10px] border-0"><Gavel className="w-3 h-3 mr-1" /> Live</Badge>
                       {(listing.bids?.length > 5) && <Badge className="bg-red-500/90 text-white text-[10px] border-0">Hot</Badge>}
@@ -94,7 +94,7 @@ export default function LiveAuctions() {
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
                       <div className="bg-secondary/40 rounded-lg p-2">
                         <p className="text-muted-foreground text-[10px]">Full Price</p>
-                        <p className="font-display font-bold text-sm">${(listing.fullPrice || 0).toLocaleString()}</p>
+                        <p className="font-display font-bold text-sm">${listing.fullPrice?.toLocaleString()}</p>
                       </div>
                       <div className="bg-secondary/40 rounded-lg p-2">
                         <p className="text-muted-foreground text-[10px]">Per Share</p>
