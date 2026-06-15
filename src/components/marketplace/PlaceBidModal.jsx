@@ -197,6 +197,16 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
       } catch (_) {}
 
       toast.success("Your bid has been submitted. Admin will review and contact you if shortlisted.");
+
+      // Send confirmation email to bidder
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: userEmail.trim(),
+          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listing.title}`,
+          body: `Hi ${userName.trim()},\n\nYour bid of $${amount.toLocaleString()} on "${listing.title}" has been submitted successfully.\n\nOur team will review your bid and contact you if shortlisted.\n\nThank you,\nSaaSShare Team`,
+        });
+      } catch (_) {}
+
       onSuccess?.();
       onClose();
       setBidAmount("");

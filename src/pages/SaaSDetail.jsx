@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import DemoRequestModal from "@/components/marketplace/DemoRequestModal";
+import PlaceBidModal from "@/components/marketplace/PlaceBidModal";
 import QnAPanel from "@/components/marketplace/QnAPanel";
 import ChatPanel from "@/components/marketplace/ChatPanel";
 import FinancialCharts from "@/components/marketplace/FinancialCharts";
@@ -136,6 +137,7 @@ export default function SaaSDetail() {
   const [reserveSpotListing, setReserveSpotListing] = useState(null);
   const [requestAcqListing, setRequestAcqListing] = useState(null);
   const [demoRequestListing, setDemoRequestListing] = useState(null);
+  const [bidListing, setBidListing] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", content: "" });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -174,6 +176,12 @@ export default function SaaSDetail() {
   const handleSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["saasListing", id] });
     queryClient.invalidateQueries({ queryKey: ["saasListings"] });
+    queryClient.invalidateQueries({ queryKey: ["auctionListings"] });
+  };
+
+  const handleBidSuccess = () => {
+    handleSuccess();
+    queryClient.invalidateQueries({ queryKey: ["bids", id] });
   };
 
   if (isLoading) {
@@ -475,7 +483,7 @@ export default function SaaSDetail() {
                       <Video className="w-4 h-4 mr-2" /> Request Demo
                     </Button>
                     {listing.status === "auction" && (
-                      <Button variant="outline" className="w-full border-amber-500/20 text-amber-400 hover:bg-amber-500/10 rounded-xl h-10 text-sm">
+                      <Button variant="outline" className="w-full border-amber-500/20 text-amber-400 hover:bg-amber-500/10 rounded-xl h-10 text-sm" onClick={() => setBidListing(listing)}>
                         <Gavel className="w-4 h-4 mr-2" /> Place Bid
                       </Button>
                     )}
@@ -502,6 +510,7 @@ export default function SaaSDetail() {
       <ReserveSpotModal listing={reserveSpotListing} open={!!reserveSpotListing} onClose={() => setReserveSpotListing(null)} />
       <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
       <DemoRequestModal listing={demoRequestListing} open={!!demoRequestListing} onClose={() => setDemoRequestListing(null)} />
+      <PlaceBidModal listing={bidListing} open={!!bidListing} onClose={() => setBidListing(null)} onSuccess={handleBidSuccess} />
     </div>
   );
 }
