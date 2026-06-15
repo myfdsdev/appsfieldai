@@ -24,20 +24,19 @@ export default function AdminPanel() {
   const [editBid, setEditBid] = useState(null);
   const [editBidForm, setEditBidForm] = useState({});
   const [copied, setCopied] = useState({});
-  const [activeTab, setActiveTab] = useState("listings");
+  const [activeTab, setActiveTab] = useState("users");
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin";
 
   const tabs = [
-    ...(isSuperAdmin ? [
-      { id: "platform", label: "Platform Overview", icon: Globe },
-      { id: "plans", label: "Subscription Plans", icon: Ticket },
-    ] : []),
     { id: "users", label: "Users", icon: Users },
-    { id: "marketplaces", label: "Marketplaces", icon: Store },
-    { id: "listings", label: "Listings & Requests", icon: Layers },
-    { id: "auctions", label: "Live Auctions", icon: Gavel },
+    { id: "content", label: "Content & Media", icon: Layers },
+    { id: "dashboard", label: "Dashboard & UI", icon: Globe },
+    { id: "hooks", label: "Hooks & Presets", icon: Ticket },
+    { id: "ai", label: "AI & Engine", icon: RefreshCw },
+    { id: "comms", label: "Comms & Mailing", icon: Mail },
+    { id: "system", label: "System & Config", icon: Gavel },
   ];
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
@@ -123,10 +122,10 @@ export default function AdminPanel() {
     return <Badge className={`text-[10px] border ${c[s] || c.pending}`}>{l[s] || s}</Badge>;
   };
 
-  const listingContent = (
+  // ── Content & Media ──
+  const contentMediaContent = (
     <>
-      {/* Pending Approvals */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Clock className="w-4 h-4 text-amber-400" />Pending Approvals<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{pendingListings.length}</Badge></CardTitle>
@@ -150,9 +149,31 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Store className="w-4 h-4 text-violet-400" />All Listings<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allListings.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
+            {allListings.map(l => (
+              <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
+                <div className="flex items-center gap-2">
+                  <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
+                  {l.status !== "auction" && <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="h-8 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>}
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </>
+  );
 
-      {/* Spot Reservations */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+  // ── Comms & Mailing ──
+  const commsContent = (
+    <>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><CalendarCheck className="w-4 h-4 text-violet-400" />Spot Reservations<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allReservations.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
@@ -185,9 +206,7 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Acquisition Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Building2 className="w-4 h-4 text-violet-400" />Acquisition Requests<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allAcquisitions.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
@@ -218,9 +237,7 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Bid Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
@@ -246,75 +263,12 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* All Bids */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
-        <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />All Bids<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBids.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/20">
-            {enrichedBids.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bids yet</p> : enrichedBids.map(b => (
-              <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-2">
-                <div className="flex items-center gap-3 min-w-0 flex-1"><div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div><div className="min-w-0"><p className="text-sm font-medium truncate text-foreground">{b.bidderName}</p><p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p></div></div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-sm font-display font-bold text-amber-400">${b.bidAmount?.toLocaleString()}</span>
-                  <Button size="sm" variant="ghost" onClick={() => openBidEdit(b)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3" /></Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleBidDelete(b)} className="h-7 text-[11px] text-red-400/60 hover:text-red-400"><Trash2 className="w-3 h-3" /></Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Transaction History */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Receipt className="w-4 h-4 text-violet-400" />Transaction History<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allTransactions.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/20">
-            {allTransactions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p> : allTransactions.slice(0, 30).map(t => {
-              const isPos = t.amount > 0;
-              const tl = { share_purchase: "Share Purchase", full_ownership_purchase: "Full Ownership", deposit: "Deposit", withdrawal: "Withdrawal", dividend: "Dividend", sale_revenue: "Sale Revenue" }[t.type] || t.type;
-              return (
-                <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center"><ArrowDownRight className={`w-4 h-4 ${isPos ? "text-emerald-400" : "text-red-400"}`} /></div>
-                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div>
-                  </div>
-                  <span className={`text-sm font-display font-bold shrink-0 ${isPos ? "text-emerald-400" : "text-red-400"}`}>{isPos ? "+" : "-"}${Math.abs(t.amount).toLocaleString()}</span>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* All Listings */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
-        <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Store className="w-4 h-4 text-violet-400" />All Listings<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allListings.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/20">
-            {allListings.map(l => (
-              <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
-                <div className="flex items-center gap-2">
-                  <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
-                  {l.status !== "auction" && <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="h-8 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>}
-                  <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <QnAManager />
       <ChatMonitor />
-      <DividendPanel />
     </>
   );
 
-  const auctionContent = (
+  // ── System & Config ──
+  const systemContent = (
     <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
@@ -348,6 +302,72 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />All Bids<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBids.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
+            {enrichedBids.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bids yet</p> : enrichedBids.map(b => (
+              <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-2">
+                <div className="flex items-center gap-3 min-w-0 flex-1"><div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div><div className="min-w-0"><p className="text-sm font-medium truncate text-foreground">{b.bidderName}</p><p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p></div></div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-sm font-display font-bold text-amber-400">${b.bidAmount?.toLocaleString()}</span>
+                  <Button size="sm" variant="ghost" onClick={() => openBidEdit(b)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleBidDelete(b)} className="h-7 text-[11px] text-red-400/60 hover:text-red-400"><Trash2 className="w-3 h-3" /></Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Receipt className="w-4 h-4 text-violet-400" />Transaction History<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allTransactions.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
+            {allTransactions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p> : allTransactions.slice(0, 30).map(t => {
+              const isPos = t.amount > 0;
+              const tl = { share_purchase: "Share Purchase", full_ownership_purchase: "Full Ownership", deposit: "Deposit", withdrawal: "Withdrawal", dividend: "Dividend", sale_revenue: "Sale Revenue" }[t.type] || t.type;
+              return (
+                <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center"><ArrowDownRight className={`w-4 h-4 ${isPos ? "text-emerald-400" : "text-red-400"}`} /></div>
+                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div>
+                  </div>
+                  <span className={`text-sm font-display font-bold shrink-0 ${isPos ? "text-emerald-400" : "text-red-400"}`}>{isPos ? "+" : "-"}${Math.abs(t.amount).toLocaleString()}</span>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </motion.div>
+      <DividendPanel />
+    </>
+  );
+
+  // ── AI & Engine ──
+  const aiContent = (
+    <>
+      <QnAManager />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><RefreshCw className="w-4 h-4 text-cyan-400" />AI & Automation</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">AI-powered features, auto-bidding engine, and smart notifications are active.</p>
+            <div className="flex items-center gap-3 mt-3 flex-wrap">
+              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Auto-Bid</Badge>
+              <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[11px]">AI Scoring</Badge>
+              <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-[11px]">Notifications</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </>
+  );
+
+  // ── Hooks & Presets ──
+  const hooksContent = (
+    <>
+      <MarketplaceManager />
+      {isSuperAdmin && <PlanManager />}
     </>
   );
 
@@ -416,12 +436,13 @@ export default function AdminPanel() {
 
       {/* Content Area */}
       <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
-        {activeTab === "platform" && <PlatformOverview />}
-        {activeTab === "plans" && <PlanManager />}
         {activeTab === "users" && <UserManager />}
-        {activeTab === "marketplaces" && <MarketplaceManager />}
-        {activeTab === "listings" && listingContent}
-        {activeTab === "auctions" && auctionContent}
+        {activeTab === "content" && contentMediaContent}
+        {activeTab === "dashboard" && <PlatformOverview />}
+        {activeTab === "hooks" && hooksContent}
+        {activeTab === "ai" && aiContent}
+        {activeTab === "comms" && commsContent}
+        {activeTab === "system" && systemContent}
       </motion.div>
 
       {/* Edit Listing Modal */}
