@@ -2,7 +2,8 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, ChevronDown } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, ChevronDown, LayoutDashboard, Image, Zap, Bot, Megaphone, Settings, CreditCard } from "lucide-react";
+import { Link } from "react-router-dom";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -24,20 +25,20 @@ export default function AdminPanel() {
   const [editBid, setEditBid] = useState(null);
   const [editBidForm, setEditBidForm] = useState({});
   const [copied, setCopied] = useState({});
-  const [activeTab, setActiveTab] = useState("listings");
+  const [activeCategory, setActiveCategory] = useState("content");
+  const [activeSubTab, setActiveSubTab] = useState("");
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin";
 
-  const tabs = [
-    ...(isSuperAdmin ? [
-      { id: "platform", label: "Platform Overview", icon: Globe },
-      { id: "plans", label: "Subscription Plans", icon: Ticket },
-    ] : []),
-    { id: "users", label: "Users", icon: Users },
-    { id: "marketplaces", label: "Marketplaces", icon: Store },
-    { id: "listings", label: "Listings & Requests", icon: Layers },
-    { id: "auctions", label: "Live Auctions", icon: Gavel },
+  const categories = [
+    { id: "users", label: "Users", icon: Users, desc: "Manage users, roles, invites & plans" },
+    { id: "content", label: "Content & Media", icon: Image, desc: "Listings, approvals, reviews & chat" },
+    { id: "dashboard", label: "Dashboard & UI", icon: LayoutDashboard, desc: "Platform overview & marketplaces" },
+    { id: "hooks", label: "Hooks & Presets", icon: Zap, desc: "Automations & backend functions" },
+    { id: "ai", label: "AI & Engine", icon: Bot, desc: "AI agents, valuation & intelligence" },
+    { id: "comms", label: "Comms & Mailing", icon: Megaphone, desc: "Notifications, dividends & emails" },
+    { id: "system", label: "System & Config", icon: Settings, desc: "Plans, payments & settings" },
   ];
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
@@ -49,6 +50,8 @@ export default function AdminPanel() {
   const { data: allReservations = [] } = useQuery({ queryKey: ["allReservations"], queryFn: () => base44.entities.DealReservations.list("-created_date", 100) });
   const { data: allAcquisitions = [] } = useQuery({ queryKey: ["allAcquisitions"], queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100) });
   const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 100) });
+  const { data: allMarketplaces = [] } = useQuery({ queryKey: ["allMarketplaces"], queryFn: () => base44.entities.Marketplace.list() });
+  const { data: allPlans = [] } = useQuery({ queryKey: ["platformPlans"], queryFn: () => base44.entities.SubscriptionPlan.list() });
 
   const enrichedBids = useMemo(() => {
     const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Untitled");
@@ -58,21 +61,16 @@ export default function AdminPanel() {
 
   const pendingListings = allListings.filter(l => l.status === "pending");
   const auctionListings = allListings.filter(l => l.status === "auction");
-  const rejectedListings = allListings.filter(l => l.status === "rejected");
-  const activeListings = allListings.filter(l => l.status === "active");
   const activeUsers = allUsers.filter(u => u.role !== "super_admin");
 
   const stats = [
-    { icon: Users, label: "Total Users", value: allUsers.length, color: "from-violet-500 to-purple-500", iconBg: "bg-violet-500/10", iconColor: "text-violet-400" },
-    { icon: Globe, label: "Active Users", value: activeUsers.length, color: "from-emerald-500 to-teal-500", iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
-    { icon: Store, label: "Total Listings", value: allListings.length, color: "from-cyan-500 to-blue-500", iconBg: "bg-cyan-500/10", iconColor: "text-cyan-400" },
-    { icon: Gavel, label: "Active Auctions", value: auctionListings.length, color: "from-amber-500 to-orange-500", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
+    { icon: Users, label: "Total Users", value: allUsers.length, iconBg: "bg-violet-500/10", iconColor: "text-violet-400" },
+    { icon: Globe, label: "Active Users", value: activeUsers.length, iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
+    { icon: Store, label: "Total Listings", value: allListings.length, iconBg: "bg-cyan-500/10", iconColor: "text-cyan-400" },
+    { icon: Gavel, label: "Active Auctions", value: auctionListings.length, iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
   ];
 
-  const handleRefresh = () => {
-    queryClient.invalidateQueries();
-    toast.success("Data refreshed");
-  };
+  const handleRefresh = () => { queryClient.invalidateQueries(); toast.success("Data refreshed"); };
 
   const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); };
   const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); };
@@ -94,24 +92,21 @@ export default function AdminPanel() {
   const handleBidDelete = async (b) => { await base44.entities.Bid.delete(b.id); queryClient.invalidateQueries({ queryKey: ["allBids"] }); toast.success("Bid deleted"); };
 
   const handleReservationAction = async (r, status) => {
-    await base44.entities.DealReservations.update(r.id, { status });
-    queryClient.invalidateQueries({ queryKey: ["allReservations"] });
+    await base44.entities.DealReservations.update(r.id, { status }); queryClient.invalidateQueries({ queryKey: ["allReservations"] });
     toast.success(`Reservation ${status}`);
     try { await base44.functions.invoke("notifyUserApproval", { userEmail: r.userEmail, userName: r.userName, listingTitle: r.listingTitle, requestType: "reserve_spot", status, listingId: r.listingId, userId: r.userId, phone: r.phone, budget: r.budget, message: r.message }); } catch (e) {}
   };
   const handleReservationDelete = async (r) => { await base44.entities.DealReservations.delete(r.id); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation deleted"); };
 
   const handleAcquisitionAction = async (a, status) => {
-    await base44.entities.AcquisitionRequests.update(a.id, { status });
-    queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
+    await base44.entities.AcquisitionRequests.update(a.id, { status }); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
     toast.success(`Request ${status}`);
     try { await base44.functions.invoke("notifyUserApproval", { userEmail: a.userEmail, userName: a.userName, listingTitle: a.listingTitle, requestType: "acquisition_request", status, listingId: a.listingId, userId: a.userId, phone: a.phone, offerAmount: a.offerAmount, notes: a.notes }); } catch (e) {}
   };
   const handleAcquisitionDelete = async (a) => { await base44.entities.AcquisitionRequests.delete(a.id); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Acquisition request deleted"); };
 
   const handleBidRequestAction = async (br, status) => {
-    await base44.entities.BidRequests.update(br.id, { status });
-    queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
+    await base44.entities.BidRequests.update(br.id, { status }); queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
     toast.success(`Bid request ${status}`);
     try { await base44.functions.invoke("notifyBidStatus", { userId: br.userId, userEmail: br.userEmail, userName: br.userName, listingTitle: br.listingTitle, listingId: br.listingId, requestType: "bid_request", status, requestId: br.id, bidAmount: br.bidAmount }); } catch (e) {}
   };
@@ -123,8 +118,12 @@ export default function AdminPanel() {
     return <Badge className={`text-[10px] border ${c[s] || c.pending}`}>{l[s] || s}</Badge>;
   };
 
-  const listingContent = (
-    <>
+  // ─── Category Content Renderers ──────────────────────────────────
+
+  const UsersContent = () => <UserManager />;
+
+  const ContentMediaContent = () => (
+    <div className="space-y-5">
       {/* Pending Approvals */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
@@ -161,9 +160,7 @@ export default function AdminPanel() {
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium text-foreground">{r.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{r.userEmail}</span>
-                    <div className="flex items-center gap-0.5 ml-1">
-                      {r.userEmail && <><a href={`mailto:${r.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground"><Mail className="w-3 h-3" /></a><button onClick={() => doCopy(`re-${r.id}`, r.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground">{copied[`re-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button></>}
-                    </div>
+                    <div className="flex items-center gap-0.5 ml-1">{r.userEmail && <><a href={`mailto:${r.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground"><Mail className="w-3 h-3" /></a><button onClick={() => doCopy(`re-${r.id}`, r.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground">{copied[`re-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button></>}</div>
                   </div>
                   <p className="text-xs text-violet-400">{r.listingTitle || "Unknown Listing"}</p>
                   <div className="flex items-center gap-3 flex-wrap">
@@ -227,9 +224,7 @@ export default function AdminPanel() {
             {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
               <div key={br.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-foreground">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span>
-                  </div>
+                  <div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span></div>
                   <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
                   <div className="flex items-center gap-3 flex-wrap">
                     {br.bidAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${br.bidAmount?.toLocaleString()}</span>}
@@ -266,8 +261,36 @@ export default function AdminPanel() {
         </Card>
       </motion.div>
 
-      {/* Transaction History */}
+      {/* Live Auctions */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Live Auctions<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{auctionListings.length}</Badge></CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/20">
+            {auctionListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No active auctions</p> : auctionListings.map(l => {
+              const fullVal = ((l.sharePrice || 0) * (l.totalShares || 0));
+              return (
+                <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${l.imageGradient || 'from-amber-600 to-orange-600'} flex items-center justify-center`}><Gavel className="w-5 h-5 text-white" /></div>
+                    <div className="min-w-0"><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${fullVal.toLocaleString()} valuation · {l.soldShares || 0}/{l.totalShares || 0} shares</p></div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="text-right mr-2"><p className="text-xs font-display font-bold text-amber-400">${l.sharePrice || 0}/share</p><p className="text-[10px] text-muted-foreground">{l.auctionEndsAt ? new Date(l.auctionEndsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "No end date"}</p></div>
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs text-muted-foreground hover:text-foreground"><Pencil className="w-3.5 h-3.5" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleApprove(l)} className="h-8 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"><CheckCircle className="w-3.5 h-3.5 mr-1" />End Auction</Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="h-8 text-xs text-red-400/60 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></Button>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Transaction History */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Receipt className="w-4 h-4 text-violet-400" />Transaction History<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allTransactions.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
@@ -276,10 +299,7 @@ export default function AdminPanel() {
               const tl = { share_purchase: "Share Purchase", full_ownership_purchase: "Full Ownership", deposit: "Deposit", withdrawal: "Withdrawal", dividend: "Dividend", sale_revenue: "Sale Revenue" }[t.type] || t.type;
               return (
                 <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center"><ArrowDownRight className={`w-4 h-4 ${isPos ? "text-emerald-400" : "text-red-400"}`} /></div>
-                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div>
-                  </div>
+                  <div className="flex items-center gap-3 min-w-0 flex-1"><div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center"><ArrowDownRight className={`w-4 h-4 ${isPos ? "text-emerald-400" : "text-red-400"}`} /></div><div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div></div>
                   <span className={`text-sm font-display font-bold shrink-0 ${isPos ? "text-emerald-400" : "text-red-400"}`}>{isPos ? "+" : "-"}${Math.abs(t.amount).toLocaleString()}</span>
                 </div>
               );
@@ -289,7 +309,7 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* All Listings */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Store className="w-4 h-4 text-violet-400" />All Listings<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allListings.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
@@ -310,46 +330,115 @@ export default function AdminPanel() {
 
       <QnAManager />
       <ChatMonitor />
-      <DividendPanel />
-    </>
+    </div>
   );
 
-  const auctionContent = (
-    <>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Live Auctions<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{auctionListings.length}</Badge></CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/20">
-            {auctionListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No active auctions</p> : auctionListings.map(l => {
-              const fullVal = ((l.sharePrice || 0) * (l.totalShares || 0));
-              return (
-                <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${l.imageGradient || 'from-amber-600 to-orange-600'} flex items-center justify-center`}><Gavel className="w-5 h-5 text-white" /></div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p>
-                      <p className="text-[11px] text-muted-foreground">{l.category} · ${fullVal.toLocaleString()} valuation · {l.soldShares || 0}/{l.totalShares || 0} shares · +{l.growthRate || 0}% growth</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right mr-2">
-                      <p className="text-xs font-display font-bold text-amber-400">${l.sharePrice || 0}/share</p>
-                      <p className="text-[10px] text-muted-foreground">{l.auctionEndsAt ? new Date(l.auctionEndsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "No end date"}</p>
-                    </div>
-                    <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs text-muted-foreground hover:text-foreground"><Pencil className="w-3.5 h-3.5" /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleApprove(l)} className="h-8 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"><CheckCircle className="w-3.5 h-3.5 mr-1" />End Auction</Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="h-8 text-xs text-red-400/60 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></Button>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </motion.div>
-    </>
+  const DashboardUIContent = () => (
+    <div className="space-y-5">
+      <PlatformOverview />
+      <MarketplaceManager />
+    </div>
   );
+
+  const HooksPresetsContent = () => (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+      <Card className="border-border/40 bg-[#1a1a1a]">
+        <CardHeader><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Zap className="w-4 h-4 text-amber-400" />Backend Functions ({23})</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {["autoBid","distributeDividends","getSuperAdminStats","notifyAdminNewListing","notifyAdminAcquisitionRequest","notifyAdminReservation","notifyBidStatus","notifyUserApproval","notifyVendorPayout","stripeCheckout","stripeSubscribe","stripeWebhook","walletDeposit"].map(fn => (
+              <div key={fn} className="flex items-center gap-2 p-2.5 rounded-lg bg-[#252525] border border-border/20">
+                <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-xs font-medium text-foreground truncate">{fn}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-3">Manage automations & webhooks from the dashboard</p>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  const AIEngineContent = () => (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+      <Card className="border-border/40 bg-[#1a1a1a]">
+        <CardHeader><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Bot className="w-4 h-4 text-violet-400" />AI Agents & Intelligence</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl bg-[#252525] border border-border/20">
+              <div className="flex items-center gap-2 mb-2"><Bot className="w-4 h-4 text-violet-400" /><span className="text-sm font-display font-bold text-foreground">listing_bot</span></div>
+              <p className="text-xs text-muted-foreground">Marketplace listing assistant agent</p>
+              <Badge className="mt-2 text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Active</Badge>
+            </div>
+            <div className="p-4 rounded-xl bg-[#252525] border border-border/20">
+              <div className="flex items-center gap-2 mb-2"><Zap className="w-4 h-4 text-cyan-400" /><span className="text-sm font-display font-bold text-foreground">AI Valuation</span></div>
+              <p className="text-xs text-muted-foreground">Automated SaaS valuation tool for listings</p>
+              <Badge className="mt-2 text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Available</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  const CommsContent = () => (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+      <DividendPanel />
+      <Card className="border-border/40 bg-[#1a1a1a]">
+        <CardHeader><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Megaphone className="w-4 h-4 text-violet-400" />Notification Functions</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {["notifyAdminLogin","notifyAdminRegister","notifyAdminNewMessage","notifyAdminNewQnA","notifyAdminRequestCancelled","notifyVendorNewReview","notifyVendorSalesMilestone","sendVendorWelcomeEmail","createAppNotification"].map(fn => (
+              <div key={fn} className="flex items-center gap-2 p-2 rounded-lg bg-[#252525] border border-border/20">
+                <Megaphone className="w-3 h-3 text-violet-400 shrink-0" /><span className="text-[11px] text-foreground truncate">{fn}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  const SystemContent = () => (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+      <PlanManager />
+      <Card className="border-border/40 bg-[#1a1a1a]">
+        <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Settings className="w-4 h-4 text-violet-400" />Advanced Settings</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Link to="/admin/settings" className="p-4 rounded-xl bg-[#252525] border border-border/20 hover:border-violet-500/30 transition-colors group">
+              <Mail className="w-5 h-5 text-violet-400 mb-2" />
+              <p className="text-sm font-medium text-foreground group-hover:text-violet-400 transition-colors">Email Settings</p>
+              <p className="text-[11px] text-muted-foreground mt-1">SMTP, templates</p>
+            </Link>
+            <Link to="/admin/settings" className="p-4 rounded-xl bg-[#252525] border border-border/20 hover:border-violet-500/30 transition-colors group">
+              <CreditCard className="w-5 h-5 text-violet-400 mb-2" />
+              <p className="text-sm font-medium text-foreground group-hover:text-violet-400 transition-colors">Payment Settings</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Stripe, Razorpay</p>
+            </Link>
+            <Link to="/admin/settings" className="p-4 rounded-xl bg-[#252525] border border-border/20 hover:border-violet-500/30 transition-colors group">
+              <Settings className="w-5 h-5 text-violet-400 mb-2" />
+              <p className="text-sm font-medium text-foreground group-hover:text-violet-400 transition-colors">General Settings</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Platform config</p>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  const renderContent = () => {
+    switch (activeCategory) {
+      case "users": return <UsersContent />;
+      case "content": return <ContentMediaContent />;
+      case "dashboard": return <DashboardUIContent />;
+      case "hooks": return <HooksPresetsContent />;
+      case "ai": return <AIEngineContent />;
+      case "comms": return <CommsContent />;
+      case "system": return <SystemContent />;
+      default: return <ContentMediaContent />;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -389,16 +478,16 @@ export default function AdminPanel() {
         ))}
       </div>
 
-      {/* Secondary Navigation Bar */}
+      {/* 7-Category Navigation Bar (VideoClawBot Style) */}
       <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <div className="flex gap-1 flex-wrap bg-[#1a1a1a] border border-border/40 rounded-2xl p-1.5">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+          {categories.map(cat => {
+            const Icon = cat.icon;
+            const isActive = activeCategory === cat.id;
             return (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                key={cat.id}
+                onClick={() => { setActiveCategory(cat.id); setActiveSubTab(""); }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
                     ? "bg-[#d93025] text-white shadow-lg shadow-red-500/20"
@@ -406,22 +495,19 @@ export default function AdminPanel() {
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {tab.label}
+                {cat.label}
                 <ChevronDown className="w-3.5 h-3.5 opacity-50" />
               </button>
             );
           })}
         </div>
+        {/* Active Category Description */}
+        <p className="text-xs text-muted-foreground mt-2 ml-1">{categories.find(c => c.id === activeCategory)?.desc}</p>
       </motion.div>
 
       {/* Content Area */}
-      <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
-        {activeTab === "platform" && <PlatformOverview />}
-        {activeTab === "plans" && <PlanManager />}
-        {activeTab === "users" && <UserManager />}
-        {activeTab === "marketplaces" && <MarketplaceManager />}
-        {activeTab === "listings" && listingContent}
-        {activeTab === "auctions" && auctionContent}
+      <motion.div key={activeCategory} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+        {renderContent()}
       </motion.div>
 
       {/* Edit Listing Modal */}
