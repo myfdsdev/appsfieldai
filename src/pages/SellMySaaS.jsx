@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Upload, Info, CheckCircle, Loader2, AlertCircle, Store } from "lucide-react";
+import { Upload, Info, CheckCircle, Loader2, AlertCircle, Store, Clock, FileText, Percent, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { base44 } from "@/api/base44Client";
@@ -24,6 +25,8 @@ export default function SellMySaaS() {
   const [revenueProofFile, setRevenueProofFile] = useState(null);
   const [productImageFile, setProductImageFile] = useState(null);
   const [marketplaceId, setMarketplaceId] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [submittedListing, setSubmittedListing] = useState(null);
   const [form, setForm] = useState({
     title: "", category: "CRM", description: "", sellerName: "",
     fullPrice: "", sharePrice: "", totalShares: "50",
@@ -153,7 +156,8 @@ export default function SellMySaaS() {
           });
         } catch (_) {}
       }
-      navigate("/investments");
+      setSubmittedListing({ title: form.title, status });
+      setShowSuccess(true);
     } catch (err) {
       toast.error("Failed to submit listing. Please try again.");
     } finally {
@@ -359,6 +363,95 @@ export default function SellMySaaS() {
           All SaaS listings are reviewed within 24 hours. You must verify revenue through bank statements or payment processor screenshots. SaaSShare charges a 5% commission on completed sales.
         </div>
       </div>
+
+      {/* Success Confirmation Modal */}
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent className="max-w-md border-border/40 bg-card/95 backdrop-blur-xl rounded-2xl p-0 overflow-hidden">
+          {/* Success Gradient Bar */}
+          <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500" />
+          
+          <div className="p-6 pt-5 space-y-5">
+            <DialogHeader className="space-y-3">
+              <motion.div 
+                initial={{ scale: 0 }} 
+                animate={{ scale: 1 }} 
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center"
+              >
+                <CheckCircle className="w-8 h-8 text-emerald-400" />
+              </motion.div>
+              <DialogTitle className="text-center font-display text-lg">
+                {submittedListing?.status === "active" ? "Your SaaS is Live! 🎉" : "Submitted for Review"}
+              </DialogTitle>
+              <DialogDescription className="text-center text-sm text-muted-foreground">
+                {submittedListing?.status === "active"
+                  ? `"${submittedListing?.title}" is now live on the marketplace.`
+                  : `"${submittedListing?.title}" has been submitted successfully.`}
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Info Cards */}
+            <div className="space-y-3">
+              <div className="flex gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">24-Hour Review</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">All listings are reviewed by our team within 24 hours.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Revenue Verification</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Provide bank statements or payment processor screenshots to verify your revenue.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
+                  <Percent className="w-4 h-4 text-violet-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">5% Commission</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">SaaSShare charges a 5% commission on each completed sale.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-1">
+              <Button
+                variant="outline"
+                className="flex-1 border-border/40 rounded-xl"
+                onClick={() => {
+                  setShowSuccess(false);
+                  setStep(1);
+                  setForm({ title: "", category: "CRM", description: "", sellerName: "", fullPrice: "", sharePrice: "", totalShares: "50", monthlyRevenue: "", monthlyExpenses: "", growthRate: "", features: "", auctionDuration: "" });
+                  setRevenueProofFile(null);
+                  setProductImageFile(null);
+                }}
+              >
+                List Another
+              </Button>
+              <Button
+                className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl"
+                onClick={() => {
+                  setShowSuccess(false);
+                  navigate("/investments");
+                }}
+              >
+                <ArrowRight className="w-4 h-4 mr-1.5" />
+                View My Investments
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
