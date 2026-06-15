@@ -8,6 +8,8 @@ import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
 import DemoRequestModal from "@/components/marketplace/DemoRequestModal";
+import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
+import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import { toast } from "sonner";
 
 const revenueMap = {
@@ -36,6 +38,8 @@ export default function Marketplace() {
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
   const [demoRequestListing, setDemoRequestListing] = useState(null);
+  const [reserveSpotListing, setReserveSpotListing] = useState(null);
+  const [requestAcqListing, setRequestAcqListing] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [favoriteIds, setFavoriteIds] = useState(new Set());
 
@@ -139,7 +143,7 @@ export default function Marketplace() {
         <>
           <div className={`grid sm:grid-cols-2 gap-4 ${gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
             {sorted.map((l, i) => (
-              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} onRequestDemo={setDemoRequestListing} onFavoriteToggle={handleFavoriteToggle} isFavorited={favoriteIds.has(l.id)} />
+              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onReserveSpot={setReserveSpotListing} onRequestAcquisition={setRequestAcqListing} onRequestDemo={setDemoRequestListing} onFavoriteToggle={handleFavoriteToggle} isFavorited={favoriteIds.has(l.id)} />
             ))}
           </div>
 
@@ -168,6 +172,16 @@ export default function Marketplace() {
         listingId={viewDetailListing?.id}
         open={!!viewDetailListing}
         onClose={() => setViewDetailListing(null)}
+      />
+      <ReserveSpotModal
+        listing={reserveSpotListing}
+        open={!!reserveSpotListing}
+        onClose={() => setReserveSpotListing(null)}
+      />
+      <RequestAcquisitionModal
+        listing={requestAcqListing}
+        open={!!requestAcqListing}
+        onClose={() => setRequestAcqListing(null)}
       />
       <DemoRequestModal
         listing={demoRequestListing}
