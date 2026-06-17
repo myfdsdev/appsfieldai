@@ -44,9 +44,9 @@ const NAV_GROUPS = [
   },
   {
     id: "hooks_group",
-    label: "Hooks & Presets",
+    label: "Content Presets",
     items: [
-      { id: "hooks",          label: "Deal Presets",         icon: Ticket },
+      { id: "hooks",          label: "Hook Management",      icon: Ticket },
       { id: "mktpl_templates",label: "Marketplace Templates",icon: Globe },
       { id: "pricing_presets",label: "Pricing Presets",      icon: Star },
       { id: "email_templates",label: "Email Templates",      icon: FileCode },

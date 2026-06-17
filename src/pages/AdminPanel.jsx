@@ -12,6 +12,7 @@ import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import DashboardEditor from "@/components/admin/DashboardEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
+import HookManagement from "@/components/admin/HookManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -355,13 +356,7 @@ export default function AdminPanel() {
     </>
   );
 
-  // ── Hooks & Presets ──
-  const hooksContent = (
-    <>
-      <MarketplaceManager />
-      {isSuperAdmin && <PlanManager />}
-    </>
-  );
+
 
   const renderContent = () => {
     switch (activeTab) {
@@ -609,20 +604,7 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "hooks":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <Ticket className="w-4 h-4 text-violet-400" />Deal Presets
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground py-4 text-center">Deal presets management coming soon.</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
+        return <HookManagement />;
       case "mktpl_templates":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -672,7 +654,20 @@ export default function AdminPanel() {
       case "invoices":
       case "coupons":
       case "payments":
-        return hooksContent;
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Ticket className="w-4 h-4 text-violet-400" />{activeTab === "subscriptions" ? "Subscriptions" : activeTab === "invoices" ? "Invoices" : activeTab === "coupons" ? "Coupons" : "Payments"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">{activeTab === "subscriptions" ? "Subscription" : activeTab === "invoices" ? "Invoice" : activeTab === "coupons" ? "Coupon" : "Payment"} management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
       case "system":
         return systemContent;
       case "app_notif":

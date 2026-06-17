@@ -1,0 +1,215 @@
+{
+  "name": "ContentPresetSettings",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Optional marketplace ID (null = platform-wide)"
+    },
+    "heroSettings": {
+      "type": "object",
+      "properties": {
+        "badge": {
+          "type": "string"
+        },
+        "headline": {
+          "type": "string"
+        },
+        "subheadline": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "primaryButtonText": {
+          "type": "string"
+        },
+        "secondaryButtonText": {
+          "type": "string"
+        },
+        "bgType": {
+          "type": "string",
+          "enum": [
+            "gradient",
+            "solid",
+            "image"
+          ],
+          "default": "gradient"
+        },
+        "gradientStart": {
+          "type": "string"
+        },
+        "gradientMiddle": {
+          "type": "string"
+        },
+        "gradientEnd": {
+          "type": "string"
+        },
+        "gradientDirection": {
+          "type": "string",
+          "enum": [
+            "to right",
+            "to bottom",
+            "diagonal",
+            "radial"
+          ]
+        },
+        "gradientIntensity": {
+          "type": "number",
+          "default": 50
+        },
+        "bgOpacity": {
+          "type": "number",
+          "default": 100
+        },
+        "bgImageUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "marketplaceSettings": {
+      "type": "object",
+      "properties": {
+        "sectionTitle": {
+          "type": "string"
+        },
+        "sectionSubtitle": {
+          "type": "string"
+        },
+        "sectionDescription": {
+          "type": "string"
+        },
+        "searchPlaceholder": {
+          "type": "string"
+        },
+        "categoryFilterLabel": {
+          "type": "string"
+        },
+        "sortFilterLabel": {
+          "type": "string"
+        },
+        "emptyStateTitle": {
+          "type": "string"
+        },
+        "emptyStateMessage": {
+          "type": "string"
+        },
+        "ctaButtonText": {
+          "type": "string"
+        },
+        "thumbnailUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "liveAuctionSettings": {
+      "type": "object",
+      "properties": {
+        "sectionTitle": {
+          "type": "string"
+        },
+        "sectionSubtitle": {
+          "type": "string"
+        },
+        "sectionDescription": {
+          "type": "string"
+        },
+        "cardTitleFormat": {
+          "type": "string"
+        },
+        "countdownLabel": {
+          "type": "string"
+        },
+        "bidButtonText": {
+          "type": "string"
+        },
+        "reserveButtonText": {
+          "type": "string"
+        },
+        "detailsButtonText": {
+          "type": "string"
+        },
+        "emptyStateTitle": {
+          "type": "string"
+        },
+        "emptyStateMessage": {
+          "type": "string"
+        },
+        "thumbnailUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "listingCardSettings": {
+      "type": "object",
+      "properties": {
+        "featuredBadgeText": {
+          "type": "string"
+        },
+        "reserveSpotButtonText": {
+          "type": "string"
+        },
+        "requestAcquisitionButtonText": {
+          "type": "string"
+        },
+        "placeBidButtonText": {
+          "type": "string"
+        },
+        "viewDetailsButtonText": {
+          "type": "string"
+        },
+        "soldBadgeText": {
+          "type": "string"
+        },
+        "closedBadgeText": {
+          "type": "string"
+        },
+        "revenueLabel": {
+          "type": "string"
+        },
+        "riskScoreLabel": {
+          "type": "string"
+        },
+        "defaultThumbnailUrl": {
+          "type": "string"
+        },
+        "categoryThumbnailUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "imageLibrary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "uploadedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedBy": {
+      "type": "string",
+      "description": "User ID who last updated"
+    }
+  },
+  "required": []
+}
