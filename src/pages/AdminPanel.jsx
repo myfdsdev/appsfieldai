@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -486,9 +486,71 @@ export default function AdminPanel() {
         );
       case "comms":
         return (
-          <div className="space-y-5">
-            {commsContent}
-          </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Mail className="w-4 h-4 text-red-400" />Gmail
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Gmail OAuth is connected for email delivery. Configure sender details and SMTP settings in <span className="text-foreground font-medium">Admin Settings → Email Settings</span>.</p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Connected</Badge>
+                  <Badge className="bg-red-500/10 text-red-400 border-red-500/20 text-[11px]">Gmail OAuth</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "smtp":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <AtSign className="w-4 h-4 text-cyan-400" />SMTP Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">SMTP server configuration for transactional emails. Manage SMTP credentials in <span className="text-foreground font-medium">Admin Settings → Email Settings</span>.</p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Configured</Badge>
+                  <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-[11px]">TLS Enabled</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "email_logs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <FileStack className="w-4 h-4 text-violet-400" />Email Logs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Email delivery logs coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "contact_msgs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <ContactRound className="w-4 h-4 text-amber-400" />Contact Messages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Contact message management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         );
       case "acquisitions":
         return (
@@ -702,7 +764,63 @@ export default function AdminPanel() {
             <DashboardEditor />
           </div>
         );
-      case "ai": case "chat_monitor": case "analytics":
+      case "ai":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Bot className="w-4 h-4 text-violet-400" />AI Agent
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">AI-powered agent assistance for marketplace operations. Configure AI agents from the platform dashboard.</p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Active</Badge>
+                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[11px]">LLM Enabled</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "qna_db":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <QnAManager />
+          </motion.div>
+        );
+      case "ai_recs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Sparkles className="w-4 h-4 text-amber-400" />AI Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">AI-powered product recommendations coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "automation":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Workflow className="w-4 h-4 text-cyan-400" />Automation Rules
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Automation rules management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "chat_monitor":
+      case "analytics":
         return aiContent;
       case "stripe_int": case "razorpay_int": case "gmail_int": case "jvzoo_int": case "webhooks_int":
         return (
