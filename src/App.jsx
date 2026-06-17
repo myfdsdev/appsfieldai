@@ -96,6 +96,9 @@ const AuthenticatedApp = () => {
           <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
         </Route>
       </Route>
+      {/* Redirect old /Home routes to prevent 404 */}
+      <Route path="/Home" element={<Navigate to="/" replace />} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
