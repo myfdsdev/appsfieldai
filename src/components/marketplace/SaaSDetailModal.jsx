@@ -234,7 +234,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                     </div>
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
                       <p className="text-[9px] text-muted-foreground uppercase">Full Price</p>
-                      <p className="text-xs font-display font-bold">${listing.fullPrice?.toLocaleString()}</p>
+                      <p className="text-xs font-display font-bold">${((listing.sharePrice || 0) * (listing.totalShares || 0)).toLocaleString()}</p>
                     </div>
                   </div>
 
