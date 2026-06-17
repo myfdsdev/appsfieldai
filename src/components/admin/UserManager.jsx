@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Shield, Mail, Pencil, Trash2, Crown, UserCheck, UserX, Copy, Check } from "lucide-react";
+import { Users, Shield, Mail, Pencil, Trash2, Crown, UserCheck, UserX, Copy, Check, Package, Clock, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,16 @@ export default function UserManager() {
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
+  });
+
+  const { data: allPlans = [] } = useQuery({
+    queryKey: ["subscriptionPlans"],
+    queryFn: () => base44.entities.SubscriptionPlan.list(),
+  });
+
+  const { data: allPlatformSubs = [] } = useQuery({
+    queryKey: ["platformSubs"],
+    queryFn: () => base44.entities.PlatformSubscription.list("-created_date", 50),
   });
 
   const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin";
@@ -139,6 +149,65 @@ export default function UserManager() {
           ))}
         </CardContent>
       </Card>
+
+      {/* Invited Users / Platform Subscriptions */}
+      <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+        <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Mail className="w-4 h-4 text-cyan-400" />Invited Users & Plans<Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[10px] ml-2">{allPlatformSubs.length}</Badge></CardTitle></CardHeader>
+        <CardContent className="divide-y divide-border/30">
+          {allPlatformSubs.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No subscriptions yet</p>
+          ) : allPlatformSubs.map(sub => {
+            const plan = allPlans.find(p => p.id === sub.planId);
+            const user = allUsers.find(u => u.id === sub.userId);
+            return (
+              <div key={sub.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-2">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-9 h-9 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0">
+                    <Mail className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{user?.full_name || sub.userEmail || "Unknown"}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{user?.email || sub.userEmail}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                  {plan ? (
+                    <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[10px] flex items-center gap-1">
+                      <Package className="w-2.5 h-2.5" />{plan.name}
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-secondary text-muted-foreground border-border/30 text-[10px]">No Plan</Badge>
+                  )}
+                  <Badge className={`text-[10px] border flex items-center gap-1 ${sub.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : sub.status === "trialing" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
+                    {sub.status === "active" ? <CheckCircle className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
+                    {sub.status || "pending"}
+                  </Badge>
+                  <span className="text-[10px] text-muted-foreground">{sub.created_date ? new Date(sub.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      {/* Plans Overview */}
+      {allPlans.length > 0 && (
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Package className="w-4 h-4 text-amber-400" />Active Plans<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allPlans.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {allPlans.map(plan => {
+              const subsOnPlan = allPlatformSubs.filter(s => s.planId === plan.id).length;
+              return (
+                <div key={plan.id} className="bg-secondary/30 rounded-xl p-3 border border-border/20">
+                  <p className="text-sm font-medium text-foreground">{plan.name}</p>
+                  <p className="text-lg font-display font-bold text-amber-400 mt-1">${plan.price || 0}<span className="text-[10px] text-muted-foreground font-normal">/mo</span></p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{subsOnPlan} subscribers</p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit Role Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>

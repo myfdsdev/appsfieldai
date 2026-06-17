@@ -10,6 +10,7 @@ import PlatformOverview from "@/components/admin/PlatformOverview";
 import PlanManager from "@/components/admin/PlanManager";
 import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
+import DashboardEditor from "@/components/admin/DashboardEditor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -438,7 +439,12 @@ export default function AdminPanel() {
       <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
         {activeTab === "users" && <UserManager />}
         {activeTab === "content" && contentMediaContent}
-        {activeTab === "dashboard" && <PlatformOverview />}
+        {activeTab === "dashboard" && (
+          <div className="space-y-5">
+            <PlatformOverview />
+            <DashboardEditor />
+          </div>
+        )}
         {activeTab === "hooks" && hooksContent}
         {activeTab === "ai" && aiContent}
         {activeTab === "comms" && commsContent}

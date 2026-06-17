@@ -37,6 +37,12 @@ export default function Dashboard() {
     queryFn: () => base44.entities.SaaSListing.list(),
   });
 
+  const { data: heroConfigs = [] } = useQuery({
+    queryKey: ["dashboardConfig"],
+    queryFn: () => base44.entities.AppConfig.filter({ key: "dashboard_hero" }),
+  });
+  const heroConfig = heroConfigs[0] || {};
+
   const { data: marketplaces = [] } = useQuery({
     queryKey: ["marketplaces"],
     queryFn: () => base44.entities.Marketplace.list(),
@@ -83,7 +89,7 @@ export default function Dashboard() {
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs font-medium mb-7"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
-          The Future of SaaS Ownership
+          {heroConfig.hero_badge_text || "The Future of SaaS Ownership"}
         </motion.div>
 
         {/* Robot mascot */}
@@ -100,18 +106,16 @@ export default function Dashboard() {
         <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5"
         >
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Split the Price.</span>{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">{heroConfig.hero_title_line1 || "Split the Price."}</span>{" "}
           <br />
-          <span className="text-foreground">Own the </span>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Software.</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">{heroConfig.hero_title_line2 || "Own the Software."}</span>
         </motion.h1>
 
         {/* Subheadline */}
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
           className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-8"
         >
-          Join group deals on premium software. Lock a slot, split the cost,{" "}
-          and save up to <strong className="text-foreground">98% off the full price.</strong>
+          {heroConfig.hero_subtitle || "Join group deals on premium software. Lock a slot, split the cost, and save up to 98% off the full price."}
         </motion.p>
 
         {/* CTA Buttons */}
@@ -122,14 +126,14 @@ export default function Dashboard() {
             onClick={() => document.getElementById("listings-grid")?.scrollIntoView({ behavior: "smooth" })}
             className="px-6 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
           >
-            Active deals live now
+            {heroConfig.hero_cta_primary || "Active deals live now"}
           </button>
           <button
             onClick={() => navigate("/sell")}
             className="px-6 py-2.5 rounded-full border border-orange-400/40 text-orange-400 text-sm font-semibold hover:bg-orange-400/10 transition-colors flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
-            Sell My SaaS
+            {heroConfig.hero_cta_secondary || "Sell My SaaS"}
           </button>
 
         </motion.div>

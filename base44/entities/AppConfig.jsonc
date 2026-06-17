@@ -1,0 +1,55 @@
+{
+  "name": "AppConfig",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique config key (e.g. hero, stats_cards)"
+    },
+    "hero_badge_text": {
+      "type": "string",
+      "description": "Hero section badge text"
+    },
+    "hero_title_line1": {
+      "type": "string",
+      "description": "Hero headline line 1"
+    },
+    "hero_title_line2": {
+      "type": "string",
+      "description": "Hero headline line 2"
+    },
+    "hero_subtitle": {
+      "type": "string",
+      "description": "Hero subtitle/description"
+    },
+    "hero_cta_primary": {
+      "type": "string",
+      "description": "Primary CTA button text"
+    },
+    "hero_cta_secondary": {
+      "type": "string",
+      "description": "Secondary CTA button text"
+    },
+    "stat_card_1_label": {
+      "type": "string"
+    },
+    "stat_card_1_value": {
+      "type": "string"
+    },
+    "stat_card_2_label": {
+      "type": "string"
+    },
+    "stat_card_2_value": {
+      "type": "string"
+    },
+    "stat_card_3_label": {
+      "type": "string"
+    },
+    "stat_card_3_value": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "key"
+  ]
+}
