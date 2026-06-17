@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -365,8 +365,57 @@ export default function AdminPanel() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "users": case "invite": case "roles": case "access_logs":
-        return <UserManager />;
+      case "users":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <UserManager />
+          </motion.div>
+        );
+      case "invite":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <UserPlus className="w-4 h-4 text-violet-400" />Invite User
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Invite new users to the platform. User invitations are managed from the <span className="text-foreground font-medium">Users</span> section.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "roles":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />Roles & Permissions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Manage user roles (admin, user, vendor) and permissions. Role assignments are handled in the <span className="text-foreground font-medium">Users</span> section.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "access_logs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <FileText className="w-4 h-4 text-cyan-400" />Access Logs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Access logs tracking coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
       case "content":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -497,7 +546,70 @@ export default function AdminPanel() {
             </Card>
           </motion.div>
         );
-      case "hooks": case "subscriptions": case "invoices": case "coupons": case "payments":
+      case "hooks":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Ticket className="w-4 h-4 text-violet-400" />Deal Presets
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Deal presets management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "mktpl_templates":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Globe className="w-4 h-4 text-cyan-400" />Marketplace Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Marketplace template management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "pricing_presets":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Star className="w-4 h-4 text-amber-400" />Pricing Presets
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Pricing presets management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "email_templates":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <FileCode className="w-4 h-4 text-pink-400" />Email Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Email template management coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "subscriptions":
+      case "invoices":
+      case "coupons":
+      case "payments":
         return hooksContent;
       case "system":
         return systemContent;
