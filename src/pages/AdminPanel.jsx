@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, ChevronDown } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -11,6 +11,7 @@ import PlanManager from "@/components/admin/PlanManager";
 import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import DashboardEditor from "@/components/admin/DashboardEditor";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,16 +30,6 @@ export default function AdminPanel() {
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin";
-
-  const tabs = [
-    { id: "users", label: "Users", icon: Users },
-    { id: "content", label: "Content & Media", icon: Layers },
-    { id: "dashboard", label: "Dashboard & UI", icon: Globe },
-    { id: "hooks", label: "Hooks & Presets", icon: Ticket },
-    { id: "ai", label: "AI & Engine", icon: RefreshCw },
-    { id: "comms", label: "Comms & Mailing", icon: Mail },
-    { id: "system", label: "System & Config", icon: Gavel },
-  ];
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
 
@@ -372,9 +363,140 @@ export default function AdminPanel() {
     </>
   );
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "users": case "invite": case "roles": case "access_logs":
+        return <UserManager />;
+      case "content":
+        return contentMediaContent;
+      case "pending":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Clock className="w-4 h-4 text-amber-400" />Pending Approvals<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{pendingListings.length}</Badge></CardTitle>
+              </CardHeader>
+              <CardContent className="divide-y divide-border/20">
+                {pendingListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No pending listings</p> : pendingListings.map(l => (
+                  <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center"><Store className="w-4 h-4 text-violet-400" /></div>
+                      <div><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.sellerName || "Unknown"} · {l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()}</p></div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="text-muted-foreground hover:text-foreground h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleApprove(l)} className="text-emerald-400 hover:bg-emerald-500/10 h-8 text-xs"><CheckCircle className="w-3.5 h-3.5 mr-1" />Approve</Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="text-amber-400 hover:bg-amber-500/10 h-8 text-xs"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleReject(l)} className="text-red-400 hover:bg-red-500/10 h-8 text-xs"><Ban className="w-3.5 h-3.5 mr-1" />Reject</Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:bg-red-500/10 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "comms":
+        return (
+          <div className="space-y-5">
+            {commsContent}
+          </div>
+        );
+      case "acquisitions":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Building2 className="w-4 h-4 text-violet-400" />Acquisition Requests<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allAcquisitions.length}</Badge></CardTitle></CardHeader>
+              <CardContent className="divide-y divide-border/20">
+                {allAcquisitions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p> : allAcquisitions.map(a => (
+                  <div key={a.id} className="flex items-start justify-between py-3 gap-3">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{a.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{a.userEmail}</span></div>
+                      <p className="text-xs text-violet-400">{a.listingTitle || "Unknown Listing"}</p>
+                      <div className="flex items-center gap-3 flex-wrap">{a.offerAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${a.offerAmount?.toLocaleString()}</span>}{statusBadge(a.status)}</div>
+                      {a.notes && <div className="flex items-start gap-1 text-[11px] text-muted-foreground"><MessageSquare className="w-3 h-3 mt-0.5 shrink-0" /><span className="line-clamp-2">{a.notes}</span></div>}
+                    </div>
+                    <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                      {a.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
+                      <Button size="sm" variant="ghost" onClick={() => handleAcquisitionDelete(a)} className="text-red-400/50 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "bid_requests":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
+              <CardContent className="divide-y divide-border/20">
+                {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
+                  <div key={br.id} className="flex items-start justify-between py-3 gap-3">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span></div>
+                      <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
+                      <div className="flex items-center gap-3 flex-wrap">{br.bidAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${br.bidAmount?.toLocaleString()}</span>}{statusBadge(br.status)}</div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      {br.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
+                      <Button size="sm" variant="ghost" onClick={() => handleBidRequestDelete(br)} className="text-red-400/50 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "leads":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Store className="w-4 h-4 text-cyan-400" />Leads</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Leads management coming soon.</p></CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "hooks": case "subscriptions": case "invoices": case "coupons": case "payments":
+        return hooksContent;
+      case "system": case "notif_settings":
+        return systemContent;
+      case "email_settings": case "payment_settings":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Mail className="w-4 h-4 text-cyan-400" />{activeTab === "email_settings" ? "Email Settings" : "Payment Settings"}</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Configure in <span className="text-foreground font-medium">Admin Settings</span> page.</p></CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "dashboard":
+        return (
+          <div className="space-y-5">
+            <PlatformOverview />
+            <DashboardEditor />
+          </div>
+        );
+      case "ai": case "chat_monitor": case "analytics":
+        return aiContent;
+      case "stripe_int": case "razorpay_int": case "gmail_int": case "jvzoo_int": case "webhooks_int":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Zap className="w-4 h-4 text-orange-400" />Integrations</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Integration settings are managed via <span className="text-foreground font-medium">Admin Settings</span> and the platform dashboard.</p></CardContent>
+            </Card>
+          </motion.div>
+        );
+      default:
+        return <UserManager />;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Master Admin Panel Header */}
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
@@ -398,10 +520,8 @@ export default function AdminPanel() {
         {stats.map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
             <div className="bg-[#1a1a1a] border border-border/40 rounded-2xl p-5 hover:border-border/60 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className={`w-10 h-10 rounded-xl ${s.iconBg} flex items-center justify-center`}>
-                  <s.icon className={`w-5 h-5 ${s.iconColor}`} />
-                </div>
+              <div className={`w-10 h-10 rounded-xl ${s.iconBg} flex items-center justify-center`}>
+                <s.icon className={`w-5 h-5 ${s.iconColor}`} />
               </div>
               <p className="text-3xl font-display font-bold mt-3 text-foreground">{isLoading ? "—" : s.value}</p>
               <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
@@ -410,46 +530,17 @@ export default function AdminPanel() {
         ))}
       </div>
 
-      {/* Secondary Navigation Bar */}
-      <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <div className="flex gap-1 flex-wrap bg-[#1a1a1a] border border-border/40 rounded-2xl p-1.5">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-[#d93025] text-white shadow-lg shadow-red-500/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-[#252525]"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-                <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
+      {/* Sidebar + Content Layout */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Content Area */}
-      <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
-        {activeTab === "users" && <UserManager />}
-        {activeTab === "content" && contentMediaContent}
-        {activeTab === "dashboard" && (
-          <div className="space-y-5">
-            <PlatformOverview />
-            <DashboardEditor />
-          </div>
-        )}
-        {activeTab === "hooks" && hooksContent}
-        {activeTab === "ai" && aiContent}
-        {activeTab === "comms" && commsContent}
-        {activeTab === "system" && systemContent}
-      </motion.div>
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
+            {renderContent()}
+          </motion.div>
+        </div>
+      </div>
 
       {/* Edit Listing Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
