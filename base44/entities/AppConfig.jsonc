@@ -7,28 +7,22 @@
       "description": "Unique config key (e.g. hero, stats_cards)"
     },
     "hero_badge_text": {
-      "type": "string",
-      "description": "Hero section badge text"
+      "type": "string"
     },
     "hero_title_line1": {
-      "type": "string",
-      "description": "Hero headline line 1"
+      "type": "string"
     },
     "hero_title_line2": {
-      "type": "string",
-      "description": "Hero headline line 2"
+      "type": "string"
     },
     "hero_subtitle": {
-      "type": "string",
-      "description": "Hero subtitle/description"
+      "type": "string"
     },
     "hero_cta_primary": {
-      "type": "string",
-      "description": "Primary CTA button text"
+      "type": "string"
     },
     "hero_cta_secondary": {
-      "type": "string",
-      "description": "Secondary CTA button text"
+      "type": "string"
     },
     "stat_card_1_label": {
       "type": "string"
@@ -46,6 +40,52 @@
       "type": "string"
     },
     "stat_card_3_value": {
+      "type": "string"
+    },
+    "hero_bg_type": {
+      "type": "string",
+      "enum": [
+        "gradient",
+        "solid",
+        "image"
+      ],
+      "default": "gradient"
+    },
+    "hero_gradient_start": {
+      "type": "string",
+      "default": "#b43c0a"
+    },
+    "hero_gradient_middle": {
+      "type": "string",
+      "default": "#7c2a06"
+    },
+    "hero_gradient_end": {
+      "type": "string",
+      "default": "#0a0603"
+    },
+    "hero_gradient_direction": {
+      "type": "string",
+      "enum": [
+        "radial",
+        "to bottom",
+        "to right",
+        "diagonal"
+      ],
+      "default": "radial"
+    },
+    "hero_gradient_intensity": {
+      "type": "number",
+      "default": 35
+    },
+    "hero_bg_opacity": {
+      "type": "number",
+      "default": 100
+    },
+    "hero_bg_solid_color": {
+      "type": "string",
+      "default": "#0a0603"
+    },
+    "hero_bg_image_url": {
       "type": "string"
     }
   },

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid, Upload } from "lucide-react";
+import { buildHeroBackground } from "@/lib/heroBackground";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -82,7 +83,7 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative py-20 px-4 text-center overflow-hidden rounded-2xl mb-2"
-        style={{ background: "radial-gradient(ellipse at 50% 60%, rgba(180,60,10,0.35) 0%, rgba(10,6,3,0) 70%)" }}
+        style={buildHeroBackground(heroConfig)}
       >
         {/* Badge */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
