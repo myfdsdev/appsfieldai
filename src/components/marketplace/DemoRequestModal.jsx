@@ -20,14 +20,24 @@ export default function DemoRequestModal({ listing, open, onClose }) {
   });
 
   useEffect(() => {
-    if (currentUser?.full_name) setForm((f) => ({ ...f, name: currentUser.full_name }));
-    if (currentUser?.email) setForm((f) => ({ ...f, email: currentUser.email }));
-  }, [currentUser]);
+    if (currentUser && open) {
+      setForm((f) => ({
+        ...f,
+        name: f.name || currentUser.full_name || "",
+        email: f.email || currentUser.email || "",
+      }));
+    }
+  }, [currentUser, open]);
 
   // Reset form when modal opens with a different listing
   useEffect(() => {
     if (open) {
-      setForm({ name: "", email: "", phone: "", message: "" });
+      setForm({
+        name: currentUser?.full_name || "",
+        email: currentUser?.email || "",
+        phone: "",
+        message: "",
+      });
       setSubmitted(false);
     }
   }, [open, listing?.id]);
@@ -76,7 +86,7 @@ export default function DemoRequestModal({ listing, open, onClose }) {
               <Video className="w-5 h-5 text-blue-400" />
               <h3 className="text-lg font-display font-bold">Request a Demo</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">{listing?.softwareName || listing?.title}</p>
+            <p className="text-xs text-muted-foreground mb-4">{listing?.softwareName || listing?.title || "Software Demo Request"}</p>
             <div className="space-y-3">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name *" className="bg-secondary/50 border-border/30 rounded-xl h-9 text-sm" />
               <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Your email *" type="email" className="bg-secondary/50 border-border/30 rounded-xl h-9 text-sm" />
