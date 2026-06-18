@@ -34,6 +34,7 @@ import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import { PageLoader } from '@/components/Loader';
+import RootRedirect from '@/components/RootRedirect';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -68,7 +69,7 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       {/* Public routes — accessible without login */}
       <Route element={<DashboardLayout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/saas/:id" element={<SaaSDetail />} />
         <Route path="/auctions" element={<LiveAuctions />} />
