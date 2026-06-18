@@ -120,10 +120,10 @@ export default function VendorDashboard() {
           <p className="text-sm text-muted-foreground mt-1">Manage your software, track sales and respond to customers.</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate("/vendor/register")} variant="outline" className="rounded-xl gap-1.5 h-9 text-xs">
+          <Button onClick={() => { console.log("Navigate to vendor/register"); navigate("/vendor/register"); }} variant="outline" className="rounded-xl gap-1.5 h-9 text-xs pointer-events-auto">
             <Plus className="w-3.5 h-3.5" /> Register on New Marketplace
           </Button>
-          <Button onClick={() => navigate("/sell")} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 h-9 text-xs">
+          <Button onClick={() => { console.log("Navigate to sell"); navigate("/sell"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 h-9 text-xs pointer-events-auto">
             <Plus className="w-3.5 h-3.5" /> Submit Software
           </Button>
         </div>
