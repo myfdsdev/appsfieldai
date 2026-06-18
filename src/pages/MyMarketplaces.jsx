@@ -106,7 +106,7 @@ export default function MyMarketplaces() {
   };
 
   if (!canCreateMarketplace) {
-    return <PlanLimitGuard resourceType="marketplace" currentCount={getMarketplaceCount()} limit={limits.marketplaceLimit} />;
+    return <PlanLimitGuard resource="marketplace" onBack={() => navigate(-1)} />;
   }
 
   return (
