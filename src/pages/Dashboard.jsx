@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid, Upload } from "lucide-react";
+import { useAuthGate } from "@/hooks/useAuthGate";
 import { buildHeroBackground } from "@/lib/heroBackground";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -75,6 +76,14 @@ export default function Dashboard() {
   });
 
   const handleBuySuccess = () => queryClient.invalidateQueries({ queryKey: ["saasListings"] });
+  const authGate = useAuthGate();
+
+  const handleReserveSpot = async (listing) => {
+    if (await authGate()) setReserveSpotListing(listing);
+  };
+  const handleRequestAcq = async (listing) => {
+    if (await authGate()) setRequestAcqListing(listing);
+  };
 
   return (
     <div className="space-y-0">
@@ -220,8 +229,8 @@ export default function Dashboard() {
                 marketplaceName={marketplaceMap[l.marketplaceId]}
                 delay={i * 0.04}
                 onViewDetails={setViewDetailListing}
-                onReserveSpot={setReserveSpotListing}
-                onRequestAcquisition={setRequestAcqListing}
+                onReserveSpot={handleReserveSpot}
+                onRequestAcquisition={handleRequestAcq}
                 onRequestDemo={setDemoRequestListing}
               />
             ))}

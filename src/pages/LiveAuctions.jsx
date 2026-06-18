@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Gavel, Clock, TrendingUp, Zap, Users, ArrowUpRight } from "lucide-react";
+import { useAuthGate } from "@/hooks/useAuthGate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -46,8 +47,14 @@ export default function LiveAuctions() {
     queryFn: () => base44.entities.SaaSListing.filter({ status: "auction" }),
   });
 
+  const authGate = useAuthGate();
+
   const handleBidSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["auctionListings"] });
+  };
+
+  const handlePlaceBid = async (listing) => {
+    if (await authGate()) setBidListing(listing);
   };
 
   return (
@@ -144,7 +151,7 @@ export default function LiveAuctions() {
                     {/* Place Bid Button */}
                     <Button
                       className="w-full bg-[#FF8C00] hover:bg-[#e67e00] text-white rounded-xl h-10 text-sm font-semibold border-0 shadow-lg shadow-orange-500/20"
-                      onClick={() => setBidListing(listing)}
+                      onClick={() => handlePlaceBid(listing)}
                     >
                       <Gavel className="w-4 h-4 mr-2" /> Place Bid
                     </Button>

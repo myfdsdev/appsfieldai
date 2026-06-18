@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import PlaceBidModal from "@/components/marketplace/PlaceBidModal";
+import { useAuthGate } from "@/hooks/useAuthGate";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -118,10 +119,16 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
     enabled: !!listing,
   });
 
+  const authGate = useAuthGate();
+
   const handleSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["saasListing", listingId] });
     queryClient.invalidateQueries({ queryKey: ["saasListings"] });
   };
+
+  const handleReserveSpot = async (l) => { if (await authGate()) setReserveSpotListing(l); };
+  const handleRequestAcq = async (l) => { if (await authGate()) setRequestAcqListing(l); };
+  const handlePlaceBid = async (l) => { if (await authGate()) setPlaceBidListing(l); };
 
   if (!open) return null;
 
@@ -290,21 +297,21 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                       {listing.status === "auction" && (
                         <Button
                           className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
-                          onClick={() => setPlaceBidListing(listing)}
+                          onClick={() => handlePlaceBid(listing)}
                         >
                           <Gavel className="w-4 h-4 mr-1.5" /> Place Bid
                         </Button>
                       )}
                       <Button
                         className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-9 font-semibold text-sm text-white border-0"
-                        onClick={() => setReserveSpotListing(listing)}
+                        onClick={() => handleReserveSpot(listing)}
                       >
                         <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
                       </Button>
                       <Button
                         variant="outline"
                         className="w-full border-violet-500/50 text-violet-400 hover:bg-violet-500/10 rounded-xl h-9 text-sm"
-                        onClick={() => setRequestAcqListing(listing)}
+                        onClick={() => handleRequestAcq(listing)}
                       >
                         <Building2 className="w-4 h-4 mr-1.5" /> Request Acquisition
                       </Button>
