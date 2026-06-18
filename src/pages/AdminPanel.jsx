@@ -574,8 +574,9 @@ export default function AdminPanel() {
                       <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
                       <div className="flex items-center gap-3 flex-wrap">{br.bidAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${br.bidAmount?.toLocaleString()}</span>}{statusBadge(br.status)}</div>
                     </div>
-                    <div className="flex gap-1 shrink-0">
-                      {br.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
+                    <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                      {br.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" />Contacted</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
+                      {br.status === "approved" && <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" />Contacted</Button>}
                       <Button size="sm" variant="ghost" onClick={() => handleBidRequestDelete(br)} className="text-red-400/50 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   </div>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserPlus, ShieldCheck, FileText,
-  Store, Clock, Layers, Image, Building2,
+  Store, Clock, Layers, Image, Building2, Gavel,
   Bell, Mail, Smartphone, Settings,
   Ticket, Globe, Star, FileCode,
   Bot, Database, Sparkles, Workflow,
@@ -30,6 +30,7 @@ const NAV_GROUPS = [
   { id: "pending",        label: "Pending Approvals", icon: Clock },
   { id: "reservations",   label: "Reservations",      icon: Users },
   { id: "acquisitions",   label: "Acquisitions",      icon: Building2 },
+  { id: "bid_requests",   label: "Bid Requests",       icon: Gavel },
   { id: "templates",      label: "Templates",         icon: Layers },
   { id: "media",          label: "Media Library",     icon: Image },
   ],

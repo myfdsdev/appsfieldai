@@ -4,13 +4,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   X, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2,
-  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight
+  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight, Hammer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
+import PlaceBidModal from "@/components/marketplace/PlaceBidModal";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -100,6 +101,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
   const queryClient = useQueryClient();
   const [reserveSpotListing, setReserveSpotListing] = useState(null);
   const [requestAcqListing, setRequestAcqListing] = useState(null);
+  const [placeBidListing, setPlaceBidListing] = useState(null);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["saasListing", listingId],
@@ -285,6 +287,14 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                   {/* Action Buttons */}
                   {!isSold ? (
                     <div className="space-y-2 pt-1">
+                      {listing.status === "auction" && (
+                        <Button
+                          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
+                          onClick={() => setPlaceBidListing(listing)}
+                        >
+                          <Gavel className="w-4 h-4 mr-1.5" /> Place Bid
+                        </Button>
+                      )}
                       <Button
                         className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-9 font-semibold text-sm text-white border-0"
                         onClick={() => setReserveSpotListing(listing)}
@@ -320,6 +330,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
 
       <ReserveSpotModal listing={reserveSpotListing} open={!!reserveSpotListing} onClose={() => setReserveSpotListing(null)} />
       <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
+      <PlaceBidModal listing={placeBidListing} open={!!placeBidListing} onClose={() => setPlaceBidListing(null)} />
     </AnimatePresence>
   );
 }

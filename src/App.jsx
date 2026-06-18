@@ -108,6 +108,8 @@ const AuthenticatedApp = () => {
       <Route path="/adminpanel" element={<Navigate to="/admin" replace />} />
       <Route path="/AdminHub" element={<Navigate to="/admin" replace />} />
       <Route path="/adminhub" element={<Navigate to="/admin" replace />} />
+      <Route path="/AdminReservations" element={<Navigate to="/admin/marketplace/reservations" replace />} />
+      <Route path="/adminreservations" element={<Navigate to="/admin/marketplace/reservations" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
