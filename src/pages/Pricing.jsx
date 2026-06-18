@@ -89,32 +89,25 @@ export default function Pricing() {
     }
     setLoadingPlan(plan.id);
     try {
-      const now = new Date();
-      const periodEnd = new Date(now);
-      if (billing === "monthly") periodEnd.setMonth(periodEnd.getMonth() + 1);
-      else periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-
-      // Cancel any existing active subscription
-      if (activeSub?.length > 0) {
-        for (const sub of activeSub) {
-          await base44.entities.UserSubscription.update(sub.id, { status: "cancelled" });
-        }
+      // Check if running in iframe
+      if (window.self !== window.top) {
+        toast.error("Checkout is only available in the published app, not in preview frames.");
+        setLoadingPlan(null);
+        return;
       }
 
-      await base44.entities.UserSubscription.create({
-        userId: currentUser.id,
-        planId: plan.id,
-        planName: plan.name,
-        billingCycle: billing,
-        status: "active",
-        currentPeriodStart: now.toISOString(),
-        currentPeriodEnd: periodEnd.toISOString(),
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["userSubscription"] });
-      toast.success(`🎉 You're now on the ${plan.name} plan!`);
+      // Invoke Stripe checkout backend function
+      const planKey = `${plan.id}_${billing}`;
+      const response = await base44.functions.invoke("stripeSubscribe", { planKey });
+      
+      if (response.url) {
+        window.location.href = response.url;
+      } else {
+        toast.error("Failed to start checkout. Please try again.");
+      }
     } catch (e) {
-      toast.error("Something went wrong. Please try again.");
+      console.error("Checkout error:", e);
+      toast.error(e.message || "Something went wrong. Please try again.");
     }
     setLoadingPlan(null);
   };

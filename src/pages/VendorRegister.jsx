@@ -42,6 +42,17 @@ export default function VendorRegister() {
       toast.error("Please fill all required fields");
       return;
     }
+    // Backend validation - security check
+    try {
+      const validation = await base44.functions.invoke("validatePlanLimits", { resourceType: "vendor" });
+      if (!validation.allowed) {
+        toast.error(validation.message || "Plan limit reached. Please upgrade your plan.");
+        return;
+      }
+    } catch (e) {
+      toast.error("Failed to validate plan limits");
+      return;
+    }
     setLoading(true);
     const payload = {
       marketplaceId: form.marketplaceId,

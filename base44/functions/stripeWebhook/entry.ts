@@ -25,7 +25,47 @@ Deno.serve(async (req) => {
       const session = event.data.object;
       if (session.mode === 'subscription') {
         const { userId, marketplaceId, planKey } = session.metadata || {};
-        console.log(`Subscription: user=${userId}, plan=${planKey}, marketplace=${marketplaceId}`);
+        console.log(`Subscription checkout: user=${userId}, plan=${planKey}, marketplace=${marketplaceId}`);
+        
+        if (userId) {
+          // Parse planKey (e.g., "pro_monthly")
+          const [planId, billingCycle] = (planKey || '').split('_');
+          const planMap = {
+            starter: { name: 'Starter', monthlyPrice: 49, yearlyPrice: 490 },
+            pro: { name: 'Pro', monthlyPrice: 149, yearlyPrice: 1490 },
+            agency: { name: 'Agency', monthlyPrice: 399, yearlyPrice: 3990 },
+            enterprise: { name: 'Enterprise', monthlyPrice: 999, yearlyPrice: 9990 },
+          };
+          const plan = planMap[planId];
+          
+          if (plan) {
+            const now = new Date();
+            const periodEnd = new Date(now);
+            if (billingCycle === 'yearly') periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+            else periodEnd.setMonth(periodEnd.getMonth() + 1);
+            
+            // Cancel existing subscriptions
+            const existingSubs = await base44.asServiceRole.entities.UserSubscription.filter({ userId, status: "active" });
+            for (const sub of existingSubs) {
+              await base44.asServiceRole.entities.UserSubscription.update(sub.id, { status: "cancelled" });
+            }
+            
+            // Create new subscription
+            await base44.asServiceRole.entities.UserSubscription.create({
+              userId,
+              planId,
+              planName: plan.name,
+              billingCycle: billingCycle || 'monthly',
+              status: "active",
+              currentPeriodStart: now.toISOString(),
+              currentPeriodEnd: periodEnd.toISOString(),
+              stripeSubscriptionId: session.subscription || '',
+            });
+            
+            console.log(`Created subscription for user ${userId}: ${plan.name} (${billingCycle})`);
+          }
+        }
+        
         if (marketplaceId) {
           await base44.asServiceRole.entities.Marketplace.update(marketplaceId, { status: "active" });
         }
