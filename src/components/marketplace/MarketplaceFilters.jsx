@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Grid3x3, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -113,7 +113,27 @@ export default function MarketplaceFilters({
           </SelectContent>
         </Select>
 
-
+        {/* Grid/List Toggle */}
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            onClick={() => setGridCols(3)}
+            className={`p-1.5 rounded-lg transition-all ${
+              gridCols === 3 ? "bg-violet-500/20 text-violet-400" : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Grid view (3 columns)"
+          >
+            <Grid3x3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setGridCols(4)}
+            className={`p-1.5 rounded-lg transition-all ${
+              gridCols === 4 ? "bg-violet-500/20 text-violet-400" : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Grid view (4 columns)"
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video, Hammer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onPlaceBid }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
   const { softwareName, category, sellerName, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
@@ -169,9 +169,15 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-            Reserve Spot
-          </Button>
+          {status === "auction" && !isSold ? (
+            <Button size="sm" onClick={() => onPlaceBid?.(listing)} className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 rounded-lg text-[11px] h-8 text-white border-0">
+              <Hammer className="w-3 h-3 mr-1" /> Place Bid
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+              Reserve Spot
+            </Button>
+          )}
           <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Request Acquisition
           </Button>
