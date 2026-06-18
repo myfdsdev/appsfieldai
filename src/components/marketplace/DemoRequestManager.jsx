@@ -14,7 +14,7 @@ const statusMap = {
   cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
-export default function DemoRequestManager({ marketplaceId }) {
+export default function DemoRequestManager({ marketplaceId, onStatusChange }) {
   const queryClient = useQueryClient();
   const [actionLoading, setActionLoading] = useState(null);
 
@@ -32,6 +32,8 @@ export default function DemoRequestManager({ marketplaceId }) {
     try {
       await base44.entities.DemoRequests.update(req.id, { status });
       queryClient.invalidateQueries({ queryKey: ["demoRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["myDemoRequests"] });
+      if (onStatusChange) await onStatusChange(req, status);
       toast.success(`Demo request marked as ${status}.`);
     } catch (err) {
       toast.error("Failed to update status.");
