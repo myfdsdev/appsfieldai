@@ -25,6 +25,14 @@ export default function MyInvestments() {
     },
   });
 
+  const { data: ownershipTransactions = [] } = useQuery({
+    queryKey: ["myOwnershipTx"],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.Transaction.filter({ userId: user.id, type: "ownership_purchase" }, ["-created_date"], 50);
+    },
+  });
+
   const { data: transactions = [], isLoading: loadingTx } = useQuery({
     queryKey: ["myTransactions"],
     queryFn: async () => {
@@ -82,7 +90,17 @@ export default function MyInvestments() {
     })),
   [holdings, listingTitles]);
 
-  const totalFullOwnership = fullOwnerships.reduce((s, p) => s + (p.fullPrice || 0), 0);
+  // Combine OwnershipPurchase entity records + ownership_purchase Transaction records (avoid double count by using whichever has data)
+  const allFullOwnerships = fullOwnerships.length > 0 ? fullOwnerships : ownershipTransactions.map(t => ({
+    id: t.id,
+    listingId: t.listingId,
+    listingTitle: t.listingTitle,
+    fullPrice: Math.abs(t.amount),
+    status: t.status,
+    created_date: t.created_date,
+  }));
+
+  const totalFullOwnership = allFullOwnerships.reduce((s, p) => s + (p.fullPrice || Math.abs(p.amount || 0)), 0);
   const totalInvested = enrichedHoldings.reduce((s, h) => s + h.totalInvested, 0) + totalFullOwnership;
   const totalShares = enrichedHoldings.reduce((s, h) => s + h.totalShares, 0);
   const estimatedValue = totalInvested * 1.15; // placeholder: 15% growth assumption
@@ -94,6 +112,7 @@ export default function MyInvestments() {
   const txTypeMeta = {
     share_purchase: { label: "Share Purchase", color: "text-cyan-400", icon: ArrowDownRight },
     full_ownership_purchase: { label: "Full Ownership", color: "text-violet-400", icon: ArrowDownRight },
+    ownership_purchase: { label: "Full Ownership", color: "text-violet-400", icon: ArrowDownRight },
     deposit: { label: "Deposit", color: "text-emerald-400", icon: ArrowUpRight },
     withdrawal: { label: "Withdrawal", color: "text-red-400", icon: ArrowDownRight },
     dividend: { label: "Dividend", color: "text-emerald-400", icon: ArrowUpRight },
@@ -194,11 +213,11 @@ export default function MyInvestments() {
       </div>
 
       {/* Full Ownership Purchases */}
-      {fullOwnerships.length > 0 && (
+      {allFullOwnerships.length > 0 && (
         <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
           <CardHeader><CardTitle className="text-base font-display">Full Ownership Purchases</CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/30">
-            {fullOwnerships.map((p, i) => (
+            {allFullOwnerships.map((p, i) => (
               <motion.div
                 key={p.id}
                 initial={{ opacity: 0, x: -10 }}
