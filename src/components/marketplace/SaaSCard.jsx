@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video, Hammer } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onPlaceBid }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
   const { softwareName, category, sellerName, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
@@ -89,7 +89,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         <span className="relative text-white font-display font-bold text-xl text-center px-4 leading-tight drop-shadow-lg">{title}</span>
 
         {/* Hover overlay with "View Details" */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-250 pointer-events-none">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-250">
           <div className="flex items-center gap-2 bg-white text-black font-semibold text-sm px-5 py-2 rounded-full shadow-lg">
             <ExternalLink className="w-4 h-4" />
             View Details
@@ -168,16 +168,10 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2 pt-1 mt-auto pointer-events-auto">
-          {status === "auction" && !isSold ? (
-            <Button size="sm" onClick={(e) => { e.stopPropagation(); onPlaceBid?.(listing); }} className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 rounded-lg text-[11px] h-8 text-white border-0">
-              <Hammer className="w-3 h-3 mr-1" /> Place Bid
-            </Button>
-          ) : (
-            <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-              Reserve Spot
-            </Button>
-          )}
+        <div className="flex gap-2 pt-1 mt-auto">
+          <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+            Reserve Spot
+          </Button>
           <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Request Acquisition
           </Button>

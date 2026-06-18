@@ -186,14 +186,13 @@ Deno.serve(async (req) => {
 
     if (!subject) return Response.json({ success: true });
 
-    // Send email via centralized sender (logs automatically)
+    // Send email (non-blocking — failure should not prevent in-app notification)
     try {
-      await base44.functions.invoke("sendEmail", {
+      await base44.asServiceRole.integrations.Core.SendEmail({
         to: userEmail,
         subject,
         body: bodyHtml,
-        type: status === "approved" ? "request_approved_user" : status === "rejected" ? "request_rejected_user" : "request_contacted_user",
-        relatedRequestId: requestId || "",
+        isHtml: true,
       });
     } catch (e) {
       console.error("Email send failed:", e.message);

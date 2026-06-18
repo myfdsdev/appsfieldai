@@ -14,8 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import AIValuationTool from "@/components/marketplace/AIValuationTool";
-import PlanLimitGuard from "@/components/PlanLimitGuard";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const CATEGORIES = ["CRM", "AI & ML", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance"];
 
@@ -40,7 +38,6 @@ export default function SellMySaaS() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
-  const { canCreateListing } = usePlanLimits();
 
   const { data: approvedVendors = [] } = useQuery({
     queryKey: ["myApprovedVendors"],
@@ -81,18 +78,6 @@ export default function SellMySaaS() {
     if (!validateStep(2)) {
       toast.error("Please complete all required pricing fields before submitting.");
       setStep(2);
-      return;
-    }
-    // Backend validation - security check
-    try {
-      const validation = await base44.functions.invoke("validatePlanLimits", { resourceType: "listing" });
-      if (!validation.allowed) {
-        toast.error(validation.message || "Plan limit reached. Please upgrade your plan.");
-        return;
-      }
-    } catch (e) {
-      toast.error("Failed to validate plan limits");
-      setLoading(false);
       return;
     }
     setLoading(true);
@@ -181,10 +166,6 @@ export default function SellMySaaS() {
   };
 
   const fieldError = (name) => errors[name] ? "border-red-500/50" : "";
-
-  if (!canCreateListing) {
-    return <PlanLimitGuard resource="listing" onBack={() => navigate(-1)} />;
-  }
 
   return (
     <div className="space-y-6 max-w-3xl">

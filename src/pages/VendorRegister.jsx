@@ -9,8 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import PlanLimitGuard from "@/components/PlanLimitGuard";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 export default function VendorRegister() {
   const navigate = useNavigate();
@@ -33,24 +31,12 @@ export default function VendorRegister() {
     queryKey: ["multiVendorMarketplaces"],
     queryFn: () => base44.entities.Marketplace.filter({ type: "multi_vendor", status: "active" }),
   });
-  const { canCreateVendor } = usePlanLimits();
 
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
   const handleSubmit = async () => {
     if (!form.marketplaceId || !form.vendorName || !form.email) {
       toast.error("Please fill all required fields");
-      return;
-    }
-    // Backend validation - security check
-    try {
-      const validation = await base44.functions.invoke("validatePlanLimits", { resourceType: "vendor" });
-      if (!validation.allowed) {
-        toast.error(validation.message || "Plan limit reached. Please upgrade your plan.");
-        return;
-      }
-    } catch (e) {
-      toast.error("Failed to validate plan limits");
       return;
     }
     setLoading(true);
@@ -69,10 +55,6 @@ export default function VendorRegister() {
     setSubmitted(true);
     toast.success("Application submitted! Awaiting marketplace owner approval.");
   };
-
-  if (!canCreateVendor) {
-    return <PlanLimitGuard resource="vendor" onBack={() => navigate(-1)} />;
-  }
 
   if (submitted) {
     return (

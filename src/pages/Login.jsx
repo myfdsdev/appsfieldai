@@ -14,7 +14,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const nextUrl = new URLSearchParams(window.location.search).get("next") || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +32,7 @@ export default function Login() {
         loginTime: new Date().toISOString(),
       }).catch(() => {});
       toast({ title: "Welcome back!", description: "Login successful. Redirecting..." });
-      setTimeout(() => { window.location.href = nextUrl; }, 600);
+      setTimeout(() => { window.location.href = "/"; }, 600);
     } catch (err) {
       const msg = err.message || "";
       if (msg.includes("Invalid login credentials") || msg.includes("invalid")) {
@@ -47,7 +46,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", nextUrl);
+    base44.auth.loginWithProvider("google", "/");
   };
 
   return (

@@ -159,7 +159,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
         userEmail: userEmail.trim(),
         userPhone: userPhone.trim(),
         listingId: listing.id,
-        listingTitle: listing.softwareName || listing.title || listing.name || "",
+        listingTitle: listing.title,
         bidAmount: amount,
         status: "pending",
         message: message.trim(),
@@ -174,7 +174,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
             role: "admin",
             type: "listing_submitted",
             title: "New Bid Received",
-            message: `${userName.trim()} bid $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}"`,
+            message: `${userName.trim()} bid $${amount.toLocaleString()} on "${listing.title}"`,
             listingId: listing.id,
             relatedRequestId: bidReq.id,
             isRead: false,
@@ -187,9 +187,9 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
         await base44.entities.Notification.create({
           userId,
           role: "user",
-          type: "bid_submitted",
+          type: "reserve_submitted",
           title: "Bid Submitted",
-          message: `Your bid of $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}" has been submitted. Admin will review and contact you if shortlisted.`,
+          message: `Your bid of $${amount.toLocaleString()} on "${listing.title}" has been submitted. Admin will review and contact you if shortlisted.`,
           listingId: listing.id,
           relatedRequestId: bidReq.id,
           isRead: false,
@@ -198,25 +198,12 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
 
       toast.success("Your bid has been submitted. Admin will review and contact you if shortlisted.");
 
-      const listingName = listing.softwareName || listing.title || listing.name;
-      // Admin email via centralized sender
+      // Send confirmation email to bidder
       try {
-        await base44.functions.invoke("sendEmail", {
-          to: import.meta.env.VITE_ADMIN_EMAIL || "admin@saasshare.com",
-          subject: `New Bid: $${amount.toLocaleString()} on ${listingName}`,
-          body: `<p><strong>${userName.trim()}</strong> (${userEmail.trim()}) placed a bid of <strong>$${amount.toLocaleString()}</strong> on <strong>${listingName}</strong>.</p><p>Review in Admin Panel.</p>`,
-          type: "bid_request_admin",
-          relatedRequestId: bidReq?.id || "",
-        });
-      } catch (_) {}
-      // Confirmation email to bidder
-      try {
-        await base44.functions.invoke("sendEmail", {
+        await base44.integrations.Core.SendEmail({
           to: userEmail.trim(),
-          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listingName}`,
-          body: `<p>Hi ${userName.trim()},</p><p>Your bid of <strong>$${amount.toLocaleString()}</strong> on <strong>${listingName}</strong> has been submitted. Our team will review and contact you if shortlisted.</p><p>— The SaaSShare Team</p>`,
-          type: "bid_request_admin",
-          relatedRequestId: bidReq?.id || "",
+          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listing.title}`,
+          body: `Hi ${userName.trim()},\n\nYour bid of $${amount.toLocaleString()} on "${listing.title}" has been submitted successfully.\n\nOur team will review your bid and contact you if shortlisted.\n\nThank you,\nSaaSShare Team`,
         });
       } catch (_) {}
 
@@ -262,7 +249,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
               </div>
               <div className="min-w-0">
                 <h2 className="font-display font-bold text-sm">Place a Bid</h2>
-                <p className="text-xs text-muted-foreground truncate">{listing.softwareName || listing.title || listing.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{listing.title}</p>
               </div>
             </div>
 

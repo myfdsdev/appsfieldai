@@ -11,7 +11,6 @@ const typeConfig = {
   share_purchased:     { icon: Users, color: "bg-violet-500/10 text-violet-400" },
   ownership_sold:      { icon: Building2, color: "bg-cyan-500/10 text-cyan-400" },
   reserve_submitted:   { icon: CalendarCheck, color: "bg-violet-500/10 text-violet-400" },
-  bid_submitted:       { icon: Gavel, color: "bg-amber-500/10 text-amber-400" },
   acquisition_submitted:{ icon: Building2, color: "bg-blue-500/10 text-blue-400" },
   request_approved:    { icon: CheckCircle, color: "bg-emerald-500/10 text-emerald-400" },
   request_rejected:    { icon: Ban, color: "bg-red-500/10 text-red-400" },

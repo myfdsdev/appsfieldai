@@ -2,14 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserPlus, ShieldCheck, FileText,
-  Store, Clock, Layers, Image, Building2, Gavel, Video,
+  Store, Clock, Layers, Image, Building2,
   Bell, Mail, Smartphone, Settings,
   Ticket, Globe, Star, FileCode,
   Bot, Database, Sparkles, Workflow,
   MessageSquare, AtSign, FileStack, ContactRound,
   SlidersHorizontal, CreditCard, Link, Webhook,
   ChevronDown, Plug, MailCheck, ShoppingBag, LayoutDashboard, Palette,
-  ClipboardList, TrendingUp, UserCheck,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -28,12 +27,9 @@ const NAV_GROUPS = [
   label: "Content & Media",
   items: [
   { id: "content",        label: "SaaS Listings",     icon: Store },
-  { id: "vendors",        label: "Vendors",           icon: UserCheck },
   { id: "pending",        label: "Pending Approvals", icon: Clock },
   { id: "reservations",   label: "Reservations",      icon: Users },
   { id: "acquisitions",   label: "Acquisitions",      icon: Building2 },
-  { id: "bid_requests",   label: "Bid Requests",       icon: Gavel },
-  { id: "demo_requests",  label: "Demo Requests",      icon: Video },
   { id: "templates",      label: "Templates",         icon: Layers },
   { id: "media",          label: "Media Library",     icon: Image },
   ],
@@ -94,8 +90,6 @@ const NAV_GROUPS = [
     label: "Dashboard & UI",
     items: [
       { id: "dashboard",       label: "Dashboard Editor",    icon: LayoutDashboard },
-      { id: "analytics",       label: "Analytics",           icon: TrendingUp },
-      { id: "media",           label: "Media Library",       icon: Image },
       { id: "hero_background", label: "Hero Background",     icon: Palette },
     ],
   },
@@ -108,7 +102,6 @@ const NAV_GROUPS = [
       { id: "domain_settings",  label: "Domain Settings",  icon: Globe },
       { id: "stripe_int",       label: "Integrations",     icon: Link },
       { id: "webhooks_int",     label: "Webhooks",         icon: Webhook },
-      { id: "audit_logs",       label: "Audit Logs",       icon: ClipboardList },
     ],
   },
 ];

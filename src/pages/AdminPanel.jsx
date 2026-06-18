@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound, Calendar, UserCheck } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound, Calendar } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -15,13 +15,6 @@ import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
-import DemoRequestManager from "@/components/marketplace/DemoRequestManager";
-import EmailLogsViewer from "@/components/admin/EmailLogsViewer";
-import AuditLogsViewer from "@/components/admin/AuditLogsViewer";
-import MediaLibrary from "@/components/admin/MediaLibrary";
-import AdminAnalytics from "@/components/admin/AdminAnalytics";
-import VendorManagement from "@/components/vendor/VendorManagement";
-import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,28 +36,19 @@ export default function AdminPanel() {
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
 
-  const { data: allListings = [], isLoading } = useQuery({ queryKey: ["allListings"], queryFn: () => base44.entities.SaaSListing.filter({}, undefined, 500), staleTime: 0 });
+  const { data: allListings = [], isLoading } = useQuery({ queryKey: ["allListings"], queryFn: () => base44.entities.SaaSListing.list() });
   const { data: allBids = [] } = useQuery({ queryKey: ["allBids"], queryFn: () => base44.entities.Bid.filter({}, ["-created_date"], 100) });
   const { data: allUsers = [] } = useQuery({ queryKey: ["allUsers"], queryFn: () => base44.entities.User.list() });
   const { data: allTransactions = [] } = useQuery({ queryKey: ["allTransactions"], queryFn: () => base44.entities.Transaction.filter({}, ["-created_date"], 100) });
   const { data: allReservations = [] } = useQuery({ queryKey: ["allReservations"], queryFn: () => base44.entities.DealReservations.list("-created_date", 100) });
   const { data: allAcquisitions = [] } = useQuery({ queryKey: ["allAcquisitions"], queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100) });
-  const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.filter({}, ["-created_date"], 500), staleTime: 0 });
-  const { data: allVendors = [] } = useQuery({ queryKey: ["allVendors"], queryFn: () => base44.entities.Vendor.filter({}, ["-appliedAt"], 500), staleTime: 0 });
+  const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 100) });
 
   const enrichedBids = useMemo(() => {
     const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Untitled");
     const um = {}; allUsers.forEach(u => um[u.id] = u.full_name || u.email);
     return allBids.map(b => ({ ...b, listingTitle: lm[b.listingId] || "Unknown", bidderName: um[b.userId] || "Unknown" }));
   }, [allBids, allListings, allUsers]);
-
-  const enrichedBidRequests = useMemo(() => {
-    const lm = {}; allListings.forEach(l => lm[l.id] = l);
-    return allBidRequests.map(br => ({
-      ...br,
-      listingTitle: br.listingTitle || lm[br.listingId]?.softwareName || lm[br.listingId]?.name || "Untitled Listing",
-    }));
-  }, [allBidRequests, allListings]);
 
   const pendingListings = allListings.filter(l => l.status === "pending");
   const auctionListings = allListings.filter(l => l.status === "auction");
@@ -84,10 +68,10 @@ export default function AdminPanel() {
     toast.success("Data refreshed");
   };
 
-  const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); logAdminAction({ admin: currentUser, action: "approve_listing", targetType: "SaaSListing", targetId: l.id, details: `Approved listing "${l.softwareName || "Untitled"}"` }); };
-  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); logAdminAction({ admin: currentUser, action: "approve_listing", targetType: "SaaSListing", targetId: l.id, details: `Started auction for "${l.softwareName || "Untitled"}"` }); };
-  const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" rejected`); logAdminAction({ admin: currentUser, action: "reject_listing", targetType: "SaaSListing", targetId: l.id, details: `Rejected listing "${l.softwareName || "Untitled"}"` }); };
-  const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" deleted`); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "SaaSListing", targetId: l.id, details: `Deleted listing "${l.softwareName || "Untitled"}"` }); };
+  const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); };
+  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); };
+  const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" rejected`); };
+  const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" deleted`); };
   const openEdit = (l) => { setEditListing(l); setEditForm({ softwareName: l.softwareName || "", category: l.category || "", sharePrice: l.sharePrice || 0, totalShares: l.totalShares || 0, monthlyRevenue: l.monthlyRevenue || 0, monthlyExpenses: l.monthlyExpenses || 0, growthRate: l.growthRate || 0, shortDescription: l.shortDescription || "", fullDescription: l.fullDescription || "", auctionEndsAt: l.auctionEndsAt || "", status: l.status || "pending", features: l.features || [], rating: l.rating || 5 }); };
   const handleEditSave = async () => {
     if (!editListing) return;
@@ -108,30 +92,24 @@ export default function AdminPanel() {
     queryClient.invalidateQueries({ queryKey: ["allReservations"] });
     toast.success(`Reservation ${status}`);
     try { await base44.functions.invoke("notifyUserApproval", { userEmail: r.userEmail, userName: r.userName, listingTitle: r.listingTitle, requestType: "reserve_spot", status, listingId: r.listingId, userId: r.userId, phone: r.phone, budget: r.budget, message: r.message }); } catch (e) {}
-    const actionMap = { approved: "approve_request", rejected: "reject_request", contacted: "mark_contacted", deal_in_progress: "mark_in_progress", deal_closed: "close_deal" };
-    logAdminAction({ admin: currentUser, action: actionMap[status] || status, targetType: "DealReservation", targetId: r.id, details: `${status} reservation by ${r.userName || r.userEmail} for "${r.listingTitle}"` });
   };
-  const handleReservationDelete = async (r) => { await base44.entities.DealReservations.delete(r.id); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation deleted"); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "DealReservation", targetId: r.id, details: `Deleted reservation by ${r.userName || r.userEmail} for "${r.listingTitle}"` }); };
+  const handleReservationDelete = async (r) => { await base44.entities.DealReservations.delete(r.id); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation deleted"); };
 
   const handleAcquisitionAction = async (a, status) => {
     await base44.entities.AcquisitionRequests.update(a.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
     toast.success(`Request ${status}`);
     try { await base44.functions.invoke("notifyUserApproval", { userEmail: a.userEmail, userName: a.userName, listingTitle: a.listingTitle, requestType: "acquisition_request", status, listingId: a.listingId, userId: a.userId, phone: a.phone, offerAmount: a.offerAmount, notes: a.notes }); } catch (e) {}
-    const actionMap = { approved: "approve_request", rejected: "reject_request", contacted: "mark_contacted", deal_in_progress: "mark_in_progress", deal_closed: "close_deal" };
-    logAdminAction({ admin: currentUser, action: actionMap[status] || status, targetType: "AcquisitionRequest", targetId: a.id, details: `${status} acquisition by ${a.userName || a.userEmail} for "${a.listingTitle}"` });
   };
-  const handleAcquisitionDelete = async (a) => { await base44.entities.AcquisitionRequests.delete(a.id); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Acquisition request deleted"); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "AcquisitionRequest", targetId: a.id, details: `Deleted acquisition by ${a.userName || a.userEmail} for "${a.listingTitle}"` }); };
+  const handleAcquisitionDelete = async (a) => { await base44.entities.AcquisitionRequests.delete(a.id); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Acquisition request deleted"); };
 
   const handleBidRequestAction = async (br, status) => {
     await base44.entities.BidRequests.update(br.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
     toast.success(`Bid request ${status}`);
     try { await base44.functions.invoke("notifyBidStatus", { userId: br.userId, userEmail: br.userEmail, userName: br.userName, listingTitle: br.listingTitle, listingId: br.listingId, requestType: "bid_request", status, requestId: br.id, bidAmount: br.bidAmount }); } catch (e) {}
-    const actionMap = { approved: "approve_request", rejected: "reject_request", contacted: "mark_contacted" };
-    logAdminAction({ admin: currentUser, action: actionMap[status] || status, targetType: "BidRequest", targetId: br.id, details: `${status} bid of $${br.bidAmount?.toLocaleString()} by ${br.userName || br.userEmail} for "${br.listingTitle}"` });
   };
-  const handleBidRequestDelete = async (br) => { await base44.entities.BidRequests.delete(br.id); queryClient.invalidateQueries({ queryKey: ["allBidRequests"] }); toast.success("Bid request deleted"); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "BidRequest", targetId: br.id, details: `Deleted bid by ${br.userName || br.userEmail} for "${br.listingTitle}"` }); };
+  const handleBidRequestDelete = async (br) => { await base44.entities.BidRequests.delete(br.id); queryClient.invalidateQueries({ queryKey: ["allBidRequests"] }); toast.success("Bid request deleted"); };
 
   const statusBadge = (s) => {
     const c = { pending: "bg-amber-500/10 text-amber-400 border-amber-500/20", approved: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", rejected: "bg-red-500/10 text-red-400 border-red-500/20", contacted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", cancelled: "bg-muted text-muted-foreground border-border/30", deal_in_progress: "bg-blue-500/10 text-blue-400 border-blue-500/20", deal_closed: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
@@ -256,9 +234,9 @@ export default function AdminPanel() {
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBidRequests.length}</Badge></CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
-          {enrichedBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : enrichedBidRequests.map(br => (
+            {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
               <div key={br.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -470,16 +448,6 @@ export default function AdminPanel() {
             <AcquisitionsRequestsManager />
           </motion.div>
         );
-      case "demo_requests":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardContent className="pt-5">
-                <DemoRequestManager />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
       case "templates":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -492,7 +460,10 @@ export default function AdminPanel() {
       case "media":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <MediaLibrary />
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Image className="w-4 h-4 text-pink-400" />Media Library</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Media library coming soon.</p></CardContent>
+            </Card>
           </motion.div>
         );
       case "pending":
@@ -563,7 +534,16 @@ export default function AdminPanel() {
       case "email_logs":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <EmailLogsViewer />
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <FileStack className="w-4 h-4 text-violet-400" />Email Logs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Email delivery logs coming soon.</p>
+              </CardContent>
+            </Card>
           </motion.div>
         );
       case "contact_msgs":
@@ -585,18 +565,17 @@ export default function AdminPanel() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBidRequests.length}</Badge></CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
               <CardContent className="divide-y divide-border/20">
-                {enrichedBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : enrichedBidRequests.map(br => (
+                {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
                   <div key={br.id} className="flex items-start justify-between py-3 gap-3">
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span></div>
-                      <p className="text-xs text-violet-400">{br.listingTitle || "Untitled Listing"}</p>
+                      <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
                       <div className="flex items-center gap-3 flex-wrap">{br.bidAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${br.bidAmount?.toLocaleString()}</span>}{statusBadge(br.status)}</div>
                     </div>
-                    <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                      {br.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" />Contacted</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
-                      {br.status === "approved" && <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" />Contacted</Button>}
+                    <div className="flex gap-1 shrink-0">
+                      {br.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
                       <Button size="sm" variant="ghost" onClick={() => handleBidRequestDelete(br)} className="text-red-400/50 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   </div>
@@ -677,12 +656,6 @@ export default function AdminPanel() {
                 <p className="text-sm text-muted-foreground py-4 text-center">{activeTab === "subscriptions" ? "Subscription" : activeTab === "invoices" ? "Invoice" : activeTab === "coupons" ? "Coupon" : "Payment"} management coming soon.</p>
               </CardContent>
             </Card>
-          </motion.div>
-        );
-      case "audit_logs":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <AuditLogsViewer />
           </motion.div>
         );
       case "system":
@@ -832,29 +805,8 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "chat_monitor":
-        return aiContent;
-      case "vendors":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <UserCheck className="w-4 h-4 text-cyan-400" /> All Vendors
-                  <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[10px] ml-2">{allVendors.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <VendorManagement marketplaceId={null} />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
       case "analytics":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <AdminAnalytics />
-          </motion.div>
-        );
+        return aiContent;
       case "stripe_int": case "razorpay_int": case "gmail_int": case "jvzoo_int": case "webhooks_int":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

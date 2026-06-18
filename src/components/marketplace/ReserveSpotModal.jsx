@@ -56,19 +56,19 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
         userName: userName.trim(),
         userEmail: userEmail.trim(),
         listingId: listing.id,
-        listingTitle: listing.softwareName || listing.title || listing.name || "",
+        listingTitle: listing.title,
         phone: phone.trim(),
         budget: parseFloat(budget) || 0,
         message: message.trim(),
         requestType: "reserve_spot",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminReservation", { userName: userName.trim(), userEmail: userEmail.trim(), listingTitle: listing.softwareName || listing.title || listing.name || "", listingId: listing.id, requestId: reservation.id, phone: phone.trim(), budget: parseFloat(budget) || 0, message: message.trim() }); } catch (_) {}
+      try { await base44.functions.invoke("notifyAdminReservation", { userName: userName.trim(), userEmail: userEmail.trim(), listingTitle: listing.title, listingId: listing.id, requestId: reservation.id, phone: phone.trim(), budget: parseFloat(budget) || 0, message: message.trim() }); } catch (_) {}
       try {
         await base44.entities.Notification.create({
           userId: user.id, role: "user", type: "reserve_submitted",
           title: "Reservation Submitted",
-          message: `Your spot reservation for "${listing.softwareName || listing.title || listing.name}" has been submitted. The admin will review it soon.`,
+          message: `Your spot reservation for "${listing.title}" has been submitted. The admin will review it soon.`,
           listingId: listing.id, relatedRequestId: reservation.id, isRead: false,
         });
       } catch (_) {}
@@ -95,7 +95,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
 
         <div className="space-y-4">
           <div className="rounded-xl bg-secondary/40 p-4 space-y-2">
-            <p className="text-sm font-medium">{listing.softwareName || listing.title || listing.name}</p>
+            <p className="text-sm font-medium">{listing.title}</p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>{listing.category}</span>
               <span>${listing.sharePrice}/share</span>

@@ -40,26 +40,6 @@ Deno.serve(async (req) => {
       isRead: false,
     });
 
-    // Send email notification (logged automatically)
-    if (userEmail) {
-      const emailBody = status === "approved"
-        ? `<p>Your bid of <strong>$${bidAmount?.toLocaleString()}</strong> on <strong>${listingTitle}</strong> has been <strong style="color:#34d399;">approved</strong>. The admin will contact you shortly.</p>`
-        : status === "rejected"
-        ? `<p>Your bid of <strong>$${bidAmount?.toLocaleString()}</strong> on <strong>${listingTitle}</strong> was not selected this time. Feel free to browse other listings.</p>`
-        : `<p>The admin would like to discuss your bid of <strong>$${bidAmount?.toLocaleString()}</strong> on <strong>${listingTitle}</strong>. Please expect a call or email.</p>`;
-      try {
-        await base44.functions.invoke("sendEmail", {
-          to: userEmail,
-          subject: `Bid Update: ${listingTitle}`,
-          body: `<div style="font-family:Arial,sans-serif;max-width:600px;padding:20px;background:#0a0a0a;color:#f0f0f0;border-radius:12px;"><h2 style="color:#f97316;">Bid Status Update</h2>${emailBody}<p style="color:#888;margin-top:24px;">— The SaaSShare Team</p></div>`,
-          type: status === "approved" ? "request_approved_user" : status === "rejected" ? "request_rejected_user" : "request_contacted_user",
-          relatedRequestId: requestId || "",
-        });
-      } catch (e) {
-        console.error("Bid status email failed:", e.message);
-      }
-    }
-
     return Response.json({ message: `Bid request ${statusLabels[status] || status}`, success: true });
   } catch (error) {
     console.error("notifyBidStatus error:", error);

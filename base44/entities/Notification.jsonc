@@ -23,7 +23,6 @@
         "share_purchased",
         "ownership_sold",
         "reserve_submitted",
-        "bid_submitted",
         "acquisition_submitted",
         "request_approved",
         "request_rejected",

@@ -151,11 +151,7 @@ export default function SaaSDetail() {
         } catch (_) { }
       }
     });
-    // Track listing view
-    if (id) {
-      base44.functions.invoke("trackAnalytics", { eventType: "listing_view", listingId: id }).catch(() => {});
-    }
-  }, [id]);
+  }, []);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["saasListing", id],

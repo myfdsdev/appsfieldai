@@ -24,8 +24,6 @@ import AdminSettings from '@/pages/AdminSettings';
 import AdminReservations from '@/pages/AdminReservations';
 import AdminAcquisitions from '@/pages/AdminAcquisitions';
 import AdminRoute from '@/components/AdminRoute';
-import AdminAnalytics from '@/components/admin/AdminAnalytics';
-import MediaLibrary from '@/components/admin/MediaLibrary';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
 import MyInvestments from '@/pages/MyInvestments';
@@ -35,15 +33,6 @@ import VendorRegister from '@/pages/VendorRegister';
 import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
-import MyMarketplaces from '@/pages/MyMarketplaces';
-import TermsOfService from '@/pages/TermsOfService';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import RiskDisclaimer from '@/pages/RiskDisclaimer';
-import RefundPolicy from '@/pages/RefundPolicy';
-import AboutUs from '@/pages/AboutUs';
-import ContactUs from '@/pages/ContactUs';
-import FAQ from '@/pages/FAQ';
-import HowItWorks from '@/pages/HowItWorks';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -85,16 +74,6 @@ const AuthenticatedApp = () => {
         <Route path="/auctions" element={<LiveAuctions />} />
       </Route>
 
-      {/* Public legal & info pages */}
-      <Route path="/terms" element={<TermsOfService />} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
-      <Route path="/risk-disclaimer" element={<RiskDisclaimer />} />
-      <Route path="/refund-policy" element={<RefundPolicy />} />
-      <Route path="/about" element={<AboutUs />} />
-      <Route path="/contact" element={<ContactUs />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/how-it-works" element={<HowItWorks />} />
-
       {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
@@ -109,7 +88,6 @@ const AuthenticatedApp = () => {
           <Route path="/admin-hub/:marketplaceId" element={<AdminHub />} />
           <Route path="/my-account" element={<CustomerDashboard />} />
           <Route path="/investments" element={<MyInvestments />} />
-          <Route path="/my-marketplaces" element={<MyMarketplaces />} />
         </Route>
       </Route>
 
@@ -118,8 +96,6 @@ const AuthenticatedApp = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-          <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
-          <Route path="/admin/media-library" element={<AdminRoute><MediaLibrary /></AdminRoute>} />
           <Route path="/admin/marketplace/reservations" element={<AdminRoute><AdminReservations /></AdminRoute>} />
           <Route path="/admin/marketplace/acquisition-requests" element={<AdminRoute><AdminAcquisitions /></AdminRoute>} />
         </Route>
@@ -132,8 +108,6 @@ const AuthenticatedApp = () => {
       <Route path="/adminpanel" element={<Navigate to="/admin" replace />} />
       <Route path="/AdminHub" element={<Navigate to="/admin" replace />} />
       <Route path="/adminhub" element={<Navigate to="/admin" replace />} />
-      <Route path="/AdminReservations" element={<Navigate to="/admin/marketplace/reservations" replace />} />
-      <Route path="/adminreservations" element={<Navigate to="/admin/marketplace/reservations" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

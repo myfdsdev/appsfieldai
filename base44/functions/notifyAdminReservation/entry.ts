@@ -28,15 +28,14 @@ Deno.serve(async (req) => {
 
     const adminEmail = Deno.env.get("ADMIN_EMAIL") || "";
 
-    // Email notification via centralized sender (logs automatically)
+    // Email notification
     if (adminEmail) {
       try {
-        await base44.functions.invoke("sendEmail", {
+        await base44.asServiceRole.integrations.Core.SendEmail({
           to: adminEmail,
           subject: `New Spot Reservation: ${listingTitle}`,
           body: `<p><strong>${userName || "A user"}</strong> (${userEmail}) has reserved a spot for <strong>${listingTitle}</strong>.</p><p>Review it in the Admin Panel.</p>`,
-          type: "reserve_request_admin",
-          relatedRequestId: requestId || "",
+          isHtml: true,
         });
       } catch (e) { console.error("Admin email failed:", e.message); }
     }

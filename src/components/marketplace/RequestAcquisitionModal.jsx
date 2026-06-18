@@ -96,10 +96,10 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
 
         <div className="space-y-4">
           <div className="rounded-xl bg-secondary/40 p-4 space-y-2">
-            <p className="text-sm font-medium">{listing.softwareName || listing.title || listing.name}</p>
+            <p className="text-sm font-medium">{listing.title}</p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>{listing.category}</span>
-              <span>Full price: ${((listing.sharePrice || 0) * (listing.totalShares || 0)).toLocaleString()}</span>
+              <span>Full price: ${listing.fullPrice?.toLocaleString()}</span>
             </div>
           </div>
 

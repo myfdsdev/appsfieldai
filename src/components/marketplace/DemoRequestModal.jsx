@@ -20,62 +20,41 @@ export default function DemoRequestModal({ listing, open, onClose }) {
   });
 
   useEffect(() => {
-    if (currentUser && open) {
-      setForm((f) => ({
-        ...f,
-        name: f.name || currentUser.full_name || "",
-        email: f.email || currentUser.email || "",
-      }));
-    }
-  }, [currentUser, open]);
+    if (currentUser?.full_name) setForm((f) => ({ ...f, name: currentUser.full_name }));
+    if (currentUser?.email) setForm((f) => ({ ...f, email: currentUser.email }));
+  }, [currentUser]);
 
   // Reset form when modal opens with a different listing
   useEffect(() => {
     if (open) {
-      setForm({
-        name: currentUser?.full_name || "",
-        email: currentUser?.email || "",
-        phone: "",
-        message: "",
-      });
+      setForm({ name: "", email: "", phone: "", message: "" });
       setSubmitted(false);
     }
   }, [open, listing?.id]);
 
   const handleSubmit = useCallback(async () => {
-    if (!form.name.trim() || !form.email.trim()) { toast.error("Name and email are required."); return; }
-    if (!form.phone.trim()) { toast.error("Phone number is required."); return; }
+    if (!form.name || !form.email) { toast.error("Name and email required."); return; }
     if (!listing?.id) { toast.error("Invalid listing. Please try again."); return; }
     setLoading(true);
     try {
-      await base44.entities.DemoRequests.create({
-        userId: currentUser?.id || "",
-        userName: form.name,
-        userEmail: form.email,
+      await base44.entities.DemoRequest.create({
+        marketplaceId: listing.marketplaceId,
+        softwareId: listing.id,
+        softwareName: listing.softwareName || listing.title,
+        customerName: form.name,
+        customerEmail: form.email,
         phone: form.phone,
         message: form.message,
-        listingId: listing.id,
-        listingTitle: listing.softwareName || listing.title || "Untitled",
         status: "pending",
       });
-      // Admin notification via centralized sender (logged automatically)
-      try {
-        await base44.functions.invoke("sendEmail", {
-          to: import.meta.env.VITE_ADMIN_EMAIL || "admin@saasshare.com",
-          subject: `New Demo Request: ${listing.softwareName || listing.title}`,
-          body: `<p><strong>${form.name}</strong> (${form.email}) has requested a demo for <strong>${listing.softwareName || listing.title}</strong>.</p><p>Phone: ${form.phone}</p>${form.message ? `<p>Message: ${form.message}</p>` : ""}<p>Review in the Admin Panel.</p>`,
-          type: "demo_request_admin",
-        });
-      } catch (_) {}
       setSubmitted(true);
-      toast.success("Demo request submitted successfully.");
-      setTimeout(() => onClose(), 1800);
+      toast.success("Demo request submitted!");
     } catch (err) {
       toast.error(err?.message || "Failed to submit demo request. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [form, listing, currentUser, onClose]);
+  }, [form, listing]);
 
   if (!open) return null;
 
@@ -97,7 +76,7 @@ export default function DemoRequestModal({ listing, open, onClose }) {
               <Video className="w-5 h-5 text-blue-400" />
               <h3 className="text-lg font-display font-bold">Request a Demo</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">{listing?.softwareName || listing?.title || "Software Demo Request"}</p>
+            <p className="text-xs text-muted-foreground mb-4">{listing?.softwareName || listing?.title}</p>
             <div className="space-y-3">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name *" className="bg-secondary/50 border-border/30 rounded-xl h-9 text-sm" />
               <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Your email *" type="email" className="bg-secondary/50 border-border/30 rounded-xl h-9 text-sm" />

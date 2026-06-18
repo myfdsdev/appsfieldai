@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle, Gavel,
-  Ban, DollarSign, MessageSquare, Loader2, FileText, TrendingUp, BadgeCheck, Video
+  Ban, DollarSign, MessageSquare, Loader2, FileText, TrendingUp, BadgeCheck
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,6 @@ const TABS = [
   { id: "reserve_spot", label: "Reserve Spots" },
   { id: "acquisition_request", label: "Acquisitions" },
   { id: "bid_request", label: "Bid Requests" },
-  { id: "demo_request", label: "Demo Requests" },
   { id: "pending", label: "Pending" },
   { id: "approved", label: "Approved" },
 ];
@@ -84,8 +83,7 @@ function StatusTimeline({ currentStatus }) {
 function RequestCard({ item, type, onCancel, listingMap }) {
   const isSpot = type === "reserve_spot";
   const isBid = type === "bid_request";
-  const isDemo = type === "demo_request";
-  const amount = isSpot ? item.budget : isBid ? item.bidAmount : isDemo ? null : item.offerAmount;
+  const amount = isSpot ? item.budget : isBid ? item.bidAmount : item.offerAmount;
   const note = isSpot ? item.message : isBid ? item.message : item.notes;
   const cfg = statusConfig[item.status] || statusConfig.pending;
   const StatusIcon = cfg.icon;
@@ -108,13 +106,11 @@ function RequestCard({ item, type, onCancel, listingMap }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                <Badge className={`text-[10px] border ${isSpot ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : isBid ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : isDemo ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
+                <Badge className={`text-[10px] border ${isSpot ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : isBid ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
                   {isSpot ? (
                     <><CalendarCheck className="w-3 h-3 mr-1" /> Reserve Spot</>
                   ) : isBid ? (
                     <><Gavel className="w-3 h-3 mr-1" /> Bid Request</>
-                  ) : isDemo ? (
-                    <><Video className="w-3 h-3 mr-1" /> Demo Request</>
                   ) : (
                     <><Building2 className="w-3 h-3 mr-1" /> Acquisition</>
                   )}
@@ -130,7 +126,7 @@ function RequestCard({ item, type, onCancel, listingMap }) {
               </p>
 
               <div className="flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
-                {amount != null && amount > 0 && (
+                {amount > 0 && (
                   <span className="flex items-center gap-0.5 text-amber-400">
                     <DollarSign className="w-3 h-3" />
                     ${amount?.toLocaleString()}
@@ -189,7 +185,6 @@ function EmptyState({ tab }) {
     reserve_spot:      { title: "No spot reservations", desc: "You haven't reserved any spots yet." },
     acquisition_request: { title: "No acquisition requests", desc: "You haven't submitted any acquisition requests yet." },
     bid_request:       { title: "No bid requests", desc: "You haven't placed any bid requests yet." },
-    demo_request:      { title: "No demo requests", desc: "You haven't requested any demos yet." },
     pending:           { title: "No pending requests", desc: "All your requests have been processed." },
     approved:          { title: "No approved requests", desc: "None of your requests have been approved yet." },
   };
@@ -236,15 +231,9 @@ export default function MyRequests() {
     enabled: !!userId,
   });
 
-  const { data: demoRequests = [], isLoading: loadingDemo } = useQuery({
-    queryKey: ["myDemoRequests", userId],
-    queryFn: () => base44.entities.DemoRequests.filter({ userId }, "-created_date", 50),
-    enabled: !!userId,
-  });
-
   const { data: allListings = [] } = useQuery({
     queryKey: ["allListings"],
-    queryFn: () => base44.entities.SaaSListing.filter({}, undefined, 500),
+    queryFn: () => base44.entities.SaaSListing.list(),
   });
 
   const listingMap = {};
@@ -296,9 +285,8 @@ export default function MyRequests() {
       ...reservations.map((r) => ({ ...r, _type: "reserve_spot" })),
       ...acquisitions.map((a) => ({ ...a, _type: "acquisition_request" })),
       ...bidRequests.map((br) => ({ ...br, _type: "bid_request", budget: 0, offerAmount: 0, message: br.message || "", notes: "" })),
-      ...demoRequests.map((d) => ({ ...d, _type: "demo_request", listingTitle: d.listingTitle, message: d.message || "" })),
     ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-  }, [reservations, acquisitions, bidRequests, demoRequests]);
+  }, [reservations, acquisitions, bidRequests]);
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
@@ -306,7 +294,6 @@ export default function MyRequests() {
       if (activeTab === "reserve_spot") return item._type === "reserve_spot";
       if (activeTab === "acquisition_request") return item._type === "acquisition_request";
       if (activeTab === "bid_request") return item._type === "bid_request";
-      if (activeTab === "demo_request") return item._type === "demo_request";
       if (activeTab === "pending") return item.status === "pending";
       if (activeTab === "approved") return ["approved", "contacted", "deal_in_progress", "deal_closed"].includes(item.status);
       return true;
@@ -318,12 +305,11 @@ export default function MyRequests() {
     reserve_spot: allItems.filter((i) => i._type === "reserve_spot").length,
     acquisition_request: allItems.filter((i) => i._type === "acquisition_request").length,
     bid_request: allItems.filter((i) => i._type === "bid_request").length,
-    demo_request: allItems.filter((i) => i._type === "demo_request").length,
     pending: allItems.filter((i) => i.status === "pending").length,
     approved: allItems.filter((i) => ["approved", "contacted", "deal_in_progress", "deal_closed"].includes(i.status)).length,
   }), [allItems]);
 
-  const isLoading = loadingUser || loadingRes || loadingAcq || loadingBids || loadingDemo;
+  const isLoading = loadingUser || loadingRes || loadingAcq || loadingBids;
 
   return (
     <div className="space-y-6">
@@ -388,16 +374,7 @@ export default function MyRequests() {
                   key={`${item._type}-${item.id}`}
                   item={item}
                   type={item._type}
-                  onCancel={
-                  item._type === "reserve_spot" ? handleCancelReservation :
-                  item._type === "bid_request" ? handleCancelBidRequest :
-                  item._type === "demo_request" ? async (d) => {
-                    await base44.entities.DemoRequests.update(d.id, { status: "cancelled" });
-                    queryClient.invalidateQueries({ queryKey: ["myDemoRequests"] });
-                    toast.success("Demo request cancelled");
-                  } :
-                  handleCancelAcquisition
-                }
+                  onCancel={item._type === "reserve_spot" ? handleCancelReservation : item._type === "bid_request" ? handleCancelBidRequest : handleCancelAcquisition}
                   listingMap={listingMap}
                 />
               ))}
