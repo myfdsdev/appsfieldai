@@ -233,7 +233,7 @@ export default function MyRequests() {
 
   const { data: allListings = [] } = useQuery({
     queryKey: ["allListings"],
-    queryFn: () => base44.entities.SaaSListing.list(),
+    queryFn: () => base44.entities.SaaSListing.filter({}, undefined, 500),
   });
 
   const listingMap = {};
