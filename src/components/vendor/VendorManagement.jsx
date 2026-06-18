@@ -29,14 +29,12 @@ export default function VendorManagement({ marketplaceId }) {
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ["vendors", marketplaceId],
-    queryFn: () => base44.entities.Vendor.filter({ marketplaceId }),
-    enabled: !!marketplaceId,
+    queryFn: () => marketplaceId ? base44.entities.Vendor.filter({ marketplaceId }) : base44.entities.Vendor.filter({}, ["-appliedAt"], 500),
   });
 
   const { data: allListings = [] } = useQuery({
     queryKey: ["marketplaceListings", marketplaceId],
-    queryFn: () => base44.entities.SaaSListing.filter({ marketplaceId }),
-    enabled: !!marketplaceId,
+    queryFn: () => marketplaceId ? base44.entities.SaaSListing.filter({ marketplaceId }) : base44.entities.SaaSListing.filter({}, undefined, 500),
   });
 
   const { data: allTransactions = [] } = useQuery({

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import { Store, Plus, ExternalLink, AlertCircle, CheckCircle, Clock, Package, DollarSign, ShoppingCart, Video, MessageSquareText, Wallet, Edit3, Eye, Loader2, BarChart3 } from "lucide-react";
+import { Store, Plus, ExternalLink, AlertCircle, CheckCircle, Clock, XCircle, Package, DollarSign, ShoppingCart, Video, MessageSquareText, Wallet, Edit3, Eye, Loader2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,18 +30,31 @@ export default function VendorDashboard() {
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ["myVendors"],
-    queryFn: () => base44.entities.Vendor.filter({ userId: currentUser?.id }),
-    enabled: !!currentUser?.id,
+    queryFn: async () => {
+      // Query by userId first
+      const byUserId = await base44.entities.Vendor.filter({ userId: currentUser?.id });
+      // Also query by email as fallback for old records
+      const byEmail = await base44.entities.Vendor.filter({ email: currentUser?.email });
+      // Merge and deduplicate
+      const all = [...byUserId, ...byEmail];
+      const unique = all.filter((v, i, self) => self.findIndex(x => x.id === v.id) === i);
+      return unique;
+    },
+    enabled: !!currentUser?.id || !!currentUser?.email,
   });
 
   const approvedVendors = vendors.filter((v) => v.status === "approved");
+  const pendingVendors = vendors.filter((v) => v.status === "pending");
+  const rejectedVendors = vendors.filter((v) => v.status === "rejected");
 
-  // Auto-select first approved vendor
+  // Auto-select first approved vendor, or first pending if no approved
   useEffect(() => {
     if (approvedVendors.length > 0 && !selectedVendor) {
       setSelectedVendor(approvedVendors[0]);
+    } else if (pendingVendors.length > 0 && !selectedVendor) {
+      setSelectedVendor(pendingVendors[0]);
     }
-  }, [approvedVendors]);
+  }, [approvedVendors, pendingVendors]);
 
   const vendorListings = useQuery({
     queryKey: ["vendorListings", selectedVendor?.id],
@@ -116,18 +129,31 @@ export default function VendorDashboard() {
         </div>
       </motion.div>
 
-      {/* Vendor Selector */}
-      {approvedVendors.length === 0 ? (
+      {/* Vendor Status Messages */}
+      {vendors.length === 0 ? (
         <div className="text-center py-12 rounded-xl bg-card/40 border border-border/40">
           <Store className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground mb-4">You don't have any approved vendor profiles yet.</p>
+          <p className="text-muted-foreground mb-4">You don't have any vendor profiles yet.</p>
           <Button onClick={() => navigate("/vendor/register")} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl">Register as Vendor</Button>
+        </div>
+      ) : approvedVendors.length === 0 && pendingVendors.length === 0 && rejectedVendors.length > 0 ? (
+        <div className="text-center py-12 rounded-xl bg-card/40 border border-border/40">
+          <Store className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+          <p className="text-muted-foreground mb-2">Your vendor application was rejected.</p>
+          <p className="text-sm text-muted-foreground mb-4">You can submit a new application with updated information.</p>
+          <Button onClick={() => navigate("/vendor/register")} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl">Reapply as Vendor</Button>
+        </div>
+      ) : approvedVendors.length === 0 && pendingVendors.length > 0 ? (
+        <div className="text-center py-12 rounded-xl bg-card/40 border border-border/40">
+          <Store className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+          <p className="text-muted-foreground mb-4">Your vendor profile is pending approval.</p>
+          <p className="text-sm text-muted-foreground">The marketplace owner will review your application. You'll be notified once it's approved.</p>
         </div>
       ) : (
         <>
           {/* Vendor Selector */}
           <div className="flex gap-2 flex-wrap">
-            {approvedVendors.map((v) => (
+            {[...approvedVendors, ...pendingVendors, ...rejectedVendors].map((v) => (
               <button
                 key={v.id}
                 onClick={() => setSelectedVendor(v)}
@@ -139,6 +165,8 @@ export default function VendorDashboard() {
               >
                 <Store className="w-3.5 h-3.5" />
                 {v.vendorName}
+                {v.status === "pending" && <Clock className="w-3 h-3 text-amber-400" />}
+                {v.status === "rejected" && <XCircle className="w-3 h-3 text-red-400" />}
               </button>
             ))}
           </div>

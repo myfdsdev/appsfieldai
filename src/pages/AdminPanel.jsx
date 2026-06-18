@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound, Calendar } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound, Calendar, UserCheck } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -20,6 +20,7 @@ import EmailLogsViewer from "@/components/admin/EmailLogsViewer";
 import AuditLogsViewer from "@/components/admin/AuditLogsViewer";
 import MediaLibrary from "@/components/admin/MediaLibrary";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
+import VendorManagement from "@/components/vendor/VendorManagement";
 import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,7 @@ export default function AdminPanel() {
   const { data: allReservations = [] } = useQuery({ queryKey: ["allReservations"], queryFn: () => base44.entities.DealReservations.list("-created_date", 100) });
   const { data: allAcquisitions = [] } = useQuery({ queryKey: ["allAcquisitions"], queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100) });
   const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.filter({}, ["-created_date"], 500), staleTime: 0 });
+  const { data: allVendors = [] } = useQuery({ queryKey: ["allVendors"], queryFn: () => base44.entities.Vendor.filter({}, ["-appliedAt"], 500), staleTime: 0 });
 
   const enrichedBids = useMemo(() => {
     const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Untitled");
@@ -831,6 +833,22 @@ export default function AdminPanel() {
         );
       case "chat_monitor":
         return aiContent;
+      case "vendors":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <UserCheck className="w-4 h-4 text-cyan-400" /> All Vendors
+                  <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[10px] ml-2">{allVendors.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VendorManagement marketplaceId={null} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
       case "analytics":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
