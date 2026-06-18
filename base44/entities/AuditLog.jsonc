@@ -1,0 +1,41 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "adminId": {
+      "type": "string",
+      "description": "ID of the admin who performed the action"
+    },
+    "adminName": {
+      "type": "string",
+      "description": "Name of the admin"
+    },
+    "action": {
+      "type": "string",
+      "description": "Action performed (e.g. approve_request, reject_listing)"
+    },
+    "targetType": {
+      "type": "string",
+      "description": "Type of target entity (e.g. DealReservation, SaaSListing)"
+    },
+    "targetId": {
+      "type": "string",
+      "description": "ID of the target record"
+    },
+    "details": {
+      "type": "string",
+      "description": "Human-readable description of the action"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action was performed"
+    }
+  },
+  "required": [
+    "adminId",
+    "action",
+    "targetType",
+    "targetId"
+  ]
+}

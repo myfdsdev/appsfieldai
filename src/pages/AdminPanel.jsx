@@ -17,6 +17,8 @@ import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import DemoRequestManager from "@/components/marketplace/DemoRequestManager";
 import EmailLogsViewer from "@/components/admin/EmailLogsViewer";
+import AuditLogsViewer from "@/components/admin/AuditLogsViewer";
+import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,10 +80,10 @@ export default function AdminPanel() {
     toast.success("Data refreshed");
   };
 
-  const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); };
-  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); };
-  const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" rejected`); };
-  const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" deleted`); };
+  const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); logAdminAction({ admin: currentUser, action: "approve_listing", targetType: "SaaSListing", targetId: l.id, details: `Approved listing "${l.softwareName || "Untitled"}"` }); };
+  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); logAdminAction({ admin: currentUser, action: "approve_listing", targetType: "SaaSListing", targetId: l.id, details: `Started auction for "${l.softwareName || "Untitled"}"` }); };
+  const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" rejected`); logAdminAction({ admin: currentUser, action: "reject_listing", targetType: "SaaSListing", targetId: l.id, details: `Rejected listing "${l.softwareName || "Untitled"}"` }); };
+  const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" deleted`); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "SaaSListing", targetId: l.id, details: `Deleted listing "${l.softwareName || "Untitled"}"` }); };
   const openEdit = (l) => { setEditListing(l); setEditForm({ softwareName: l.softwareName || "", category: l.category || "", sharePrice: l.sharePrice || 0, totalShares: l.totalShares || 0, monthlyRevenue: l.monthlyRevenue || 0, monthlyExpenses: l.monthlyExpenses || 0, growthRate: l.growthRate || 0, shortDescription: l.shortDescription || "", fullDescription: l.fullDescription || "", auctionEndsAt: l.auctionEndsAt || "", status: l.status || "pending", features: l.features || [], rating: l.rating || 5 }); };
   const handleEditSave = async () => {
     if (!editListing) return;
@@ -102,24 +104,30 @@ export default function AdminPanel() {
     queryClient.invalidateQueries({ queryKey: ["allReservations"] });
     toast.success(`Reservation ${status}`);
     try { await base44.functions.invoke("notifyUserApproval", { userEmail: r.userEmail, userName: r.userName, listingTitle: r.listingTitle, requestType: "reserve_spot", status, listingId: r.listingId, userId: r.userId, phone: r.phone, budget: r.budget, message: r.message }); } catch (e) {}
+    const actionMap = { approved: "approve_request", rejected: "reject_request", contacted: "mark_contacted", deal_in_progress: "mark_in_progress", deal_closed: "close_deal" };
+    logAdminAction({ admin: currentUser, action: actionMap[status] || status, targetType: "DealReservation", targetId: r.id, details: `${status} reservation by ${r.userName || r.userEmail} for "${r.listingTitle}"` });
   };
-  const handleReservationDelete = async (r) => { await base44.entities.DealReservations.delete(r.id); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation deleted"); };
+  const handleReservationDelete = async (r) => { await base44.entities.DealReservations.delete(r.id); queryClient.invalidateQueries({ queryKey: ["allReservations"] }); toast.success("Reservation deleted"); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "DealReservation", targetId: r.id, details: `Deleted reservation by ${r.userName || r.userEmail} for "${r.listingTitle}"` }); };
 
   const handleAcquisitionAction = async (a, status) => {
     await base44.entities.AcquisitionRequests.update(a.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
     toast.success(`Request ${status}`);
     try { await base44.functions.invoke("notifyUserApproval", { userEmail: a.userEmail, userName: a.userName, listingTitle: a.listingTitle, requestType: "acquisition_request", status, listingId: a.listingId, userId: a.userId, phone: a.phone, offerAmount: a.offerAmount, notes: a.notes }); } catch (e) {}
+    const actionMap = { approved: "approve_request", rejected: "reject_request", contacted: "mark_contacted", deal_in_progress: "mark_in_progress", deal_closed: "close_deal" };
+    logAdminAction({ admin: currentUser, action: actionMap[status] || status, targetType: "AcquisitionRequest", targetId: a.id, details: `${status} acquisition by ${a.userName || a.userEmail} for "${a.listingTitle}"` });
   };
-  const handleAcquisitionDelete = async (a) => { await base44.entities.AcquisitionRequests.delete(a.id); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Acquisition request deleted"); };
+  const handleAcquisitionDelete = async (a) => { await base44.entities.AcquisitionRequests.delete(a.id); queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] }); toast.success("Acquisition request deleted"); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "AcquisitionRequest", targetId: a.id, details: `Deleted acquisition by ${a.userName || a.userEmail} for "${a.listingTitle}"` }); };
 
   const handleBidRequestAction = async (br, status) => {
     await base44.entities.BidRequests.update(br.id, { status });
     queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
     toast.success(`Bid request ${status}`);
     try { await base44.functions.invoke("notifyBidStatus", { userId: br.userId, userEmail: br.userEmail, userName: br.userName, listingTitle: br.listingTitle, listingId: br.listingId, requestType: "bid_request", status, requestId: br.id, bidAmount: br.bidAmount }); } catch (e) {}
+    const actionMap = { approved: "approve_request", rejected: "reject_request", contacted: "mark_contacted" };
+    logAdminAction({ admin: currentUser, action: actionMap[status] || status, targetType: "BidRequest", targetId: br.id, details: `${status} bid of $${br.bidAmount?.toLocaleString()} by ${br.userName || br.userEmail} for "${br.listingTitle}"` });
   };
-  const handleBidRequestDelete = async (br) => { await base44.entities.BidRequests.delete(br.id); queryClient.invalidateQueries({ queryKey: ["allBidRequests"] }); toast.success("Bid request deleted"); };
+  const handleBidRequestDelete = async (br) => { await base44.entities.BidRequests.delete(br.id); queryClient.invalidateQueries({ queryKey: ["allBidRequests"] }); toast.success("Bid request deleted"); logAdminAction({ admin: currentUser, action: "delete_request", targetType: "BidRequest", targetId: br.id, details: `Deleted bid by ${br.userName || br.userEmail} for "${br.listingTitle}"` }); };
 
   const statusBadge = (s) => {
     const c = { pending: "bg-amber-500/10 text-amber-400 border-amber-500/20", approved: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", rejected: "bg-red-500/10 text-red-400 border-red-500/20", contacted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", cancelled: "bg-muted text-muted-foreground border-border/30", deal_in_progress: "bg-blue-500/10 text-blue-400 border-blue-500/20", deal_closed: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
@@ -668,6 +676,12 @@ export default function AdminPanel() {
                 <p className="text-sm text-muted-foreground py-4 text-center">{activeTab === "subscriptions" ? "Subscription" : activeTab === "invoices" ? "Invoice" : activeTab === "coupons" ? "Coupon" : "Payment"} management coming soon.</p>
               </CardContent>
             </Card>
+          </motion.div>
+        );
+      case "audit_logs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AuditLogsViewer />
           </motion.div>
         );
       case "system":

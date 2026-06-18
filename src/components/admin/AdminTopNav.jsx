@@ -9,6 +9,7 @@ import {
   MessageSquare, AtSign, FileStack, ContactRound,
   SlidersHorizontal, CreditCard, Link, Webhook,
   ChevronDown, Plug, MailCheck, ShoppingBag, LayoutDashboard, Palette,
+  ClipboardList,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -104,6 +105,7 @@ const NAV_GROUPS = [
       { id: "domain_settings",  label: "Domain Settings",  icon: Globe },
       { id: "stripe_int",       label: "Integrations",     icon: Link },
       { id: "webhooks_int",     label: "Webhooks",         icon: Webhook },
+      { id: "audit_logs",       label: "Audit Logs",       icon: ClipboardList },
     ],
   },
 ];

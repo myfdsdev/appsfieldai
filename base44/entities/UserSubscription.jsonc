@@ -1,0 +1,50 @@
+{
+  "name": "UserSubscription",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the user"
+    },
+    "planId": {
+      "type": "string",
+      "description": "ID of the SubscriptionPlan"
+    },
+    "planName": {
+      "type": "string",
+      "description": "Name of the plan at time of subscription"
+    },
+    "billingCycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "currentPeriodStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "currentPeriodEnd": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "userId",
+    "planId",
+    "planName",
+    "billingCycle",
+    "status"
+  ]
+}
