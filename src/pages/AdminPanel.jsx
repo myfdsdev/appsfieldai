@@ -50,6 +50,14 @@ export default function AdminPanel() {
     return allBids.map(b => ({ ...b, listingTitle: lm[b.listingId] || "Unknown", bidderName: um[b.userId] || "Unknown" }));
   }, [allBids, allListings, allUsers]);
 
+  const enrichedBidRequests = useMemo(() => {
+    const lm = {}; allListings.forEach(l => lm[l.id] = l);
+    return allBidRequests.map(br => ({
+      ...br,
+      listingTitle: br.listingTitle || lm[br.listingId]?.softwareName || lm[br.listingId]?.name || "Untitled Listing",
+    }));
+  }, [allBidRequests, allListings]);
+
   const pendingListings = allListings.filter(l => l.status === "pending");
   const auctionListings = allListings.filter(l => l.status === "auction");
   const rejectedListings = allListings.filter(l => l.status === "rejected");
@@ -234,9 +242,9 @@ export default function AdminPanel() {
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBidRequests.length}</Badge></CardTitle></CardHeader>
           <CardContent className="divide-y divide-border/20">
-            {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
+          {enrichedBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : enrichedBidRequests.map(br => (
               <div key={br.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -565,13 +573,13 @@ export default function AdminPanel() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBidRequests.length}</Badge></CardTitle></CardHeader>
               <CardContent className="divide-y divide-border/20">
-                {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
+                {enrichedBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : enrichedBidRequests.map(br => (
                   <div key={br.id} className="flex items-start justify-between py-3 gap-3">
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span></div>
-                      <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
+                      <p className="text-xs text-violet-400">{br.listingTitle || "Untitled Listing"}</p>
                       <div className="flex items-center gap-3 flex-wrap">{br.bidAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${br.bidAmount?.toLocaleString()}</span>}{statusBadge(br.status)}</div>
                     </div>
                     <div className="flex gap-1 shrink-0 flex-wrap justify-end">
