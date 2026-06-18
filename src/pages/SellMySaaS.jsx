@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import AIValuationTool from "@/components/marketplace/AIValuationTool";
-import PlanLimitGuard, { usePlanLimits } from "@/components/PlanLimitGuard";
+import PlanLimitGuard from "@/components/PlanLimitGuard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const CATEGORIES = ["CRM", "AI & ML", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance"];
 

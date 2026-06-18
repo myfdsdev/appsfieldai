@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import PlanLimitGuard, { usePlanLimits } from "@/components/PlanLimitGuard";
+import PlanLimitGuard from "@/components/PlanLimitGuard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 export default function VendorRegister() {
   const navigate = useNavigate();
