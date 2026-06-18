@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import PlanLimitGuard, { usePlanLimits } from "@/components/PlanLimitGuard";
 
 export default function VendorRegister() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function VendorRegister() {
     queryKey: ["multiVendorMarketplaces"],
     queryFn: () => base44.entities.Marketplace.filter({ type: "multi_vendor", status: "active" }),
   });
+  const { canCreateVendor } = usePlanLimits();
 
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -55,6 +57,10 @@ export default function VendorRegister() {
     setSubmitted(true);
     toast.success("Application submitted! Awaiting marketplace owner approval.");
   };
+
+  if (!canCreateVendor) {
+    return <PlanLimitGuard resource="vendor" onBack={() => navigate(-1)} />;
+  }
 
   if (submitted) {
     return (

@@ -33,6 +33,7 @@ import VendorRegister from '@/pages/VendorRegister';
 import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
+import MyMarketplaces from '@/pages/MyMarketplaces';
 import TermsOfService from '@/pages/TermsOfService';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import RiskDisclaimer from '@/pages/RiskDisclaimer';
@@ -106,6 +107,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin-hub/:marketplaceId" element={<AdminHub />} />
           <Route path="/my-account" element={<CustomerDashboard />} />
           <Route path="/investments" element={<MyInvestments />} />
+          <Route path="/my-marketplaces" element={<MyMarketplaces />} />
         </Route>
       </Route>
 

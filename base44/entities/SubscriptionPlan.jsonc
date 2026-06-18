@@ -4,98 +4,54 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Plan name (e.g. Starter, Pro, Agency)"
-    },
-    "description": {
-      "type": "string",
-      "description": "Plan description"
+      "description": "Plan name (e.g. Starter, Pro, Agency, Enterprise)"
     },
     "monthlyPrice": {
       "type": "number",
-      "description": "Monthly price in dollars"
+      "description": "Monthly price in USD"
     },
     "yearlyPrice": {
       "type": "number",
-      "description": "Yearly price in dollars"
+      "description": "Yearly price in USD"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of plan features"
     },
     "marketplaceLimit": {
       "type": "number",
-      "default": 1,
-      "description": "Max marketplaces allowed"
+      "default": 0,
+      "description": "Max marketplaces (0 = unlimited)"
+    },
+    "listingLimit": {
+      "type": "number",
+      "default": 0,
+      "description": "Max listings (0 = unlimited)"
     },
     "vendorLimit": {
       "type": "number",
       "default": 0,
-      "description": "Max vendors per marketplace"
-    },
-    "productLimit": {
-      "type": "number",
-      "default": 10,
-      "description": "Max listings per marketplace"
-    },
-    "customerLimit": {
-      "type": "number",
-      "default": 100,
-      "description": "Max customers per marketplace"
-    },
-    "orderLimit": {
-      "type": "number",
-      "default": 50,
-      "description": "Max orders per marketplace"
-    },
-    "storageLimit": {
-      "type": "number",
-      "default": 500,
-      "description": "Storage limit in MB"
+      "description": "Max vendors (0 = unlimited)"
     },
     "customDomainAllowed": {
       "type": "boolean",
-      "default": false,
-      "description": "Can use custom domain"
+      "default": false
     },
-    "multiVendorAllowed": {
-      "type": "boolean",
-      "default": false,
-      "description": "Can enable multi-vendor mode"
-    },
-    "whiteLabelAllowed": {
-      "type": "boolean",
-      "default": false,
-      "description": "Can remove platform branding"
-    },
-    "commissionModuleAllowed": {
-      "type": "boolean",
-      "default": false,
-      "description": "Can set commission rates"
-    },
-    "featuredListingsAllowed": {
-      "type": "boolean",
-      "default": false,
-      "description": "Can feature listings"
-    },
-    "supportLevel": {
+    "status": {
       "type": "string",
       "enum": [
-        "basic",
-        "priority",
-        "dedicated"
+        "active",
+        "inactive"
       ],
-      "default": "basic",
-      "description": "Support level included"
-    },
-    "isActive": {
-      "type": "boolean",
-      "default": true,
-      "description": "Whether plan is publicly available"
-    },
-    "sortOrder": {
-      "type": "number",
-      "default": 0,
-      "description": "Display order"
+      "default": "active"
     }
   },
   "required": [
     "name",
-    "monthlyPrice"
+    "monthlyPrice",
+    "yearlyPrice"
   ]
 }

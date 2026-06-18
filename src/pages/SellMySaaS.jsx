@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import AIValuationTool from "@/components/marketplace/AIValuationTool";
+import PlanLimitGuard, { usePlanLimits } from "@/components/PlanLimitGuard";
 
 const CATEGORIES = ["CRM", "AI & ML", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance"];
 
@@ -38,6 +39,7 @@ export default function SellMySaaS() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
+  const { canCreateListing } = usePlanLimits();
 
   const { data: approvedVendors = [] } = useQuery({
     queryKey: ["myApprovedVendors"],
@@ -166,6 +168,10 @@ export default function SellMySaaS() {
   };
 
   const fieldError = (name) => errors[name] ? "border-red-500/50" : "";
+
+  if (!canCreateListing) {
+    return <PlanLimitGuard resource="listing" onBack={() => navigate(-1)} />;
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
