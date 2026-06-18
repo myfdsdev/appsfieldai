@@ -68,7 +68,6 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       {/* Public routes — accessible without login */}
       <Route element={<DashboardLayout />}>
-        <Route path="/" element={<Dashboard />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/saas/:id" element={<SaaSDetail />} />
         <Route path="/auctions" element={<LiveAuctions />} />
@@ -77,8 +76,9 @@ const AuthenticatedApp = () => {
       {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<MarketplaceDashboard />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/requests" element={<MyRequests />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/chats" element={<AiChatPage />} />

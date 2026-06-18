@@ -32,7 +32,12 @@ export default function Login() {
         loginTime: new Date().toISOString(),
       }).catch(() => {});
       toast({ title: "Welcome back!", description: "Login successful. Redirecting..." });
-      setTimeout(() => { window.location.href = "/"; }, 600);
+      
+      // Redirect to intended page or default to /dashboard
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get("from");
+      const redirectUrl = from ? decodeURIComponent(from) : "/dashboard";
+      setTimeout(() => { window.location.href = redirectUrl; }, 600);
     } catch (err) {
       const msg = err.message || "";
       if (msg.includes("Invalid login credentials") || msg.includes("invalid")) {
@@ -46,7 +51,11 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    // Redirect to /dashboard after login, or preserve the 'from' param
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get("from");
+    const redirectUrl = from ? decodeURIComponent(from) : "/dashboard";
+    base44.auth.loginWithProvider("google", redirectUrl);
   };
 
   return (
