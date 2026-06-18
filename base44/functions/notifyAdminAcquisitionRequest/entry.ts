@@ -57,15 +57,16 @@ Deno.serve(async (req) => {
 
     const adminEmail = Deno.env.get("ADMIN_EMAIL") || "";
 
-    // Email notification
+    // Email notification via centralized sender (logs automatically)
     if (adminEmail) {
       try {
         const offerText = offerAmount ? ` with an offer of $${offerAmount.toLocaleString()}` : "";
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        await base44.functions.invoke("sendEmail", {
           to: adminEmail,
           subject: `New Acquisition Request: ${listingTitle}`,
           body: `<p><strong>${userName || "A user"}</strong> (${userEmail}) wants to acquire <strong>${listingTitle}</strong>${offerText}.</p><p>Review it in the Admin Panel.</p>`,
-          isHtml: true,
+          type: "acquisition_request_admin",
+          relatedRequestId: requestId || "",
         });
       } catch (e) { console.error("Admin email failed:", e.message); }
     }

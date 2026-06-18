@@ -33,6 +33,14 @@ import VendorRegister from '@/pages/VendorRegister';
 import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
+import TermsOfService from '@/pages/TermsOfService';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import RiskDisclaimer from '@/pages/RiskDisclaimer';
+import RefundPolicy from '@/pages/RefundPolicy';
+import AboutUs from '@/pages/AboutUs';
+import ContactUs from '@/pages/ContactUs';
+import FAQ from '@/pages/FAQ';
+import HowItWorks from '@/pages/HowItWorks';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -73,6 +81,16 @@ const AuthenticatedApp = () => {
         <Route path="/saas/:id" element={<SaaSDetail />} />
         <Route path="/auctions" element={<LiveAuctions />} />
       </Route>
+
+      {/* Public legal & info pages */}
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/risk-disclaimer" element={<RiskDisclaimer />} />
+      <Route path="/refund-policy" element={<RefundPolicy />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<ContactUs />} />
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/how-it-works" element={<HowItWorks />} />
 
       {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>

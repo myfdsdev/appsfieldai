@@ -58,12 +58,13 @@ export default function DemoRequestModal({ listing, open, onClose }) {
         listingTitle: listing.softwareName || listing.title || "Untitled",
         status: "pending",
       });
-      // Admin notification (best-effort)
+      // Admin notification via centralized sender (logged automatically)
       try {
-        await base44.integrations.Core.SendEmail({
+        await base44.functions.invoke("sendEmail", {
           to: import.meta.env.VITE_ADMIN_EMAIL || "admin@saasshare.com",
           subject: `New Demo Request: ${listing.softwareName || listing.title}`,
-          body: `New demo request from ${form.name} (${form.email}) for ${listing.softwareName || listing.title}.\nPhone: ${form.phone}\nMessage: ${form.message}`,
+          body: `<p><strong>${form.name}</strong> (${form.email}) has requested a demo for <strong>${listing.softwareName || listing.title}</strong>.</p><p>Phone: ${form.phone}</p>${form.message ? `<p>Message: ${form.message}</p>` : ""}<p>Review in the Admin Panel.</p>`,
+          type: "demo_request_admin",
         });
       } catch (_) {}
       setSubmitted(true);

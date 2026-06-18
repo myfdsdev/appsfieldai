@@ -1,0 +1,45 @@
+{
+  "name": "EmailLog",
+  "type": "object",
+  "properties": {
+    "to": {
+      "type": "string",
+      "description": "Recipient email address"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject"
+    },
+    "type": {
+      "type": "string",
+      "description": "Email type/event (e.g. reserve_request_admin, request_approved)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed"
+      ],
+      "default": "sent"
+    },
+    "relatedRequestId": {
+      "type": "string",
+      "description": "Related request ID"
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the email was sent/attempted"
+    },
+    "error": {
+      "type": "string",
+      "description": "Error message if failed"
+    }
+  },
+  "required": [
+    "to",
+    "subject",
+    "type",
+    "status"
+  ]
+}

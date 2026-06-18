@@ -198,12 +198,25 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
 
       toast.success("Your bid has been submitted. Admin will review and contact you if shortlisted.");
 
-      // Send confirmation email to bidder
+      const listingName = listing.softwareName || listing.title || listing.name;
+      // Admin email via centralized sender
       try {
-        await base44.integrations.Core.SendEmail({
+        await base44.functions.invoke("sendEmail", {
+          to: import.meta.env.VITE_ADMIN_EMAIL || "admin@saasshare.com",
+          subject: `New Bid: $${amount.toLocaleString()} on ${listingName}`,
+          body: `<p><strong>${userName.trim()}</strong> (${userEmail.trim()}) placed a bid of <strong>$${amount.toLocaleString()}</strong> on <strong>${listingName}</strong>.</p><p>Review in Admin Panel.</p>`,
+          type: "bid_request_admin",
+          relatedRequestId: bidReq?.id || "",
+        });
+      } catch (_) {}
+      // Confirmation email to bidder
+      try {
+        await base44.functions.invoke("sendEmail", {
           to: userEmail.trim(),
-          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listing.softwareName || listing.title || listing.name}`,
-          body: `Hi ${userName.trim()},\n\nYour bid of $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}" has been submitted successfully.\n\nOur team will review your bid and contact you if shortlisted.\n\nThank you,\nSaaSShare Team`,
+          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listingName}`,
+          body: `<p>Hi ${userName.trim()},</p><p>Your bid of <strong>$${amount.toLocaleString()}</strong> on <strong>${listingName}</strong> has been submitted. Our team will review and contact you if shortlisted.</p><p>— The SaaSShare Team</p>`,
+          type: "bid_request_admin",
+          relatedRequestId: bidReq?.id || "",
         });
       } catch (_) {}
 

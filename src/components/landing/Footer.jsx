@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Zap } from "lucide-react";
 
 export default function Footer() {
@@ -41,9 +42,10 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-display font-bold mb-4">Legal</h4>
             <div className="space-y-2.5">
-              {["Privacy Policy", "Terms of Service", "Cookie Policy", "GDPR"].map((l) => (
-                <a key={l} href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">{l}</a>
-              ))}
+              <Link to="/privacy" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
+              <Link to="/risk-disclaimer" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Risk Disclaimer</Link>
+              <Link to="/refund-policy" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Refund Policy</Link>
             </div>
           </div>
         </div>

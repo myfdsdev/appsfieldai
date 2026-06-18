@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || "";
 import { Video, CheckCircle, XCircle, Loader2, Mail, Phone, MessageCircle, Trash2, Clock, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

@@ -16,6 +16,7 @@ import HookManagement from "@/components/admin/HookManagement";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import DemoRequestManager from "@/components/marketplace/DemoRequestManager";
+import EmailLogsViewer from "@/components/admin/EmailLogsViewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -553,16 +554,7 @@ export default function AdminPanel() {
       case "email_logs":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <FileStack className="w-4 h-4 text-violet-400" />Email Logs
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground py-4 text-center">Email delivery logs coming soon.</p>
-              </CardContent>
-            </Card>
+            <EmailLogsViewer />
           </motion.div>
         );
       case "contact_msgs":
