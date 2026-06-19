@@ -22,6 +22,18 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
 
   return (
     <div className="space-y-4">
+      {/* Store Logo */}
+      <div>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Store Logo</p>
+        <Input
+          value={form.headerLogoUrl || ""}
+          onChange={e => set("headerLogoUrl", e.target.value)}
+          className="bg-secondary/50 border-border/30 rounded-xl"
+          placeholder="https://example.com/logo.png"
+        />
+        <p className="text-[10px] text-muted-foreground mt-1">Shown in your store's top navigation bar. Leave empty to use your brand logo.</p>
+      </div>
+
       {/* Badge */}
       <div>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Badge</p>

@@ -10,6 +10,7 @@ import StoreTestimonials from "@/components/store/StoreTestimonials";
 import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
 import StoreHero from "@/components/store/StoreHero";
+import StoreNavbar from "@/components/store/StoreNavbar";
 
 export default function StorePage() {
   const { slug: slugParam } = useParams();
@@ -69,6 +70,9 @@ export default function StorePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Store top nav */}
+      <StoreNavbar marketplace={marketplace} sections={sections} />
+
       {/* Store hero */}
       {headerEnabled && (
         <StoreHero marketplace={marketplace} sections={sections} listingsCount={software.length} />

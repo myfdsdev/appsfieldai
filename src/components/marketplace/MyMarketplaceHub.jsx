@@ -63,6 +63,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     headerTitle: marketplace?.pageSections?.headerTitle || "",
     headerSubtitle: marketplace?.pageSections?.headerSubtitle || "",
     headerImageUrl: marketplace?.pageSections?.headerImageUrl || "",
+    headerLogoUrl: marketplace?.pageSections?.headerLogoUrl || "",
     heroBadgeText: marketplace?.pageSections?.heroBadgeText || "",
     heroCtaText: marketplace?.pageSections?.heroCtaText || "",
     heroBgType: marketplace?.pageSections?.heroBgType || "gradient",
