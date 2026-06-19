@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Store, Globe } from "lucide-react";
+import { Store } from "lucide-react";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
 import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 import DealsEndingSoon from "@/components/store/DealsEndingSoon";
@@ -10,6 +9,7 @@ import OneInALifetimeDeals from "@/components/store/OneInALifetimeDeals";
 import StoreTestimonials from "@/components/store/StoreTestimonials";
 import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
+import StoreHero from "@/components/store/StoreHero";
 
 export default function StorePage() {
   const { slug: slugParam } = useParams();
@@ -67,28 +67,12 @@ export default function StorePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Store header */}
+      {/* Store hero */}
       {headerEnabled && (
-        <div className="border-b border-border/40 bg-card/40 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-6 py-10">
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
-              {marketplace.branding?.logo ? (
-                <img src={marketplace.branding.logo} alt={marketplace.name} className="w-14 h-14 rounded-xl object-cover" />
-              ) : (
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: brandColor }}>
-                  <Store className="w-7 h-7 text-white" />
-                </div>
-              )}
-              <div>
-                <h1 className="text-2xl font-display font-bold">{sections.headerTitle || marketplace.name}</h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                  <Globe className="w-3.5 h-3.5" />{sections.headerSubtitle || `${software.length} ${software.length === 1 ? "listing" : "listings"}`}
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+        <StoreHero marketplace={marketplace} sections={sections} listingsCount={software.length} />
       )}
+
+      <div id="store-listings" />
 
       {software.length === 0 ? (
         <div className="max-w-7xl mx-auto px-6 py-10">

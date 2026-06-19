@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaaSCard from "@/components/marketplace/SaaSCard";
+import DealsEndingSoon from "@/components/store/DealsEndingSoon";
+import StoreTestimonials from "@/components/store/StoreTestimonials";
+import StoreCustomSection from "@/components/store/StoreCustomSection";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
@@ -49,6 +52,11 @@ export default function Dashboard() {
   const { data: marketplaces = [] } = useQuery({
     queryKey: ["marketplaces"],
     queryFn: () => base44.entities.Marketplace.list(),
+  });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["approvedReviews"],
+    queryFn: () => base44.entities.Review.filter({ status: "approved" }),
   });
 
   const marketplaceMap = useMemo(() => {
@@ -141,6 +149,9 @@ export default function Dashboard() {
 
         </motion.div>
       </motion.div>
+
+      {/* Deals Ending Soon */}
+      <DealsEndingSoon listings={publicListings} onViewDetails={setViewDetailListing} />
 
       {/* Search + Filter Bar */}
       <motion.div
@@ -238,6 +249,12 @@ export default function Dashboard() {
           )}
         </>
       )}
+
+      {/* Testimonials */}
+      <StoreTestimonials reviews={reviews} />
+
+      {/* Custom feature boxes */}
+      <StoreCustomSection />
 
       <ReserveSpotModal
         listing={reserveSpotListing}
