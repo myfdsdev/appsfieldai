@@ -10,6 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/components/ui/use-toast";
 import SetupWizard from "@/components/marketplace/SetupWizard";
 import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
+import OwnerStatsOverview from "@/components/dashboard/OwnerStatsOverview";
+import RecentReservations from "@/components/dashboard/RecentReservations";
 
 export default function MarketplaceDashboard() {
   const queryClient = useQueryClient();
@@ -93,6 +95,15 @@ export default function MarketplaceDashboard() {
         <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> New Marketplace</Button>
       </motion.div>
 
+      {/* Owner product/sales overview — only for regular owners with marketplaces */}
+      {!isAdmin && !isLoading && marketplaces.length > 0 && (
+        <OwnerStatsOverview marketplaces={marketplaces} />
+      )}
+
+      {!isAdmin && !isLoading && marketplaces.length > 0 && (
+        <h2 className="text-lg font-display font-semibold pt-2">My Marketplaces</h2>
+      )}
+
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Loading your marketplaces...</div>
       ) : marketplaces.length === 0 ? (
@@ -155,6 +166,11 @@ export default function MarketplaceDashboard() {
             );
           })}
         </div>
+      )}
+
+      {/* Recent reserve spot activity — only for regular owners with marketplaces */}
+      {!isAdmin && !isLoading && marketplaces.length > 0 && (
+        <RecentReservations marketplaces={marketplaces} />
       )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
