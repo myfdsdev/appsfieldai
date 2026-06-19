@@ -90,9 +90,17 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         const defaults = await base44.entities.StorePageDefault.filter({ key: "default" });
         pageSections = defaults?.[0]?.pageSections;
       } catch { /* no default configured — skip */ }
+      // Seed the hero theme colors from the chosen branding so the new store's
+      // hero matches the selected color theme out of the box.
+      const seededPageSections = {
+        ...(pageSections || {}),
+        heroBgType: "gradient",
+        heroGradientStart: `${data.branding.primaryColor}33`,
+        heroGradientEnd: "#0a0603",
+      };
       await base44.entities.Marketplace.create({
         ...payload,
-        ...(pageSections ? { pageSections } : {}),
+        pageSections: seededPageSections,
         name: data.name,
         slug: data.slug,
         ownerId: (await base44.auth.me()).id,
