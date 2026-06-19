@@ -1,5 +1,6 @@
 import React from "react";
-import { Store, Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Store, Menu, X, User } from "lucide-react";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
@@ -54,6 +55,16 @@ export default function StoreNavbar({ marketplace, sections = {} }) {
           >
             Browse Deals
           </button>
+          {/* User option */}
+          <Link
+            to="/login"
+            className="ml-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 transition-colors"
+          >
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: brandColor }}>
+              <User className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-sm font-medium">Account</span>
+          </Link>
         </nav>
 
         {/* Mobile toggle */}
@@ -81,6 +92,13 @@ export default function StoreNavbar({ marketplace, sections = {} }) {
           >
             Browse Deals
           </button>
+          <Link
+            to="/login"
+            onClick={() => setMenuOpen(false)}
+            className="mt-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium"
+          >
+            <User className="w-4 h-4" style={{ color: brandColor }} /> Account
+          </Link>
         </nav>
       )}
     </header>
