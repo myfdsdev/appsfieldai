@@ -11,8 +11,11 @@ Deno.serve(async (req) => {
     const { marketplaceId } = await req.json();
     if (!marketplaceId) return Response.json({ error: 'Missing marketplaceId' }, { status: 400 });
 
-    const markets = await base44.asServiceRole.entities.Marketplace.filter({ id: marketplaceId });
-    const market = markets[0];
+    let market = null;
+    try {
+      const markets = await base44.asServiceRole.entities.Marketplace.filter({ id: marketplaceId });
+      market = markets[0];
+    } catch (_) { market = null; }
     if (!market) return Response.json({ error: 'Marketplace not found' }, { status: 404 });
     if (market.ownerId !== user.id && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
