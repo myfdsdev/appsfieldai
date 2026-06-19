@@ -194,7 +194,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
               <div className="space-y-3">
                 <SectionCard title="Hero Section" icon={Image}
                   enabled={pageForm.headerEnabled} onToggle={() => setPageForm(f => ({ ...f, headerEnabled: !f.headerEnabled }))}>
-                  <HeroSectionEditor form={pageForm} setForm={setPageForm} />
+                  <HeroSectionEditor form={pageForm} setForm={setPageForm} marketplace={marketplace} />
                 </SectionCard>
                 <SectionCard title="Product Sections" icon={Package}
                   enabled={pageForm.productsEnabled} onToggle={() => setPageForm(f => ({ ...f, productsEnabled: !f.productsEnabled }))}>

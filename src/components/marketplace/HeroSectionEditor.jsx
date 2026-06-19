@@ -3,9 +3,22 @@ import { Input } from "@/components/ui/input";
 
 // Hero Section editor for a store's Page Settings — mirrors the admin dashboard
 // hero controls (badge, headline, subtitle, CTA, cover image, background style).
-export default function HeroSectionEditor({ form, setForm }) {
+export default function HeroSectionEditor({ form, setForm, marketplace }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
   const bgType = form.heroBgType || "gradient";
+
+  const brandColor = marketplace?.branding?.primaryColor || "#f97316";
+  const accentColor = marketplace?.branding?.accentColor || brandColor;
+  const previewBg = (() => {
+    if (bgType === "image" && form.headerImageUrl) {
+      return `linear-gradient(to bottom, rgba(10,6,3,0.7), rgba(10,6,3,0.95)), url(${form.headerImageUrl}) center/cover`;
+    }
+    if (bgType === "solid") return form.heroSolidColor || "#0a0603";
+    const gStart = form.heroGradientStart || `${brandColor}33`;
+    const gEnd = form.heroGradientEnd || "#0a0603";
+    return `radial-gradient(ellipse at top, ${gStart} 0%, ${gEnd} 60%)`;
+  })();
+  const previewOpacity = (form.heroBgOpacity ?? 100) / 100;
 
   return (
     <div className="space-y-4">
@@ -140,6 +153,30 @@ export default function HeroSectionEditor({ form, setForm }) {
             onChange={e => set("heroBgOpacity", Number(e.target.value))}
             className="w-full accent-orange-500 h-1.5 rounded-full"
           />
+        </div>
+      </div>
+
+      {/* Live Preview */}
+      <div>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Live Preview</p>
+        <div className="rounded-xl overflow-hidden border border-border/20 p-6 text-center" style={{ background: previewBg, opacity: previewOpacity }}>
+          {form.heroBadgeText && (
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs mb-4">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
+              {form.heroBadgeText}
+            </span>
+          )}
+          <h2 className="text-2xl font-display font-extrabold leading-tight mb-3">
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${brandColor}, ${accentColor})` }}>
+              {form.headerTitle || marketplace?.name || "Your Store"}
+            </span>
+          </h2>
+          <p className="text-muted-foreground text-xs max-w-xs mx-auto mb-4 line-clamp-2">
+            {form.headerSubtitle || "Discover amazing software deals"}
+          </p>
+          <span className="px-4 py-1.5 rounded-full bg-white text-black text-xs font-semibold">
+            {form.heroCtaText || "Browse deals"}
+          </span>
         </div>
       </div>
     </div>
