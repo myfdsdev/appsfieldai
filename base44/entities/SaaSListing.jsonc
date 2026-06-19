@@ -88,7 +88,7 @@
         "both"
       ],
       "default": "group_deal",
-      "description": "Deal offering type \u2014 group split, single buyer, or both"
+      "description": "Deal offering type"
     },
     "sharePrice": {
       "type": "number",
@@ -172,6 +172,16 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the software is featured"
+    },
+    "isBestSeller": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this listing is marked as a best seller"
+    },
+    "isLifetimeDeal": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this listing is a lifetime deal"
     },
     "auctionEndsAt": {
       "type": "string",

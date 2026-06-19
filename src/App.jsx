@@ -25,6 +25,9 @@ import AdminReservations from '@/pages/AdminReservations';
 import AdminAcquisitions from '@/pages/AdminAcquisitions';
 import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
+import BestSellers from '@/pages/BestSellers';
+import Categories from '@/pages/Categories';
+import LifetimeDeals from '@/pages/LifetimeDeals';
 import AiChatPage from '@/pages/AiChat';
 import MyInvestments from '@/pages/MyInvestments';
 import Pricing from '@/pages/Pricing';
@@ -71,6 +74,9 @@ const AuthenticatedApp = () => {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/saas/:id" element={<SaaSDetail />} />
         <Route path="/auctions" element={<LiveAuctions />} />
+        <Route path="/best-sellers" element={<BestSellers />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/lifetime-deals" element={<LifetimeDeals />} />
       </Route>
 
       {/* Protected routes — require login */}

@@ -64,6 +64,8 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     sellerName: "",
     pricingType: "paid",
     status: "pending",
+    isBestSeller: false,
+    isLifetimeDeal: false,
   });
 
   useEffect(() => {
@@ -92,6 +94,8 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         sellerName: listing.sellerName || "",
         pricingType: listing.pricingType || "paid",
         status: listing.status || "pending",
+        isBestSeller: listing.isBestSeller || false,
+        isLifetimeDeal: listing.isLifetimeDeal || false,
       });
     }
   }, [listing]);
@@ -289,6 +293,27 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                   <span className="text-sm text-muted-foreground">days</span>
                 </div>
               )}
+            </div>
+
+            {/* Badges */}
+            <div>
+              <label className="text-xs text-muted-foreground mb-2 block">Listing Badges</label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                  <input type="checkbox" checked={form.isBestSeller} onChange={e => update("isBestSeller", e.target.checked)} className="accent-orange-500 w-4 h-4" />
+                  <div>
+                    <p className="text-sm font-medium">🏆 Best Seller</p>
+                    <p className="text-[10px] text-muted-foreground">Show this listing on the Best Sellers page</p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                  <input type="checkbox" checked={form.isLifetimeDeal} onChange={e => update("isLifetimeDeal", e.target.checked)} className="accent-orange-500 w-4 h-4" />
+                  <div>
+                    <p className="text-sm font-medium">♾️ Lifetime Deal</p>
+                    <p className="text-[10px] text-muted-foreground">Show this listing on the Lifetime Deals page</p>
+                  </div>
+                </label>
+              </div>
             </div>
 
             {/* Financial Details */}
