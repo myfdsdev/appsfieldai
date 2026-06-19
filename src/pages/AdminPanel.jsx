@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound, Calendar } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
+import PlatformDomainConfig from "@/components/admin/PlatformDomainConfig";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
 import PlatformOverview from "@/components/admin/PlatformOverview";
@@ -265,6 +266,7 @@ export default function AdminPanel() {
   // ── System & Config ──
   const systemContent = (
     <>
+      <PlatformDomainConfig />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
