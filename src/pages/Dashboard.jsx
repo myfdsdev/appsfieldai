@@ -31,7 +31,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
 
-  // Store owners land on their own active store page instead of the platform home.
+  // Store owners land on their own marketplace management dashboard instead of the
+  // public storefront, so they can administer their store.
   const { data: ownedMarketplaces } = useQuery({
     queryKey: ["ownerStoreRedirect", user?.id],
     queryFn: () => base44.entities.Marketplace.filter({ ownerId: user?.id }),
@@ -39,11 +40,8 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated || !ownedMarketplaces) return;
-    const activeStore = ownedMarketplaces.find((m) => m.status === "active") || ownedMarketplaces[0];
-    if (activeStore?.slug) {
-      navigate(`/store/${activeStore.slug}`, { replace: true });
-    }
+    if (!isAuthenticated || !ownedMarketplaces || ownedMarketplaces.length === 0) return;
+    navigate("/dashboard", { replace: true });
   }, [isAuthenticated, ownedMarketplaces, navigate]);
 
   const [search, setSearch] = useState("");
