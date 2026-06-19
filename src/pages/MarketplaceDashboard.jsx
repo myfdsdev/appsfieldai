@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe } from "lucide-react";
+import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { toast } from "@/components/ui/use-toast";
 import SetupWizard from "@/components/marketplace/SetupWizard";
 import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
 
@@ -13,13 +15,45 @@ export default function MarketplaceDashboard() {
   const queryClient = useQueryClient();
   const [view, setView] = useState("list");
   const [selectedMarketplace, setSelectedMarketplace] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
+  const isAdmin = currentUser?.role === "admin";
+
+  // Admins see ALL marketplaces across every owner; regular owners see only their own.
   const { data: marketplaces = [], isLoading } = useQuery({
-    queryKey: ["ownerMarketplaces"],
-    queryFn: () => base44.entities.Marketplace.filter({ ownerId: currentUser?.id }),
+    queryKey: ["ownerMarketplaces", isAdmin, currentUser?.id],
+    queryFn: () => (isAdmin ? base44.entities.Marketplace.list() : base44.entities.Marketplace.filter({ ownerId: currentUser?.id })),
     enabled: !!currentUser?.id,
   });
+
+  // Map owner -> { name, email } so admins can see who owns each marketplace.
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ["allUsersForMarketplaces"],
+    queryFn: () => base44.entities.User.list(),
+    enabled: isAdmin,
+  });
+  const ownerMap = useMemo(() => {
+    const map = {};
+    allUsers.forEach((u) => { map[u.id] = u; });
+    return map;
+  }, [allUsers]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await base44.entities.Marketplace.delete(deleteTarget.id);
+      toast({ title: "Marketplace deleted", description: `"${deleteTarget.name}" has been removed.` });
+      setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
+    } catch (err) {
+      toast({ title: "Delete failed", description: err.message || "Could not delete marketplace.", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
   const { data: plans = [] } = useQuery({
     queryKey: ["platformPlans"],
     queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
@@ -53,8 +87,8 @@ export default function MarketplaceDashboard() {
     <div className="space-y-6 p-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">My Marketplaces</h1>
-          <p className="text-sm text-muted-foreground mt-1">Build and manage your SaaS marketplace sites.</p>
+          <h1 className="text-2xl font-display font-bold">{isAdmin ? "Admin Marketplace" : "My Marketplaces"}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{isAdmin ? "Manage every user's marketplace across the platform." : "Build and manage your SaaS marketplace sites."}</p>
         </div>
         <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> New Marketplace</Button>
       </motion.div>
@@ -72,6 +106,7 @@ export default function MarketplaceDashboard() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {marketplaces.map((m, i) => {
             const plan = plans.find(p => p.id === m.planId);
+            const owner = ownerMap[m.ownerId];
             return (
               <motion.div key={m.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
                 <Card className="border-border/40 bg-card/60 backdrop-blur-xl hover:border-violet-500/30 transition-all">
@@ -101,9 +136,18 @@ export default function MarketplaceDashboard() {
                         {m.categories.length > 3 && <Badge variant="secondary" className="text-[9px]">+{m.categories.length - 3}</Badge>}
                       </div>
                     )}
+                    {isAdmin && (
+                      <div className="mb-3 p-2 rounded-lg bg-secondary/40 border border-border/40 space-y-1">
+                        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><UserIcon className="w-3 h-3" />{owner?.full_name || "Unknown owner"}</p>
+                        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><Mail className="w-3 h-3" />{owner?.email || "—"}</p>
+                      </div>
+                    )}
                     <div className="flex gap-2 flex-wrap">
                       <Button size="sm" onClick={() => { setSelectedMarketplace(m); setView("hub"); }} className="h-8 text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 hover:from-orange-600 hover:to-amber-600"><LayoutDashboard className="w-3 h-3 mr-1" />Manage</Button>
                       <Button size="sm" variant="ghost" onClick={() => window.open(storeUrl(m), "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
+                      {isAdmin && (
+                        <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(m)} className="h-8 text-xs text-red-400 hover:text-red-400 hover:bg-red-500/10"><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -112,6 +156,23 @@ export default function MarketplaceDashboard() {
           })}
         </div>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete marketplace?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteTarget?.name}" Marketplace? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDelete(); }} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
