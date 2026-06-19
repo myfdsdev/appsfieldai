@@ -18,6 +18,7 @@ import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
 import HeroSectionEditor from "@/components/marketplace/HeroSectionEditor";
 import CustomPagesManager from "@/components/marketplace/CustomPagesManager";
 import TestimonialsManager from "@/components/marketplace/TestimonialsManager";
+import FooterPagesList from "@/components/marketplace/FooterPagesList";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -227,6 +228,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                       <FileText className="w-3.5 h-3.5" /> Add Custom Page
                     </Button>
                   </div>
+                  <FooterPagesList marketplaceId={marketplace?.id} />
                 </SectionCard>
               </div>
               <div className="flex flex-wrap gap-2">
