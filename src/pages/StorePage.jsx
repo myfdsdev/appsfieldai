@@ -13,6 +13,8 @@ import StoreHero from "@/components/store/StoreHero";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
+import StoreAuthModal from "@/components/store/StoreAuthModal";
+import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 
 export default function StorePage() {
   const { slug: slugParam } = useParams();
@@ -25,6 +27,10 @@ export default function StorePage() {
   const [notFound, setNotFound] = useState(false);
   const [viewDetailListing, setViewDetailListing] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState(null);
+  const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
+
+  const marketplaceId = data?.marketplace?.id;
+  const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
 
   const handleSelectCategory = (cat) => {
     setCategoryFilter(prev => (prev === cat ? null : cat));
@@ -79,7 +85,13 @@ export default function StorePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Store top nav */}
-      <StoreNavbar marketplace={marketplace} sections={sections} />
+      <StoreNavbar
+        marketplace={marketplace}
+        sections={sections}
+        customer={customer}
+        onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
+        onLogout={logout}
+      />
 
       {/* Store hero */}
       {headerEnabled && (
@@ -131,6 +143,15 @@ export default function StorePage() {
         listingId={viewDetailListing?.id}
         open={!!viewDetailListing}
         onClose={() => setViewDetailListing(null)}
+      />
+
+      <StoreAuthModal
+        open={authModal.open}
+        initialMode={authModal.mode}
+        marketplace={marketplace}
+        brandColor={brandColor}
+        onClose={() => setAuthModal((a) => ({ ...a, open: false }))}
+        onAuthed={(c) => setCustomer(c)}
       />
     </div>
   );

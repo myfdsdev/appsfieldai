@@ -1,0 +1,48 @@
+{
+  "name": "StoreCustomer",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace this customer account belongs to"
+    },
+    "fullName": {
+      "type": "string",
+      "description": "Customer full name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Customer email (unique within the marketplace)"
+    },
+    "passwordHash": {
+      "type": "string",
+      "description": "Salted SHA-256 password hash"
+    },
+    "passwordSalt": {
+      "type": "string",
+      "description": "Per-account password salt"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Optional phone number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ],
+      "default": "active",
+      "description": "Account status"
+    },
+    "sessionToken": {
+      "type": "string",
+      "description": "Current session token for this customer"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "email",
+    "passwordHash"
+  ]
+}

@@ -1,14 +1,23 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Store, Menu, X, User } from "lucide-react";
+import { Store, Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
-export default function StoreNavbar({ marketplace, sections = {} }) {
+export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout }) {
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const logo = sections.headerLogoUrl || marketplace.branding?.logo;
   const name = marketplace.name || "Store";
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [accountOpen, setAccountOpen] = React.useState(false);
+  const accountRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (accountRef.current && !accountRef.current.contains(e.target)) setAccountOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -21,6 +30,50 @@ export default function StoreNavbar({ marketplace, sections = {} }) {
     { label: "Lifetime Deals", target: "store-lifetime-deals" },
     { label: "Become A Vendor?", target: "store-become-vendor" },
   ];
+
+  const AccountButton = () => {
+    if (customer) {
+      return (
+        <div className="relative ml-1" ref={accountRef}>
+          <button
+            onClick={() => setAccountOpen((o) => !o)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 transition-colors"
+          >
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: brandColor }}>
+              <User className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-sm font-medium max-w-[120px] truncate">{customer.fullName || customer.email}</span>
+            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${accountOpen ? "rotate-180" : ""}`} />
+          </button>
+          {accountOpen && (
+            <div className="absolute right-0 mt-2 w-52 bg-card border border-border/40 rounded-xl shadow-2xl shadow-black/40 py-2 z-50">
+              <div className="px-3 py-2 border-b border-border/30 mb-1">
+                <p className="text-sm font-medium truncate">{customer.fullName || "Customer"}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
+              </div>
+              <button
+                onClick={() => { setAccountOpen(false); onLogout?.(); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" /> Log out
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <button
+        onClick={() => onOpenAuth?.("login")}
+        className="ml-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 transition-colors"
+      >
+        <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: brandColor }}>
+          <User className="w-3.5 h-3.5 text-white" />
+        </div>
+        <span className="text-sm font-medium">Sign In</span>
+      </button>
+    );
+  };
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-background/80 backdrop-blur-xl">
@@ -56,15 +109,7 @@ export default function StoreNavbar({ marketplace, sections = {} }) {
             Browse Deals
           </button>
           {/* User option */}
-          <Link
-            to="/login"
-            className="ml-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 transition-colors"
-          >
-            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: brandColor }}>
-              <User className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="text-sm font-medium">Account</span>
-          </Link>
+          <AccountButton />
         </nav>
 
         {/* Mobile toggle */}
@@ -92,13 +137,27 @@ export default function StoreNavbar({ marketplace, sections = {} }) {
           >
             Browse Deals
           </button>
-          <Link
-            to="/login"
-            onClick={() => setMenuOpen(false)}
-            className="mt-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium"
-          >
-            <User className="w-4 h-4" style={{ color: brandColor }} /> Account
-          </Link>
+          {customer ? (
+            <>
+              <div className="mt-1 px-3 py-2 rounded-xl bg-secondary/50 text-sm">
+                <p className="font-medium truncate">{customer.fullName || customer.email}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
+              </div>
+              <button
+                onClick={() => { setMenuOpen(false); onLogout?.(); }}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium text-red-400"
+              >
+                <LogOut className="w-4 h-4" /> Log out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => { setMenuOpen(false); onOpenAuth?.("login"); }}
+              className="mt-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium"
+            >
+              <User className="w-4 h-4" style={{ color: brandColor }} /> Sign In
+            </button>
+          )}
         </nav>
       )}
     </header>
