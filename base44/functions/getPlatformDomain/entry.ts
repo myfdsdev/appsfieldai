@@ -6,6 +6,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //   2. The X-Forwarded-Host / Origin / Referer of the live request (auto-detects
 //      the Base44 custom domain the app is actually being served on)
 //   3. Fallback to the default <appId>.base44.app host
+// The real host Base44 serves this app on — every subdomain / custom domain
+// must CNAME here (NOT back at the platform's own root domain, which causes
+// Cloudflare Error 1000 "DNS points to prohibited IP").
+const CNAME_TARGET = "base44.onrender.com";
+
 function rootDomain(host) {
   const clean = (host || "")
     .toLowerCase()
@@ -34,7 +39,7 @@ Deno.serve(async (req) => {
       const configured = configs?.[0]?.platformDomain;
       if (configured) {
         const root = rootDomain(configured);
-        return Response.json({ platformDomain: root, cnameTarget: `cname.${root}`, source: "configured" });
+        return Response.json({ platformDomain: root, cnameTarget: CNAME_TARGET, source: "configured" });
       }
     } catch (err) {
       console.error("AppConfig lookup failed", err);
@@ -52,13 +57,13 @@ Deno.serve(async (req) => {
       const root = rootDomain(h);
       // Skip internal/base44 infra hosts — only accept a real custom domain.
       if (root && !root.includes("base44.") && !root.includes("127.0.0.1") && !root.includes("localhost")) {
-        return Response.json({ platformDomain: root, cnameTarget: `cname.${root}`, source: "auto_detected" });
+        return Response.json({ platformDomain: root, cnameTarget: CNAME_TARGET, source: "auto_detected" });
       }
     }
 
     // 3) Fallback to the default app host.
     const fallback = `${appId}.base44.app`;
-    return Response.json({ platformDomain: fallback, cnameTarget: `cname.${fallback}`, source: "default" });
+    return Response.json({ platformDomain: fallback, cnameTarget: CNAME_TARGET, source: "default" });
   } catch (error) {
     console.error("getPlatformDomain error", error);
     return Response.json({ error: error.message }, { status: 500 });

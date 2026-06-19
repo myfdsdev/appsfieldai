@@ -54,6 +54,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const [verifying, setVerifying] = useState(false);
   const [platformDomain, setPlatformDomain] = useState("");
   const [domainSource, setDomainSource] = useState("");
+  const [cnameTarget, setCnameTarget] = useState("");
 
   useEffect(() => { setMp(marketplaceProp); }, [marketplaceProp]);
 
@@ -62,6 +63,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
       .then(res => {
         setPlatformDomain(res.data?.platformDomain || "");
         setDomainSource(res.data?.source || "");
+        setCnameTarget(res.data?.cnameTarget || "");
       })
       .catch(() => {});
   }, []);
@@ -76,9 +78,11 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const PLATFORM_DOMAIN = platformDomain || "your-platform.com";
   const txtKey = PLATFORM_DOMAIN.split(".")[0];
 
-  // The store's live address on the platform — this is what the custom domain points to.
-  const storeSubdomain = marketplace?.subdomain || marketplace?.slug || "store";
-  const CNAME_TARGET = `${storeSubdomain}.${PLATFORM_DOMAIN}`;
+  // The real Base44 host every custom domain must CNAME to (NOT the platform root domain,
+  // which would cause Cloudflare Error 1000). Comes from getPlatformDomain.
+  const CNAME_TARGET = cnameTarget || "base44.onrender.com";
+  // A-record IP for root domains (matches the platform's own root A record).
+  const ROOT_A_IP = "216.24.57.1";
 
   const token = marketplace?.verificationToken;
   const domain = marketplace?.customDomain;
@@ -221,7 +225,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
                     <CopyField label="Type" value={isRoot ? "A" : "CNAME"} />
                     <CopyField label="Host / Name" value={recordHost} />
-                    <CopyField label="Value" value={isRoot ? "76.76.21.21" : CNAME_TARGET} />
+                    <CopyField label="Value" value={isRoot ? ROOT_A_IP : CNAME_TARGET} />
                   </div>
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
