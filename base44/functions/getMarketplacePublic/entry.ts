@@ -4,12 +4,22 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const { slug } = await req.json();
+    const { slug, customDomain } = await req.json();
 
-    // Resolve by subdomain first (the live store address), then fall back to slug.
-    let marketplace = await base44.asServiceRole.entities.Marketplace.filter({ subdomain: slug });
-    if (!marketplace.length) {
-      marketplace = await base44.asServiceRole.entities.Marketplace.filter({ slug });
+    let marketplace = [];
+
+    // 1. Resolve by custom domain first (someone visiting deals.theirbrand.com / store.x.com).
+    if (customDomain) {
+      const clean = String(customDomain).toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+      marketplace = await base44.asServiceRole.entities.Marketplace.filter({ customDomain: clean });
+    }
+
+    // 2. Else resolve by subdomain (the store-name slug), then fall back to slug.
+    if (!marketplace.length && slug) {
+      marketplace = await base44.asServiceRole.entities.Marketplace.filter({ subdomain: slug });
+      if (!marketplace.length) {
+        marketplace = await base44.asServiceRole.entities.Marketplace.filter({ slug });
+      }
     }
     if (!marketplace.length) return Response.json({ error: 'Marketplace not found' }, { status: 404 });
 

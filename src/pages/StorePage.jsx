@@ -5,10 +5,12 @@ import { base44 } from "@/api/base44Client";
 import { Store, Globe } from "lucide-react";
 import SaaSCard from "@/components/marketplace/SaaSCard";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
-import { getStoreKeyFromHost } from "@/lib/storeHost";
+import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 
 export default function StorePage() {
   const { slug: slugParam } = useParams();
+  // A customer's own domain (e.g. deals.brand.com) resolves the store by customDomain.
+  const customDomain = getCustomDomainFromHost();
   // On a wildcard store subdomain the key comes from the hostname, not the path.
   const slug = slugParam || getStoreKeyFromHost();
   const [data, setData] = useState(null);
@@ -20,7 +22,7 @@ export default function StorePage() {
     let active = true;
     setLoading(true);
     base44.functions
-      .invoke("getMarketplacePublic", { slug })
+      .invoke("getMarketplacePublic", { slug, customDomain })
       .then((res) => {
         if (!active) return;
         if (res.data?.error || !res.data?.marketplace) setNotFound(true);
@@ -29,7 +31,7 @@ export default function StorePage() {
       .catch(() => active && setNotFound(true))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
-  }, [slug]);
+  }, [slug, customDomain]);
 
   if (loading) {
     return (
@@ -46,7 +48,7 @@ export default function StorePage() {
           <Store className="w-8 h-8 text-muted-foreground" />
         </div>
         <h1 className="text-xl font-display font-bold">Store not found</h1>
-        <p className="text-sm text-muted-foreground mt-1">The store "{slug}" doesn't exist or isn't published yet.</p>
+        <p className="text-sm text-muted-foreground mt-1">{customDomain ? `No store is connected to ${customDomain} yet.` : `The store "${slug}" doesn't exist or isn't published yet.`}</p>
       </div>
     );
   }

@@ -37,7 +37,7 @@ import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import StorePage from '@/pages/StorePage';
-import { getStoreKeyFromHost } from '@/lib/storeHost';
+import { getStoreKeyFromHost, getCustomDomainFromHost } from '@/lib/storeHost';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -53,8 +53,9 @@ const StoreSubdomainApp = () => (
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Store subdomain → render the public store directly, skip auth gating entirely.
-  if (getStoreKeyFromHost()) {
+  // Store subdomain OR a customer's own custom domain → render the public store directly,
+  // skip auth gating entirely.
+  if (getStoreKeyFromHost() || getCustomDomainFromHost()) {
     return <StoreSubdomainApp />;
   }
 
