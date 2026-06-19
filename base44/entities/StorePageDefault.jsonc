@@ -1,0 +1,64 @@
+{
+  "name": "StorePageDefault",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "default": "default",
+      "description": "Unique key \u2014 always 'default' for the single global default record"
+    },
+    "pageSections": {
+      "type": "object",
+      "description": "Default store page section configuration inherited by new marketplaces",
+      "properties": {
+        "headerEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "headerTitle": {
+          "type": "string"
+        },
+        "headerSubtitle": {
+          "type": "string"
+        },
+        "headerImageUrl": {
+          "type": "string"
+        },
+        "productsEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "productsSectionTitle": {
+          "type": "string"
+        },
+        "testimonialsEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "testimonialsTitle": {
+          "type": "string"
+        },
+        "customBoxesEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "customBoxes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "footerEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "footerText": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "key"
+  ]
+}

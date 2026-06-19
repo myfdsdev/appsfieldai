@@ -15,6 +15,7 @@ import DashboardEditor from "@/components/admin/DashboardEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
 import DFYProductManager from "@/components/admin/DFYProductManager";
+import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -601,20 +602,7 @@ export default function AdminPanel() {
       case "dfy_products":
         return <DFYProductManager />;
       case "mktpl_templates":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <Globe className="w-4 h-4 text-cyan-400" />Marketplace Templates
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground py-4 text-center">Marketplace template management coming soon.</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
+        return <StorePageDefaultManager />;
       case "pricing_presets":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

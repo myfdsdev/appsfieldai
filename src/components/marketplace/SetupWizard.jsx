@@ -84,7 +84,19 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     if (marketplace?.id) {
       await base44.entities.Marketplace.update(marketplace.id, payload);
     } else {
-      await base44.entities.Marketplace.create({ ...payload, name: data.name, slug: data.slug, ownerId: (await base44.auth.me()).id });
+      // Inherit the global default store page content for new marketplaces
+      let pageSections;
+      try {
+        const defaults = await base44.entities.StorePageDefault.filter({ key: "default" });
+        pageSections = defaults?.[0]?.pageSections;
+      } catch { /* no default configured — skip */ }
+      await base44.entities.Marketplace.create({
+        ...payload,
+        ...(pageSections ? { pageSections } : {}),
+        name: data.name,
+        slug: data.slug,
+        ownerId: (await base44.auth.me()).id,
+      });
     }
     queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
     setSaving(false);
