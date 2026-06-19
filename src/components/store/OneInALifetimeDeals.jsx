@@ -41,7 +41,7 @@ export default function OneInALifetimeDeals({ listings = [], onViewDetails }) {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((l, i) => (
-            <SaaSCard key={l.id} listing={l} delay={i * 0.04} onViewDetails={onViewDetails} />
+            <SaaSCard key={l.id} listing={l} delay={i * 0.04} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onViewDetails} />
           ))}
         </div>
       )}
