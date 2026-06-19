@@ -6,13 +6,21 @@
       "type": "string",
       "description": "ID of the user who bought shares"
     },
+    "userName": {
+      "type": "string",
+      "description": "Name of the buyer"
+    },
     "listingId": {
       "type": "string",
       "description": "ID of the SaaS listing"
     },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the listing at purchase time"
+    },
     "sharesBought": {
       "type": "number",
-      "description": "Number of shares purchased"
+      "description": "Number of spots/shares purchased"
     },
     "pricePerShare": {
       "type": "number",
@@ -21,13 +29,21 @@
     "totalAmount": {
       "type": "number",
       "description": "Total amount paid"
+    },
+    "purchaseType": {
+      "type": "string",
+      "enum": [
+        "spot",
+        "full"
+      ],
+      "default": "spot",
+      "description": "Spot purchase or full ownership"
     }
   },
   "required": [
     "userId",
     "listingId",
     "sharesBought",
-    "pricePerShare",
     "totalAmount"
   ]
 }

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
+import BuySpotModal from "@/components/marketplace/BuySpotModal";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -100,6 +101,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
   const queryClient = useQueryClient();
   const [reserveSpotListing, setReserveSpotListing] = useState(null);
   const [requestAcqListing, setRequestAcqListing] = useState(null);
+  const [buySpotListing, setBuySpotListing] = useState(null);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["saasListing", listingId],
@@ -282,21 +284,30 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                   {/* Spacer */}
                   <div className="flex-1" />
 
+                  {/* Deal Timer */}
+                  {!listing.noDayLimit && listing.dealEndDate && new Date(listing.dealEndDate) > new Date() && (
+                    <div className="rounded-xl bg-orange-500/5 border border-orange-500/20 p-2.5">
+                      <p className="text-[9px] text-orange-400 uppercase mb-1">Deal Ends In</p>
+                      <CountdownTimer endDate={listing.dealEndDate} />
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   {!isSold ? (
                     <div className="space-y-2 pt-1">
                       <Button
-                        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl h-9 font-semibold text-sm text-white border-0"
-                        onClick={() => setReserveSpotListing(listing)}
+                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
+                        onClick={() => setBuySpotListing(listing)}
+                        disabled={sharesLeft <= 0}
                       >
-                        <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
+                        {sharesLeft <= 0 ? "All Spots Filled" : `Buy Spot — $${listing.sharePrice}`}
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full border-violet-500/50 text-violet-400 hover:bg-violet-500/10 rounded-xl h-9 text-sm"
-                        onClick={() => setRequestAcqListing(listing)}
+                        className="w-full border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
+                        onClick={() => setReserveSpotListing(listing)}
                       >
-                        <Building2 className="w-4 h-4 mr-1.5" /> Request Acquisition
+                        <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
                       </Button>
                     </div>
                   ) : (
@@ -320,6 +331,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
 
       <ReserveSpotModal listing={reserveSpotListing} open={!!reserveSpotListing} onClose={() => setReserveSpotListing(null)} />
       <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
+      <BuySpotModal listing={buySpotListing} open={!!buySpotListing} onClose={() => setBuySpotListing(null)} onSuccess={handleSuccess} />
     </AnimatePresence>
   );
 }

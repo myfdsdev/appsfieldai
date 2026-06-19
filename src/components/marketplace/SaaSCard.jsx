@@ -55,10 +55,10 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
-  const { softwareName, category, sellerName, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
+  const { softwareName, category, sellerName, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
   const title = softwareName || "Untitled";
   const fullPrice = (sharePrice || 0) * (totalShares || 0);
   const isSold = status === "sold";
@@ -135,31 +135,48 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
           )}
         </div>
 
-        {/* Countdown for auctions */}
+        {/* Countdown for auctions or timed deals */}
         {status === "auction" && auctionEndsAt && (
           <CountdownTimer endDate={auctionEndsAt} />
         )}
+        {status !== "auction" && !noDayLimit && dealEndDate && new Date(dealEndDate) > new Date() && (
+          <CountdownTimer endDate={dealEndDate} />
+        )}
+        {noDayLimit && (
+          <div className="flex items-center gap-1.5 text-xs text-emerald-400">
+            <Clock className="w-3 h-3" /> No time limit
+          </div>
+        )}
 
         {/* Pricing */}
-        <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="rounded-lg bg-secondary/40 p-2.5">
-            <p className="text-[10px] text-muted-foreground">Full Price</p>
-            <p className="text-sm font-display font-bold">${fullPrice.toLocaleString()}</p>
+        {dealType === "single_purchase" ? (
+          <div className="rounded-lg bg-secondary/40 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground">Deal Price</p>
+            <p className="text-lg font-display font-bold text-[#f79a1b]">${fullPrice.toLocaleString()}</p>
           </div>
-          <div className="rounded-lg bg-secondary/40 p-2.5">
-            <p className="text-[10px] text-muted-foreground">Per Share</p>
-            <p className="text-sm font-display font-bold text-[#f79a1b]">${sharePrice}</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2 text-center">
+              <div className="rounded-lg bg-secondary/40 p-2.5">
+                <p className="text-[10px] text-muted-foreground">Full Price</p>
+                <p className="text-sm font-display font-bold">${fullPrice.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg bg-secondary/40 p-2.5">
+                <p className="text-[10px] text-muted-foreground">Per Spot</p>
+                <p className="text-sm font-display font-bold text-[#f79a1b]">${sharePrice}</p>
+              </div>
+            </div>
 
-        {/* Shares Progress */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[11px]">
-            <span className="text-muted-foreground">Shares sold</span>
-            <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
-          </div>
-          <Progress value={sharePercent} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
-        </div>
+            {/* Spots Progress */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-muted-foreground">Spots filled</span>
+                <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
+              </div>
+              <Progress value={sharePercent} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
+            </div>
+          </>
+        )}
 
         {/* Revenue & Growth */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -169,14 +186,17 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-            Reserve Spot
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
-            Request Acquisition
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onRequestDemo?.(listing)} className="rounded-lg text-[11px] h-8 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10">
-            <Video className="w-3 h-3" />
+          {(dealType !== "single_purchase") ? (
+            <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+              {sharesLeft <= 0 ? "Sold Out" : `Buy Spot — $${sharePrice}`}
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+              Buy Now — ${fullPrice.toLocaleString()}
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40 px-2.5">
+            Reserve
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
             <ExternalLink className="w-3 h-3" />

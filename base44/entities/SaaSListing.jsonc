@@ -74,11 +74,43 @@
     },
     "price": {
       "type": "number",
-      "description": "Current price"
+      "description": "Single buy / full price"
     },
     "discountPrice": {
       "type": "number",
       "description": "Discounted deal price"
+    },
+    "dealType": {
+      "type": "string",
+      "enum": [
+        "group_deal",
+        "single_purchase",
+        "both"
+      ],
+      "default": "group_deal",
+      "description": "Deal offering type \u2014 group split, single buyer, or both"
+    },
+    "sharePrice": {
+      "type": "number",
+      "description": "Price per individual spot/share"
+    },
+    "totalShares": {
+      "type": "number",
+      "description": "Total number of spots/shares"
+    },
+    "soldShares": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of spots/shares already sold"
+    },
+    "noDayLimit": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the deal has no time limit"
+    },
+    "dealDurationDays": {
+      "type": "number",
+      "description": "Duration of the deal in days"
     },
     "dealStartDate": {
       "type": "string",
@@ -90,6 +122,18 @@
       "format": "date-time",
       "description": "Deal end date"
     },
+    "dealStatus": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "live",
+        "funded",
+        "completed",
+        "expired"
+      ],
+      "default": "live",
+      "description": "Deal lifecycle status"
+    },
     "monthlyRevenue": {
       "type": "number",
       "description": "Monthly revenue in dollars"
@@ -98,19 +142,6 @@
       "type": "number",
       "default": 0,
       "description": "Monthly expenses in dollars"
-    },
-    "sharePrice": {
-      "type": "number",
-      "description": "Price per individual share"
-    },
-    "totalShares": {
-      "type": "number",
-      "description": "Total number of shares"
-    },
-    "soldShares": {
-      "type": "number",
-      "default": 0,
-      "description": "Number of shares already sold"
     },
     "growthRate": {
       "type": "number",

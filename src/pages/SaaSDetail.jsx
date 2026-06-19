@@ -12,6 +12,7 @@ import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import DemoRequestModal from "@/components/marketplace/DemoRequestModal";
 import PlaceBidModal from "@/components/marketplace/PlaceBidModal";
+import BuySpotModal from "@/components/marketplace/BuySpotModal";
 import QnAPanel from "@/components/marketplace/QnAPanel";
 import ChatPanel from "@/components/marketplace/ChatPanel";
 import FinancialCharts from "@/components/marketplace/FinancialCharts";
@@ -138,6 +139,7 @@ export default function SaaSDetail() {
   const [requestAcqListing, setRequestAcqListing] = useState(null);
   const [demoRequestListing, setDemoRequestListing] = useState(null);
   const [bidListing, setBidListing] = useState(null);
+  const [buySpotListing, setBuySpotListing] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", content: "" });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -470,14 +472,27 @@ export default function SaaSDetail() {
                   </div>
                 )}
 
+                {/* Deal Timer */}
+                {!listing.noDayLimit && listing.dealEndDate && new Date(listing.dealEndDate) > new Date() && (
+                  <div className="rounded-xl bg-orange-500/5 border border-orange-500/20 p-3">
+                    <p className="text-[10px] text-orange-400 uppercase mb-1">Deal Ends In</p>
+                    <CountdownTimer endDate={listing.dealEndDate} />
+                  </div>
+                )}
+                {listing.noDayLimit && (
+                  <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-3">
+                    <p className="text-[10px] text-emerald-400 flex items-center gap-1"><Clock className="w-3 h-3" /> No time limit — deal stays open until all spots are filled</p>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 {!isSold && (
                   <div className="space-y-2 pt-2">
-                    <Button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setReserveSpotListing(listing)}>
-                      <CalendarCheck className="w-4 h-4 mr-2" /> Reserve Spot
+                    <Button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-10 font-semibold text-sm text-white border-0" onClick={() => setBuySpotListing(listing)} disabled={sharesLeft <= 0}>
+                      {sharesLeft <= 0 ? "All Spots Filled" : `Buy Spot — $${listing.sharePrice}`}
                     </Button>
-                    <Button variant="outline" className="w-full border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-xl h-10 text-sm" onClick={() => setRequestAcqListing(listing)}>
-                      <Building2 className="w-4 h-4 mr-2" /> Request Acquisition
+                    <Button variant="outline" className="w-full border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-10 text-sm" onClick={() => setReserveSpotListing(listing)}>
+                      <CalendarCheck className="w-4 h-4 mr-2" /> Reserve Spot
                     </Button>
                     <Button variant="outline" className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10 rounded-xl h-10 text-sm" onClick={() => setDemoRequestListing(listing)}>
                       <Video className="w-4 h-4 mr-2" /> Request Demo
@@ -511,6 +526,7 @@ export default function SaaSDetail() {
       <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
       <DemoRequestModal listing={demoRequestListing} open={!!demoRequestListing} onClose={() => setDemoRequestListing(null)} />
       <PlaceBidModal listing={bidListing} open={!!bidListing} onClose={() => setBidListing(null)} onSuccess={handleBidSuccess} />
+      <BuySpotModal listing={buySpotListing} open={!!buySpotListing} onClose={() => setBuySpotListing(null)} onSuccess={handleSuccess} />
     </div>
   );
 }
