@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Globe, CheckCircle2, XCircle, Clock, Copy, Check, RefreshCw, ShieldCheck, Info } from "lucide-react";
@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-
-const PLATFORM_DOMAIN = "saasshare.app";
-const CNAME_TARGET = "cname.saasshare.app";
 
 function genToken() {
   return "vk_" + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
@@ -52,6 +49,21 @@ export default function DomainManager({ marketplace, onUpdate }) {
   const [customDomain, setCustomDomain] = useState(marketplace?.customDomain || "");
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [platformDomain, setPlatformDomain] = useState("");
+  const [domainSource, setDomainSource] = useState("");
+
+  useEffect(() => {
+    base44.functions.invoke("getPlatformDomain", {})
+      .then(res => {
+        setPlatformDomain(res.data?.platformDomain || "");
+        setDomainSource(res.data?.source || "");
+      })
+      .catch(() => {});
+  }, []);
+
+  const PLATFORM_DOMAIN = platformDomain || "your-platform.com";
+  const CNAME_TARGET = `cname.${PLATFORM_DOMAIN}`;
+  const txtKey = PLATFORM_DOMAIN.split(".")[0];
 
   const token = marketplace?.verificationToken;
   const domain = marketplace?.customDomain;
@@ -102,6 +114,18 @@ export default function DomainManager({ marketplace, onUpdate }) {
 
   return (
     <div className="space-y-6">
+      {/* Detected platform domain banner */}
+      <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-xs">
+        <Info className="w-4 h-4 text-blue-400 shrink-0" />
+        <span className="text-muted-foreground">
+          Platform domain:{" "}
+          <code className="font-mono text-blue-400">{platformDomain || "detecting…"}</code>
+          {domainSource === "auto_detected" && <span className="text-blue-400/60"> · auto-detected from your Base44 custom domain</span>}
+          {domainSource === "configured" && <span className="text-blue-400/60"> · set in admin settings</span>}
+          {domainSource === "default" && <span className="text-amber-400/70"> · using default — set a Base44 custom domain or configure one in admin</span>}
+        </span>
+      </div>
+
       {/* Platform Subdomain */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card/60 backdrop-blur-xl border border-border/40 rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-3">
@@ -109,7 +133,8 @@ export default function DomainManager({ marketplace, onUpdate }) {
           <h3 className="font-display font-semibold text-base">Free Subdomain</h3>
           <Badge variant="secondary" className="text-[9px]">Instant</Badge>
         </div>
-        <p className="text-xs text-muted-foreground mb-4">Every store gets a free subdomain — no DNS setup needed.</p>
+        <p className="text-xs text-muted-foreground mb-1">Every store gets a free subdomain — no DNS setup needed.</p>
+        <p className="text-[11px] text-muted-foreground mb-4">Example: <code className="font-mono text-orange-400/80">mystore.{PLATFORM_DOMAIN}</code></p>
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Input value={subdomain} onChange={e => setSubdomain(e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl pr-28" placeholder="mystore" />
@@ -173,8 +198,8 @@ export default function DomainManager({ marketplace, onUpdate }) {
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
                     <CopyField label="Type" value="TXT" />
-                    <CopyField label="Host / Name" value={`_saasshare.${domain}`} />
-                    <CopyField label="Value" value={`saasshare-verify=${token || "—"}`} />
+                    <CopyField label="Host / Name" value={`_${txtKey}.${domain}`} />
+                    <CopyField label="Value" value={`${txtKey}-verify=${token || "—"}`} />
                   </div>
 
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">

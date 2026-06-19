@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Unique config key (e.g. hero, stats_cards)"
     },
+    "platformDomain": {
+      "type": "string",
+      "description": "Base platform domain for customer stores (e.g. saasshare.app). Used for subdomains and custom-domain DNS targets."
+    },
     "hero_badge_text": {
       "type": "string"
     },

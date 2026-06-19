@@ -11,6 +11,9 @@ export default function GeneralSettings() {
   const [siteName, setSiteName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
+  const [platformDomain, setPlatformDomain] = useState("");
+  const [detectedDomain, setDetectedDomain] = useState("");
+  const [domainSource, setDomainSource] = useState("");
   const [auctionDuration, setAuctionDuration] = useState("");
   const [defaultShares, setDefaultShares] = useState("");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -25,6 +28,15 @@ export default function GeneralSettings() {
         const user = await base44.auth.me();
         if (user.requireListingApproval !== undefined) setRequireListingApproval(user.requireListingApproval);
       } catch { /* use defaults */ }
+      try {
+        const configs = await base44.entities.AppConfig.filter({ key: "main" });
+        if (configs?.[0]?.platformDomain) setPlatformDomain(configs[0].platformDomain);
+      } catch { /* none yet */ }
+      try {
+        const res = await base44.functions.invoke("getPlatformDomain", {});
+        setDetectedDomain(res.data?.platformDomain || "");
+        setDomainSource(res.data?.source || "");
+      } catch { /* ignore */ }
       setLoading(false);
     })();
   }, []);
@@ -33,6 +45,10 @@ export default function GeneralSettings() {
     setSaving(true);
     try {
       await base44.auth.updateMe({ requireListingApproval });
+      const cleanDomain = platformDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+      const configs = await base44.entities.AppConfig.filter({ key: "main" });
+      if (configs?.[0]) await base44.entities.AppConfig.update(configs[0].id, { platformDomain: cleanDomain });
+      else await base44.entities.AppConfig.create({ key: "main", platformDomain: cleanDomain });
       toast.success("Settings saved successfully.");
     } catch {
       toast.error("Failed to save settings.");
@@ -86,6 +102,25 @@ export default function GeneralSettings() {
           />
         </Field>
       </div>
+
+      {/* Platform Domain */}
+      <Field label="Platform Domain">
+        <Input
+          placeholder="saasshare.app"
+          value={platformDomain}
+          onChange={(e) => setPlatformDomain(e.target.value)}
+          className="h-10 bg-secondary/40 border-border/50 font-mono"
+        />
+        <p className="text-xs text-muted-foreground">
+          Base domain for customer stores — used for subdomains (<code className="font-mono">store.{platformDomain || "saasshare.app"}</code>) and custom-domain DNS targets.
+          {detectedDomain && (
+            <span className="block mt-1">
+              Auto-detected: <code className="font-mono text-blue-400">{detectedDomain}</code>
+              <span className="text-muted-foreground/70"> ({domainSource === "configured" ? "from this setting" : domainSource === "auto_detected" ? "from your live Base44 custom domain" : "default — set your domain above"})</span>
+            </span>
+          )}
+        </p>
+      </Field>
 
       {/* Logo Upload */}
       <Field label="Logo">
