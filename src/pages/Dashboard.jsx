@@ -139,14 +139,6 @@ export default function Dashboard() {
           >
             {heroConfig.hero_cta_primary || "Active deals live now"}
           </button>
-          <button
-            onClick={() => navigate("/sell")}
-            className="px-6 py-2.5 rounded-full border border-orange-400/40 text-orange-400 text-sm font-semibold hover:bg-orange-400/10 transition-colors flex items-center gap-2"
-          >
-            <Upload className="w-4 h-4" />
-            {heroConfig.hero_cta_secondary || "Sell My SaaS"}
-          </button>
-
         </motion.div>
       </motion.div>
 
