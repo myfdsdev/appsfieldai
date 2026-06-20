@@ -87,8 +87,8 @@ export default function Login() {
       {/* Left showcase area */}
       <div className="relative z-10 flex-1 hidden lg:flex flex-col items-center justify-center px-12">
         <div className="text-center select-none">
-          <span className="block text-[10px] tracking-[0.5em] text-red-300/60 font-medium uppercase mb-2">Powering the future of</span>
-          <h2 className="font-display font-extrabold text-6xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-red-200 via-red-400 to-red-600 tracking-tight">
+          <span className="block text-[10px] tracking-[0.5em] text-orange-300/60 font-medium uppercase mb-2">Powering the future of</span>
+          <h2 className="font-display font-extrabold text-6xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-orange-100 via-orange-400 to-orange-600 tracking-tight">
             {brandName}
           </h2>
         </div>
@@ -96,7 +96,7 @@ export default function Login() {
 
       {/* Right login card */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-10 lg:py-0 lg:pr-16">
-        <div className="w-full max-w-[460px] bg-white/[0.05] backdrop-blur-2xl rounded-[28px] border border-white/10 p-8 sm:p-12 shadow-[0_0_0_1px_rgba(239,68,68,0.08),0_20px_90px_-20px_rgba(239,68,68,0.3)] ring-1 ring-inset ring-white/[0.03]">
+        <div className="w-full max-w-[460px] bg-white/[0.05] backdrop-blur-2xl rounded-[28px] border border-white/10 p-8 sm:p-12 shadow-[0_0_0_1px_rgba(249,115,22,0.08),0_20px_90px_-20px_rgba(249,115,22,0.3)] ring-1 ring-inset ring-white/[0.03]">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
             <img src={branding.logo || DEFAULT_LOGO} alt={brandName} className="h-8 max-w-[140px] object-contain" />
@@ -132,7 +132,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-red-300/60" aria-hidden="true" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-300/60" aria-hidden="true" />
               <input
                 id="email"
                 type="email"
@@ -141,13 +141,13 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-12 pl-11 pr-3 rounded-xl bg-white/[0.04] backdrop-blur-sm border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-400/40 focus:border-red-400/50"
+                className="w-full h-12 pl-11 pr-3 rounded-xl bg-white/[0.04] backdrop-blur-sm border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400/50"
                 required
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-red-300/60" aria-hidden="true" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-300/60" aria-hidden="true" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -155,7 +155,7 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/[0.04] backdrop-blur-sm border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-400/40 focus:border-red-400/50"
+                className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/[0.04] backdrop-blur-sm border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400/50"
                 required
               />
               <button
@@ -174,18 +174,18 @@ export default function Login() {
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-400"
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-orange-500 focus:ring-orange-400"
                 />
                 Remember me
               </label>
-              <Link to="/forgot-password" className="text-red-400 hover:underline font-medium">
+              <Link to="/forgot-password" className="text-orange-400 hover:underline font-medium">
                 Forgot password?
               </Link>
             </div>
 
             <Button
               type="submit"
-              className="w-full h-12 font-semibold text-white rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-500/30"
+              className="w-full h-12 font-semibold text-white rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-lg shadow-orange-500/30"
               disabled={loading}
             >
               {loading ? (
@@ -201,7 +201,7 @@ export default function Login() {
 
           <p className="text-center text-sm text-white/50 mt-6">
             Don't have an account?{" "}
-            <Link to="/register" className="text-red-400 font-medium hover:underline">
+            <Link to="/register" className="text-orange-400 font-medium hover:underline">
               Create one
             </Link>
           </p>
