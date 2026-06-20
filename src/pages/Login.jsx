@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+
+const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [branding, setBranding] = useState({ logo: "", siteName: "" });
+
+  useEffect(() => {
+    base44.entities.AppConfig.filter({ key: "main" })
+      .then((cfgs) => {
+        const cfg = cfgs?.[0];
+        if (cfg) setBranding({ logo: cfg.appLogoUrl || "", siteName: cfg.siteName || "" });
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,13 +78,19 @@ export default function Login() {
         <div className="flex flex-col items-center text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-7">
             <img
-              src="https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png"
-              alt="SaaSShare"
-              className="w-11 h-11 object-contain"
+              src={branding.logo || DEFAULT_LOGO}
+              alt={branding.siteName || "SaaSShare"}
+              className="h-11 max-w-[200px] object-contain"
             />
-            <span className="font-display font-bold text-2xl text-foreground tracking-tight">
-              SaaS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Share</span>
-            </span>
+            {!branding.logo && (
+              <span className="font-display font-bold text-2xl text-foreground tracking-tight">
+                {branding.siteName ? (
+                  branding.siteName
+                ) : (
+                  <>SaaS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Share</span></>
+                )}
+              </span>
+            )}
           </Link>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
           <p className="text-muted-foreground mt-1.5 text-sm">Log in to your account</p>
