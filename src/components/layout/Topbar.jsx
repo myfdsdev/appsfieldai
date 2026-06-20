@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import { base44 } from "@/api/base44Client";
+
+const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
 
 const mainNavLinks = [
   { to: "/best-sellers", label: "Best Sellers" },
@@ -29,6 +32,16 @@ export default function Topbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const [branding, setBranding] = useState({ logo: "", siteName: "" });
+
+  useEffect(() => {
+    base44.entities.AppConfig.filter({ key: "main" })
+      .then((cfgs) => {
+        const cfg = cfgs?.[0];
+        if (cfg) setBranding({ logo: cfg.appLogoUrl || "", siteName: cfg.siteName || "" });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -45,10 +58,16 @@ export default function Topbar() {
       <div className="max-w-9xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src="https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png" alt="logo" className="w-8 h-8 object-contain" />
-          <span className="font-display font-bold text-base">
-            SaaS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Share</span>
-          </span>
+          <img src={branding.logo || DEFAULT_LOGO} alt="logo" className="h-8 max-w-[140px] object-contain" />
+          {!branding.logo && (
+            <span className="font-display font-bold text-base">
+              {branding.siteName ? (
+                branding.siteName
+              ) : (
+                <>SaaS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Share</span></>
+              )}
+            </span>
+          )}
         </Link>
 
         {/* Desktop Main Nav */}
