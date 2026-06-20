@@ -7,6 +7,20 @@ import { Switch } from "@/components/ui/switch";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
+const Field = ({ label, children }) => (
+  <div className="space-y-2">
+    <Label className="text-sm text-muted-foreground">{label}</Label>
+    {children}
+  </div>
+);
+
+const ToggleRow = ({ label, checked, onChange }) => (
+  <div className="flex items-center justify-between py-2">
+    <span className="text-sm text-foreground/80">{label}</span>
+    <Switch checked={checked} onCheckedChange={onChange} />
+  </div>
+);
+
 export default function GeneralSettings() {
   const [siteName, setSiteName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
@@ -87,20 +101,6 @@ export default function GeneralSettings() {
       setSaving(false);
     }
   };
-
-  const Field = ({ label, children }) => (
-    <div className="space-y-2">
-      <Label className="text-sm text-muted-foreground">{label}</Label>
-      {children}
-    </div>
-  );
-
-  const ToggleRow = ({ label, checked, onChange }) => (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm text-foreground/80">{label}</span>
-      <Switch checked={checked} onCheckedChange={onChange} />
-    </div>
-  );
 
   return (
     <div className="space-y-6">
