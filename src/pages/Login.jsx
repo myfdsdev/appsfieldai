@@ -87,7 +87,7 @@ export default function Login() {
       {/* Left showcase area */}
       <div className="relative z-10 flex-1 hidden lg:flex flex-col items-center justify-center px-12">
         <div className="text-center select-none">
-          <span className="block text-[10px] tracking-[0.5em] text-orange-300/60 font-medium uppercase mb-2">Powering the future of</span>
+          <span className="block text-[10px] tracking-[0.5em] text-orange-300/60 font-medium uppercase mb-2">Launch Your Own AI Apps Selling Business With</span>
           <h2 className="font-display font-extrabold text-6xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-orange-100 via-orange-400 to-orange-600 tracking-tight">
             {brandName}
           </h2>
