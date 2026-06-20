@@ -96,7 +96,7 @@ export default function Login() {
 
       {/* Right login card */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-10 lg:py-0 lg:pr-16">
-        <div className="w-full max-w-[420px] bg-white/[0.06] backdrop-blur-2xl rounded-3xl border border-white/10 p-8 sm:p-10 shadow-[0_20px_80px_-15px_rgba(34,211,238,0.25)]">
+        <div className="w-full max-w-[460px] bg-white/[0.05] backdrop-blur-2xl rounded-[28px] border border-white/10 p-8 sm:p-12 shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_20px_90px_-20px_rgba(34,211,238,0.3)] ring-1 ring-inset ring-white/[0.03]">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
             <img src={branding.logo || DEFAULT_LOGO} alt={brandName} className="h-8 max-w-[140px] object-contain" />
