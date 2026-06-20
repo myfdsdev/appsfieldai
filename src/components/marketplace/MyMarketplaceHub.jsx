@@ -26,6 +26,28 @@ const LANGUAGES = [
   "Indonesian", "German", "Japanese", "Turkish", "Korean"
 ];
 
+const Toggle = ({ value, onChange }) => (
+  <button onClick={e => { e.stopPropagation(); onChange(!value); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${value ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-secondary/50 text-muted-foreground border border-border/30"}`}>
+    {value ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+    {value ? "Enabled" : "Disabled"}
+  </button>
+);
+
+const SectionCard = ({ title, icon: Icon, enabled, onToggle, children }) => (
+  <div className={`rounded-xl border transition-all ${enabled ? "border-orange-500/20 bg-orange-500/5" : "border-border/30 bg-secondary/20"}`}>
+    <div className="flex items-center justify-between p-4 cursor-pointer" onClick={onToggle}>
+      <div className="flex items-center gap-2.5">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${enabled ? "bg-orange-500/20" : "bg-secondary/50"}`}>
+          <Icon className={`w-4 h-4 ${enabled ? "text-orange-400" : "text-muted-foreground"}`} />
+        </div>
+        <span className="text-sm font-medium">{title}</span>
+      </div>
+      <Toggle value={enabled} onChange={onToggle} />
+    </div>
+    {enabled && children && <div className="px-4 pb-4 space-y-3 border-t border-border/20 pt-3">{children}</div>}
+  </div>
+);
+
 const NAV_GROUPS = [
   {
     label: "Page", items: [
@@ -142,28 +164,6 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     toast.success("Tax information saved!");
     setSaving(false);
   };
-
-  const Toggle = ({ value, onChange }) => (
-    <button onClick={e => { e.stopPropagation(); onChange(!value); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${value ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-secondary/50 text-muted-foreground border border-border/30"}`}>
-      {value ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-      {value ? "Enabled" : "Disabled"}
-    </button>
-  );
-
-  const SectionCard = ({ title, icon: Icon, enabled, onToggle, children }) => (
-    <div className={`rounded-xl border transition-all ${enabled ? "border-orange-500/20 bg-orange-500/5" : "border-border/30 bg-secondary/20"}`}>
-      <div className="flex items-center justify-between p-4 cursor-pointer" onClick={onToggle}>
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${enabled ? "bg-orange-500/20" : "bg-secondary/50"}`}>
-            <Icon className={`w-4 h-4 ${enabled ? "text-orange-400" : "text-muted-foreground"}`} />
-          </div>
-          <span className="text-sm font-medium">{title}</span>
-        </div>
-        <Toggle value={enabled} onChange={onToggle} />
-      </div>
-      {enabled && children && <div className="px-4 pb-4 space-y-3 border-t border-border/20 pt-3">{children}</div>}
-    </div>
-  );
 
   return (
     <div className="flex gap-6">

@@ -151,6 +151,10 @@
         "headerImageUrl": {
           "type": "string"
         },
+        "headerLogoUrl": {
+          "type": "string",
+          "description": "Store logo shown in the top navigation bar"
+        },
         "heroBadgeText": {
           "type": "string",
           "description": "Small badge/pill text above the hero headline"
