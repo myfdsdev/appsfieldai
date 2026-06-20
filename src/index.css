@@ -91,8 +91,10 @@
   }
 }
 
-/* Global input/textarea/select styles */
-input, textarea, select {
+/* Global input/textarea/select styles (opt-out with .no-global-input-style on an ancestor) */
+input:not(.no-global-input-style input),
+textarea:not(.no-global-input-style textarea),
+select:not(.no-global-input-style select) {
   background-color: #212121 !important;
   border-color: #2f2f2f !important;
 }

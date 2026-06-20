@@ -9,13 +9,6 @@ import { toast } from "@/components/ui/use-toast";
 
 const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
 
-const chatBubbles = [
-  "Of course, let's...",
-  "I can help you with that.",
-  "Give me just one second, okay?",
-  "I'll need to verify your identity first, though.",
-];
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -79,7 +72,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden flex flex-col lg:flex-row bg-gradient-to-br from-[#eaf1ff] via-[#e6ecff] to-[#dfe4ff]">
+    <div className="no-global-input-style min-h-screen w-full relative overflow-hidden flex flex-col lg:flex-row bg-gradient-to-br from-[#eaf1ff] via-[#e6ecff] to-[#dfe4ff]">
       {/* Soft ambient gradient blobs */}
       <div className="pointer-events-none absolute -bottom-40 -left-20 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-indigo-300/40 via-purple-300/30 to-transparent blur-[120px]" />
       <div className="pointer-events-none absolute -top-32 right-1/4 w-[500px] h-[500px] rounded-full bg-blue-200/40 blur-[120px]" />
@@ -104,14 +97,6 @@ export default function Login() {
 
       {/* Left showcase area */}
       <div className="relative z-10 flex-1 hidden lg:flex flex-col items-center justify-center px-12">
-        {/* Chat bubbles */}
-        <div className="absolute top-[20%] left-1/2 -translate-x-1/3 flex flex-col items-end gap-2.5">
-          {chatBubbles.map((text, i) => (
-            <div key={i} className="px-4 py-2 rounded-2xl rounded-tr-sm bg-white/50 backdrop-blur-sm border border-white/60 text-slate-500 text-sm shadow-sm">
-              {text}
-            </div>
-          ))}
-        </div>
         {/* Big faded brand wordmark */}
         <div className="text-center select-none">
           <span className="block text-[10px] tracking-[0.5em] text-slate-400/70 font-medium uppercase mb-1">The</span>
@@ -169,7 +154,7 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-12 pl-11 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400"
+                className="w-full h-12 pl-11 pr-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/60 text-slate-800 text-sm placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400"
                 required
               />
             </div>
@@ -183,7 +168,7 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 pl-11 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400"
+                className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/40 backdrop-blur-sm border border-white/60 text-slate-800 text-sm placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400"
                 required
               />
               <button
