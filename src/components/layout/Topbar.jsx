@@ -33,6 +33,7 @@ export default function Topbar() {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const [branding, setBranding] = useState({ logo: "", siteName: "" });
+  const [brandLoaded, setBrandLoaded] = useState(false);
 
   useEffect(() => {
     base44.entities.AppConfig.filter({ key: "main" })
@@ -40,7 +41,8 @@ export default function Topbar() {
         const cfg = cfgs?.[0];
         if (cfg) setBranding({ logo: cfg.appLogoUrl || "", siteName: cfg.siteName || "" });
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setBrandLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -57,16 +59,17 @@ export default function Topbar() {
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/80 backdrop-blur-xl">
       <div className="max-w-9xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src={branding.logo || DEFAULT_LOGO} alt="logo" className="h-8 max-w-[140px] object-contain" />
-          {!branding.logo && (
-            <span className="font-display font-bold text-base">
-              {branding.siteName ? (
-                branding.siteName
+        <Link to="/" className="flex items-center gap-2 shrink-0 min-w-[140px] h-8">
+          {brandLoaded && (
+            <>
+              {branding.logo ? (
+                <img src={branding.logo} alt="logo" className="h-8 max-w-[140px] object-contain" />
               ) : (
-                <>SaaS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Share</span></>
+                <span className="font-display font-bold text-base">
+                  {branding.siteName || "Store"}
+                </span>
               )}
-            </span>
+            </>
           )}
         </Link>
 
