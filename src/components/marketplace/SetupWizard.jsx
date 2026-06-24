@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import BuildingStoreOverlay from "@/components/marketplace/BuildingStoreOverlay";
 
 const TEMPLATES = [
   { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600" },
@@ -31,6 +32,17 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [building, setBuilding] = useState(false);
+
+  // Real platform domain (e.g. saasshare.app) for the store URL preview, set by the admin.
+  const { data: platformDomain } = useQuery({
+    queryKey: ["platformDomain"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getPlatformDomain", {});
+      return res.data?.platformDomain || "yourdomain.com";
+    },
+    staleTime: Infinity,
+  });
   const [data, setData] = useState({
     type: marketplace?.type || "single_vendor",
     template: marketplace?.template || "default",
@@ -87,6 +99,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     if (marketplace?.id) {
       await base44.entities.Marketplace.update(marketplace.id, payload);
     } else {
+      setBuilding(true);
       // Inherit the global default store page content for new marketplaces
       let pageSections;
       try {
@@ -119,6 +132,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     }
     queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
     setSaving(false);
+    setBuilding(false);
     toast.success(marketplace?.id ? "Marketplace updated!" : "Marketplace launched!");
     onComplete?.();
   };
@@ -129,6 +143,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
 
   return (
     <div className="max-w-3xl mx-auto">
+      {building && <BuildingStoreOverlay storeName={data.name} />}
       {/* Step indicators */}
       <div className="flex items-center gap-1 mb-8">
         {steps.map((s, i) => {
@@ -285,7 +300,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
               {!marketplace?.id && (
                 <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
                   <p className="text-sm font-medium text-violet-400"><Rocket className="w-4 h-4 inline mr-1" />{data.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{data.slug}.yourdomain.com</p>
+                  <p className="text-[11px] text-muted-foreground">{data.slug}.{platformDomain || "yourdomain.com"}</p>
                 </div>
               )}
             </div>
