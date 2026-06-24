@@ -30,6 +30,7 @@ Generate compelling, professional, conversion-focused content for this store's l
 - A pre-headline that sits above (max 8 words)
 - A subheadline describing the value (1-2 sentences)
 - A call-to-action button label (2-3 words)
+- A short footer tagline describing the store (max 12 words)
 - Exactly 5 highly relevant FAQs (question + helpful answer of 1-2 sentences)
 - Exactly 5 realistic, niche-specific testimonials (author name, author role/company, rating 4-5, content of 1-2 sentences)`;
 
@@ -43,6 +44,7 @@ Generate compelling, professional, conversion-focused content for this store's l
           headline: { type: 'string' },
           subheadline: { type: 'string' },
           ctaText: { type: 'string' },
+          footerTagline: { type: 'string' },
           faqs: {
             type: 'array',
             items: {
@@ -83,6 +85,8 @@ Generate compelling, professional, conversion-focused content for this store's l
       faqEnabled: true,
       faqTitle: existing.faqTitle || 'Frequently Asked Questions',
       faqs: Array.isArray(g.faqs) ? g.faqs.filter(f => f.question && f.answer) : (existing.faqs || []),
+      footerEnabled: true,
+      footerText: g.footerTagline || existing.footerText || `${storeName} — your destination for the best SaaS deals.`,
     };
 
     await base44.entities.Marketplace.update(marketplaceId, { pageSections: updatedPageSections });
