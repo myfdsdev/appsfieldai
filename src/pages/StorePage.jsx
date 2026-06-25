@@ -199,6 +199,8 @@ export default function StorePage() {
         open={!!viewDetailListing}
         sellerName={viewDetailListing?.resolvedSellerName}
         onClose={() => setViewDetailListing(null)}
+        onAddToCart={(l) => { handleAddToCart(l); setViewDetailListing(null); }}
+        onBuyNow={(l) => { setViewDetailListing(null); handleBuyNow(l); }}
         requireAuth={() => {
           if (customer) return true;
           // Visitor must log in / sign up before buying or reserving a spot.

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   X, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2,
-  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight
+  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight, ShoppingCart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,7 +97,7 @@ function ImageSlider({ images }) {
   );
 }
 
-export default function SaaSDetailModal({ listingId, open, onClose, requireAuth, sellerName }) {
+export default function SaaSDetailModal({ listingId, open, onClose, requireAuth, sellerName, onAddToCart, onBuyNow }) {
   // requireAuth (optional): called before buy/reserve. Return true if allowed to proceed,
   // false to block (e.g. store visitor must log in first — caller opens its auth modal).
   const guard = (action) => () => {
@@ -291,22 +291,61 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
 
                   {/* Action Buttons */}
                   {!isSold ? (
-                    <div className="space-y-2 pt-1">
-                      <Button
-                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
-                        onClick={guard(() => setBuySpotListing(listing))}
-                        disabled={sharesLeft <= 0}
-                      >
-                        {sharesLeft <= 0 ? "All Spots Filled" : `Buy Spot — $${listing.sharePrice}`}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
-                        onClick={guard(() => setReserveSpotListing(listing))}
-                      >
-                        <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
-                      </Button>
-                    </div>
+                    (onAddToCart || onBuyNow) ? (
+                      // Store context — 2-column layout with cart option
+                      listing.dealType === "single_purchase" ? (
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <Button
+                            variant="outline"
+                            className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
+                            onClick={() => onAddToCart?.(listing)}
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-1.5" /> Add to Cart
+                          </Button>
+                          <Button
+                            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
+                            onClick={() => onBuyNow?.(listing)}
+                          >
+                            Buy Now
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <Button
+                            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0 disabled:opacity-40"
+                            onClick={guard(() => setBuySpotListing(listing))}
+                            disabled={sharesLeft <= 0}
+                          >
+                            {sharesLeft <= 0 ? "All Spots Filled" : `Buy Spot — $${listing.sharePrice}`}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
+                            onClick={guard(() => setReserveSpotListing(listing))}
+                          >
+                            <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve
+                          </Button>
+                        </div>
+                      )
+                    ) : (
+                      // App marketplace context
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <Button
+                          className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0 disabled:opacity-40"
+                          onClick={guard(() => setBuySpotListing(listing))}
+                          disabled={sharesLeft <= 0}
+                        >
+                          {sharesLeft <= 0 ? "All Spots Filled" : `Buy Spot — $${listing.sharePrice}`}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
+                          onClick={guard(() => setReserveSpotListing(listing))}
+                        >
+                          <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
+                        </Button>
+                      </div>
+                    )
                   ) : (
                     <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-center">
                       <p className="text-red-400 font-display font-bold">Sold Out</p>
