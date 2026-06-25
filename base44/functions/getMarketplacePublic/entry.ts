@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
         name: m.name,
         slug: m.slug,
         type: m.type,
+        categories: m.categories || [],
         template: m.template,
         branding: m.branding,
         currency: m.currency,

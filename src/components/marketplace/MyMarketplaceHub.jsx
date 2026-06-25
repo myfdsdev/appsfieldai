@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import SoftwareManager from "@/components/marketplace/SoftwareManager";
 import CouponManager from "@/components/marketplace/CouponManager";
+import CategoryManager from "@/components/marketplace/CategoryManager";
 import CustomerManager from "@/components/marketplace/CustomerManager";
 import DomainManager from "@/components/marketplace/DomainManager";
 import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
@@ -60,6 +61,7 @@ const NAV_GROUPS = [
   {
     label: "Products", items: [
       { id: "products", label: "Products", icon: Package },
+      { id: "categories", label: "Categories", icon: Tags },
       { id: "coupons", label: "Coupons", icon: Tag },
       { id: "deals", label: "Deals", icon: Zap },
       { id: "auctions", label: "Auctions", icon: Gavel },
@@ -276,6 +278,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
           {activeTab === "products" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Products</h2>
             <SoftwareManager marketplaceId={marketplace?.id} /></div>
+          )}
+
+          {/* CATEGORIES */}
+          {activeTab === "categories" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Categories</h2>
+              <p className="text-sm text-muted-foreground">Add or remove product categories shown on your store page.</p></div>
+              <CategoryManager marketplaceId={marketplace?.id} />
+            </div>
           )}
 
           {/* COUPONS */}

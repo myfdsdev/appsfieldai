@@ -83,7 +83,12 @@ export default function StorePage() {
     );
   }
 
-  const { marketplace, software = [], reviews = [], customPages = [], testimonials = [] } = data;
+  const { marketplace, software = [], reviews = [], customPages = [], testimonials = [], categories = [] } = data;
+  // Saved categories = SoftwareCategory records + simple categories from setup.
+  const savedCategories = [
+    ...categories.map((c) => c.name).filter(Boolean),
+    ...(marketplace.categories || []),
+  ];
   // On a path-based store (/store/:slug) keep the prefix; on a subdomain/custom domain it's root.
   const storeBasePath = slugParam ? `/store/${slugParam}` : "";
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
@@ -128,7 +133,7 @@ export default function StorePage() {
           </div>
 
           {/* Categories */}
-          <StoreCategories listings={software} brandColor={brandColor} onSelect={handleSelectCategory} />
+          <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} onSelect={handleSelectCategory} />
 
           {/* Lifetime Deals (searchable grid of all store products) */}
           <div id="store-lifetime-deals">

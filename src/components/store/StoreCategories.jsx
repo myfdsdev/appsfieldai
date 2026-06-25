@@ -1,11 +1,12 @@
 import React from "react";
 import { LayoutGrid } from "lucide-react";
 
-// Category chip strip for a store page — derived from the store's own listings.
-export default function StoreCategories({ listings = [], brandColor = "#f97316", onSelect }) {
-  const categories = Array.from(
-    new Set(listings.map((l) => l.category).filter(Boolean))
-  );
+// Category chip strip for a store page — combines the store's saved categories
+// (created at setup or in the Categories manager) with any used by listings.
+export default function StoreCategories({ listings = [], savedCategories = [], brandColor = "#f97316", onSelect }) {
+  const savedNames = savedCategories.map((c) => (typeof c === "string" ? c : c?.name)).filter(Boolean);
+  const listingNames = listings.map((l) => l.category).filter(Boolean);
+  const categories = Array.from(new Set([...savedNames, ...listingNames]));
 
   if (categories.length === 0) return null;
 
