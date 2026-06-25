@@ -28,7 +28,7 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
     { label: "Best Sellers", target: "store-best-sellers" },
     { label: "Categories", target: "store-categories" },
     { label: "Lifetime Deals", target: "store-lifetime-deals" },
-    { label: "Become A Vendor?", target: "store-become-vendor" },
+    ...(marketplace.type === "multi_vendor" ? [{ label: "Become A Vendor?", target: "store-become-vendor" }] : []),
   ];
 
   const AccountButton = () => {

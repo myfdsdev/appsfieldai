@@ -139,8 +139,10 @@ export default function StorePage() {
             />
           </div>
 
-          {/* Become A Vendor? */}
-          <StoreVendorCTA marketplace={marketplace} brandColor={brandColor} />
+          {/* Become A Vendor? — only on multi-vendor stores */}
+          {marketplace.type === "multi_vendor" && (
+            <StoreVendorCTA marketplace={marketplace} brandColor={brandColor} />
+          )}
         </>
       )}
 
