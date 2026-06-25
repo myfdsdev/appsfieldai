@@ -155,35 +155,37 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
           </div>
         )}
 
-        {/* Pricing */}
-        {dealType === "single_purchase" ? (
-          <div className="rounded-lg bg-secondary/40 p-3 text-center">
-            <p className="text-[10px] text-muted-foreground">Deal Price</p>
-            <p className="text-lg font-display font-bold text-[#f79a1b]">${fullPrice.toLocaleString()}</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="rounded-lg bg-secondary/40 p-2.5">
-                <p className="text-[10px] text-muted-foreground">Full Price</p>
-                <p className="text-sm font-display font-bold">${fullPrice.toLocaleString()}</p>
-              </div>
-              <div className="rounded-lg bg-secondary/40 p-2.5">
-                <p className="text-[10px] text-muted-foreground">Per Spot</p>
-                <p className="text-sm font-display font-bold text-[#f79a1b]">${sharePrice}</p>
-              </div>
+        {/* Pricing — fixed-height block so single-purchase & group-deal cards align */}
+        <div className="space-y-3 min-h-[104px] flex flex-col justify-center">
+          {dealType === "single_purchase" ? (
+            <div className="rounded-lg bg-secondary/40 p-3 text-center">
+              <p className="text-[10px] text-muted-foreground">Deal Price</p>
+              <p className="text-lg font-display font-bold text-[#f79a1b]">${fullPrice.toLocaleString()}</p>
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="rounded-lg bg-secondary/40 p-2.5">
+                  <p className="text-[10px] text-muted-foreground">Full Price</p>
+                  <p className="text-sm font-display font-bold">${fullPrice.toLocaleString()}</p>
+                </div>
+                <div className="rounded-lg bg-secondary/40 p-2.5">
+                  <p className="text-[10px] text-muted-foreground">Per Spot</p>
+                  <p className="text-sm font-display font-bold text-[#f79a1b]">${sharePrice}</p>
+                </div>
+              </div>
 
-            {/* Spots Progress */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-muted-foreground">Spots filled</span>
-                <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
+              {/* Spots Progress */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Spots filled</span>
+                  <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
+                </div>
+                <Progress value={sharePercent} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
               </div>
-              <Progress value={sharePercent} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
 
         {/* Revenue & Growth */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
