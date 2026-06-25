@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Save, CreditCard, Banknote, ShieldCheck } from "lucide-react";
+import { Save, CreditCard, Banknote, ShieldCheck, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 // Store payment settings — PayPal (sandbox/live with Client ID & Secret) + Cash on Delivery.
@@ -63,7 +63,12 @@ export default function PaymentSettingsManager({ marketplace }) {
               <div><label className="text-xs text-muted-foreground">Secret Key</label><Input type="password" value={form.paypalSecret} onChange={e => set("paypalSecret", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 font-mono text-xs" placeholder="EGnHDxD...your-paypal-secret" /></div>
               <div><label className="text-xs text-muted-foreground">PayPal Account Email <span className="opacity-60">(optional)</span></label><Input value={form.paypalEmail} onChange={e => set("paypalEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="payments@yourstore.com" /></div>
             </div>
-            <p className="text-[11px] text-muted-foreground">Get your {form.paypalMode === "live" ? "Live" : "Sandbox"} credentials from the PayPal Developer Dashboard → Apps & Credentials.</p>
+            <p className="text-[11px] text-muted-foreground">
+              Get your {form.paypalMode === "live" ? "Live" : "Sandbox"} credentials from the{" "}
+              <a href="https://developer.paypal.com/dashboard/applications/sandbox" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-2 inline-flex items-center gap-0.5">
+                PayPal Developer Dashboard → Apps &amp; Credentials <ExternalLink className="w-3 h-3" />
+              </a>
+            </p>
           </div>
         )}
       </div>
