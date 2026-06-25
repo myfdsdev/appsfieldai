@@ -17,7 +17,11 @@ import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
+import StoreCartDrawer from "@/components/store/StoreCartDrawer";
+import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
+import { useStoreCart } from "@/hooks/useStoreCart";
+import { toast } from "sonner";
 
 export default function StorePage() {
   const { slug: slugParam } = useParams();
@@ -33,14 +37,37 @@ export default function StorePage() {
   const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
   const [accountPanel, setAccountPanel] = useState({ open: false, tab: "account" });
   const [reserveListing, setReserveListing] = useState(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const marketplaceId = data?.marketplace?.id;
   const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
+  const cart = useStoreCart(marketplaceId);
 
   // Reserve a spot: must be signed in. Opens the store reserve modal.
   const handleReserve = (listing) => {
     if (!customer) { setAuthModal({ open: true, mode: "login" }); return; }
     setReserveListing(listing);
+  };
+
+  // Add to cart — open for everyone (account only required at checkout).
+  const handleAddToCart = (listing) => {
+    cart.addItem(listing, 1);
+    toast.success(`${listing.softwareName} added to cart`);
+  };
+
+  // Buy Now — add to cart then go straight to checkout (must be signed in).
+  const handleBuyNow = (listing) => {
+    cart.addItem(listing, 1);
+    if (!customer) { setAuthModal({ open: true, mode: "login" }); return; }
+    setCheckoutOpen(true);
+  };
+
+  // Checkout from the cart drawer — requires sign-in.
+  const handleCheckout = () => {
+    if (!customer) { setCartOpen(false); setAuthModal({ open: true, mode: "login" }); return; }
+    setCartOpen(false);
+    setCheckoutOpen(true);
   };
 
   const handleSelectCategory = (cat) => {
@@ -106,6 +133,8 @@ export default function StorePage() {
         marketplace={marketplace}
         sections={sections}
         customer={customer}
+        cartCount={cart.count}
+        onOpenCart={() => setCartOpen(true)}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
         onOpenAccount={(tab) => setAccountPanel({ open: true, tab })}
         onLogout={logout}
@@ -129,7 +158,7 @@ export default function StorePage() {
         <>
           {/* Best Sellers / 🔥 Deals Ending Soon */}
           <div id="store-best-sellers">
-            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} />
+            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
           </div>
 
           {/* Categories */}
@@ -141,6 +170,8 @@ export default function StorePage() {
               listings={categoryFilter ? software.filter(l => l.category === categoryFilter) : software}
               onViewDetails={setViewDetailListing}
               onReserveSpot={handleReserve}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
             />
           </div>
 
@@ -203,6 +234,25 @@ export default function StorePage() {
         brandColor={brandColor}
         onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
         onLogout={logout}
+      />
+
+      <StoreCartDrawer
+        open={cartOpen}
+        cart={cart}
+        brandColor={brandColor}
+        onClose={() => setCartOpen(false)}
+        onCheckout={handleCheckout}
+      />
+
+      <StoreCheckoutModal
+        open={checkoutOpen}
+        items={cart.items}
+        total={cart.total}
+        marketplace={marketplace}
+        customer={customer}
+        brandColor={brandColor}
+        onClose={() => setCheckoutOpen(false)}
+        onPlaced={() => { cart.clear(); }}
       />
     </div>
   );

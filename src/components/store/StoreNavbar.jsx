@@ -1,9 +1,9 @@
 import React from "react";
-import { Store, Menu, X, User, LogOut, ChevronDown, Package } from "lucide-react";
+import { Store, Menu, X, User, LogOut, ChevronDown, Package, ShoppingCart } from "lucide-react";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
-export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAccount }) {
+export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAccount, cartCount = 0, onOpenCart }) {
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const logo = sections.headerLogoUrl || marketplace.branding?.logo;
   const name = marketplace.name || "Store";
@@ -122,14 +122,29 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
           >
             Browse Deals
           </button>
+          {/* Cart */}
+          <button onClick={() => onOpenCart?.()} className="relative ml-1 w-9 h-9 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 flex items-center justify-center transition-colors" title="Cart">
+            <ShoppingCart className="w-4.5 h-4.5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style={{ background: brandColor }}>{cartCount}</span>
+            )}
+          </button>
           {/* User option */}
           <AccountButton />
         </nav>
 
-        {/* Mobile toggle */}
-        <button onClick={() => setMenuOpen((o) => !o)} className="md:hidden p-2 rounded-lg hover:bg-secondary/50">
-          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Mobile toggle + cart */}
+        <div className="md:hidden flex items-center gap-1">
+          <button onClick={() => onOpenCart?.()} className="relative p-2 rounded-lg hover:bg-secondary/50" title="Cart">
+            <ShoppingCart className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style={{ background: brandColor }}>{cartCount}</span>
+            )}
+          </button>
+          <button onClick={() => setMenuOpen((o) => !o)} className="p-2 rounded-lg hover:bg-secondary/50">
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

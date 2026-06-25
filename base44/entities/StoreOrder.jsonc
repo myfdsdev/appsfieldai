@@ -1,0 +1,95 @@
+{
+  "name": "StoreOrder",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace this order belongs to"
+    },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "ID of the StoreCustomer who placed the order"
+    },
+    "customerName": {
+      "type": "string",
+      "description": "Customer full name at time of order"
+    },
+    "customerEmail": {
+      "type": "string",
+      "description": "Customer email at time of order"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone for the order"
+    },
+    "items": {
+      "type": "array",
+      "description": "Purchased line items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string"
+          },
+          "listingTitle": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "total": {
+      "type": "number",
+      "description": "Order total amount"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "paymentMethod": {
+      "type": "string",
+      "enum": [
+        "paypal",
+        "cod"
+      ],
+      "default": "cod",
+      "description": "Selected payment method"
+    },
+    "paymentStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Payment status"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "placed",
+        "processing",
+        "completed",
+        "cancelled"
+      ],
+      "default": "placed",
+      "description": "Order fulfillment status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Customer notes for the order"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "items",
+    "total"
+  ]
+}

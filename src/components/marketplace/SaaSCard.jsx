@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot, onAddToCart, onBuyNow }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
   const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
@@ -192,23 +192,46 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2 pt-1 mt-auto">
-          {(dealType !== "single_purchase") ? (
-            <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-              {sharesLeft <= 0 ? "Sold Out" : `Buy Spot — $${sharePrice}`}
+        {/* Store context (cart enabled): single-purchase → Add to Cart + Buy Now; group deals → Reserve. */}
+        {onAddToCart || onBuyNow ? (
+          <div className="flex gap-2 pt-1 mt-auto">
+            {dealType !== "single_purchase" ? (
+              <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+                {sharesLeft <= 0 ? "Sold Out" : "Reserve a Spot"}
+              </Button>
+            ) : (
+              <>
+                <Button size="sm" variant="outline" onClick={() => onAddToCart?.(listing)} disabled={isSold} className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40 px-2.5" title="Add to cart">
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                </Button>
+                <Button size="sm" onClick={() => onBuyNow?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+                  Buy Now — ${fullPrice.toLocaleString()}
+                </Button>
+              </>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
+              <ExternalLink className="w-3 h-3" />
             </Button>
-          ) : (
-            <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-              Buy Now — ${fullPrice.toLocaleString()}
+          </div>
+        ) : (
+          <div className="flex gap-2 pt-1 mt-auto">
+            {(dealType !== "single_purchase") ? (
+              <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+                {sharesLeft <= 0 ? "Sold Out" : `Buy Spot — $${sharePrice}`}
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+                Buy Now — ${fullPrice.toLocaleString()}
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40 px-2.5">
+              Reserve
             </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40 px-2.5">
-            Reserve
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
-            <ExternalLink className="w-3 h-3" />
-          </Button>
-        </div>
+            <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+          </div>
+        )}
       </div>
     </motion.div>
   );

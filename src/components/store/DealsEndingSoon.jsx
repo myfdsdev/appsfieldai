@@ -29,7 +29,7 @@ function CountdownPill({ endDate }) {
   );
 }
 
-export default function DealsEndingSoon({ listings = [], onViewDetails, onReserveSpot }) {
+export default function DealsEndingSoon({ listings = [], onViewDetails, onReserveSpot, onAddToCart, onBuyNow }) {
   const scrollRef = useRef(null);
 
   // Deals with an upcoming end date, soonest first, max 6.
@@ -70,7 +70,7 @@ export default function DealsEndingSoon({ listings = [], onViewDetails, onReserv
               <div className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-sm rounded-full px-2.5 py-1 border border-border/40">
                 <CountdownPill endDate={l.dealEndDate} />
               </div>
-              <SaaSCard listing={l} delay={0} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} />
+              <SaaSCard listing={l} delay={0} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} />
             </div>
           </motion.div>
         ))}

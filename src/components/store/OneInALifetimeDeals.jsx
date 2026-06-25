@@ -5,7 +5,7 @@ import SaaSCard from "@/components/marketplace/SaaSCard";
 
 const STORE_DEFAULTS = { title: "One In A Lifetime Deals", subtitle: "Exclusive lifetime offers from this store" };
 
-export default function OneInALifetimeDeals({ listings = [], onViewDetails, onReserveSpot }) {
+export default function OneInALifetimeDeals({ listings = [], onViewDetails, onReserveSpot, onAddToCart, onBuyNow }) {
   const [search, setSearch] = useState("");
 
   const filtered = listings.filter(l => {
@@ -41,7 +41,7 @@ export default function OneInALifetimeDeals({ listings = [], onViewDetails, onRe
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((l, i) => (
-            <SaaSCard key={l.id} listing={l} delay={i * 0.04} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} />
+            <SaaSCard key={l.id} listing={l} delay={i * 0.04} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} />
           ))}
         </div>
       )}
