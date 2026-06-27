@@ -74,7 +74,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5"
+        className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5 max-w-4xl mx-auto text-balance"
       >
         <span
           className="text-transparent bg-clip-text"
