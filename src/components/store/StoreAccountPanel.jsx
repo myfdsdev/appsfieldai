@@ -81,8 +81,9 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
 
   useEffect(() => { if (open) setTab(initialTab); }, [open, initialTab]);
 
+  // Load orders + reservations whenever the panel opens (both tabs use the summary).
   useEffect(() => {
-    if (!open || tab !== "products" || !marketplaceId) return;
+    if (!open || !marketplaceId) return;
     setLoading(true);
     Promise.all([
       fetchStoreCustomerOrders(marketplaceId),
@@ -90,7 +91,12 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
     ])
       .then(([o, p]) => { setOrders(o); setProducts(p); })
       .finally(() => setLoading(false));
-  }, [open, tab, marketplaceId]);
+  }, [open, marketplaceId]);
+
+  const deliveredCount = orders.filter((o) => o.status === "completed").length;
+  const totalSpent = orders
+    .filter((o) => o.paymentStatus === "paid")
+    .reduce((s, o) => s + (o.total || 0), 0);
 
   if (!open) return null;
 
@@ -135,6 +141,26 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
         <div className="flex-1 overflow-y-auto p-5">
           {tab === "account" ? (
             <div className="space-y-3">
+              {/* Quick stats */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded-2xl border border-border/40 bg-card/60 p-3 text-center">
+                  <p className="text-lg font-display font-bold" style={{ color: brandColor }}>{orders.length}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Orders</p>
+                </div>
+                <div className="rounded-2xl border border-border/40 bg-card/60 p-3 text-center">
+                  <p className="text-lg font-display font-bold text-emerald-400">{deliveredCount}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Delivered</p>
+                </div>
+                <div className="rounded-2xl border border-border/40 bg-card/60 p-3 text-center">
+                  <p className="text-lg font-display font-bold">${totalSpent.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Spent</p>
+                </div>
+              </div>
+              <button onClick={() => setTab("products")}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
+                style={{ background: brandColor }}>
+                <Package className="w-4 h-4" /> View My Products
+              </button>
               <div className="rounded-2xl border border-border/40 bg-card/60 p-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-muted-foreground" />
