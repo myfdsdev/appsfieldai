@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
     if (!file || typeof file === 'string') {
       return Response.json({ error: 'No file provided' }, { status: 400 });
     }
+    const campaignId = (formData.get('campaignId') || 'file').toString().replace(/[^a-zA-Z0-9._-]/g, '-');
 
     const endpoint = Deno.env.get('R2_ENDPOINT');
     const bucket = Deno.env.get('R2_BUCKET_NAME');
@@ -27,10 +28,10 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Keep a safe, unique key inside a folder by content type.
-    const folder = (file.type || '').startsWith('video/') ? 'videos' : 'images';
-    const safeName = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '-');
-    const key = `${folder}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${safeName}`;
+    // Path: uploads/{user_id}/{campaign_id}_{timestamp}.{ext}
+    const nameExt = (file.name || '').includes('.') ? file.name.split('.').pop().toLowerCase() : '';
+    const ext = nameExt || ((file.type || '').split('/')[1] || 'bin');
+    const key = `uploads/${user.id}/${campaignId}_${Date.now()}.${ext}`;
 
     const arrayBuffer = await file.arrayBuffer();
     await s3.send(new PutObjectCommand({
