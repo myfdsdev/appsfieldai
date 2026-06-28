@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Store, User, Mail, Phone, Package, ShoppingBag, CalendarCheck, Loader2, ArrowLeft, LogOut, CheckCircle2, Clock, CircleDollarSign } from "lucide-react";
+import { Store, User, Mail, Phone, Package, ShoppingBag, CalendarCheck, Loader2, ArrowLeft, LogOut, CheckCircle2, Clock, CircleDollarSign, KeyRound, ExternalLink } from "lucide-react";
 import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { fetchStoreCustomerOrders, fetchStoreCustomerProducts } from "@/lib/storeCustomerAuth";
@@ -40,6 +40,24 @@ function ReservationRow({ p, brandColor }) {
           <span className="text-sm font-display font-bold" style={{ color: brandColor }}>${p.amountDue.toLocaleString()}</span>
         )}
       </div>
+
+      {/* Product access — shown once the deal is fulfilled and access info is delivered */}
+      {p.delivery && (
+        <div className="mt-3 pt-3 border-t border-border/30 rounded-xl bg-emerald-500/[0.04] -mx-1 px-3 pb-2">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 mb-1.5">
+            <KeyRound className="w-3.5 h-3.5" /> Product Access
+          </p>
+          {p.delivery.accessUrl && (
+            <a href={p.delivery.accessUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline break-all" style={{ color: brandColor }}>
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" /> {p.delivery.accessUrl}
+            </a>
+          )}
+          {p.delivery.instructions && (
+            <p className="text-xs text-muted-foreground whitespace-pre-wrap mt-1.5">{p.delivery.instructions}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

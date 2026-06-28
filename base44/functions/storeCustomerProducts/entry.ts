@@ -31,6 +31,11 @@ Deno.serve(async (req) => {
       const fulfilled = listing
         ? (listing.status === 'sold' || (listing.totalShares > 0 && listing.soldShares >= listing.totalShares))
         : false;
+      // Once the reservation is fulfilled / payment approved, expose the product access info.
+      const accessReady = r.status === 'fulfilled' || !!r.paymentApproved;
+      const delivery = (accessReady && listing?.delivery && (listing.delivery.accessUrl || listing.delivery.instructions))
+        ? { accessUrl: listing.delivery.accessUrl || '', instructions: listing.delivery.instructions || '' }
+        : null;
       return {
         id: r.id,
         listingId: r.listingId,
@@ -40,6 +45,7 @@ Deno.serve(async (req) => {
         paymentApproved: !!r.paymentApproved,
         status: r.status,
         createdAt: r.created_date,
+        delivery,
         listing: listing ? {
           imageGradient: listing.imageGradient,
           category: listing.category,
