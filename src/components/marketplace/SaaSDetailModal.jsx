@@ -47,10 +47,7 @@ const isVideoUrl = (url) => typeof url === "string" && VIDEO_RE.test(url);
 function getEmbedUrl(url) {
   if (typeof url !== "string") return null;
   const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
-  if (yt) {
-    const origin = typeof window !== "undefined" ? encodeURIComponent(window.location.origin) : "";
-    return `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0&playsinline=1${origin ? `&origin=${origin}` : ""}`;
-  }
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}?rel=0&playsinline=1`;
   const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
   return null;
