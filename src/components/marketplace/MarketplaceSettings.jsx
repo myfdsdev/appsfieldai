@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Store, Palette, Tag, Settings, Globe, Mail, Shield, FileText, ArrowLeft, Save } from "lucide-react";
 import DomainManager from "@/components/marketplace/DomainManager";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -110,12 +111,12 @@ export default function MarketplaceSettings({ marketplace, onBack }) {
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-muted-foreground">Logo URL</label>
-                <Input value={form.branding.logo} onChange={e => updateBranding("logo", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." />
+                <label className="text-xs text-muted-foreground">Logo</label>
+                <div className="mt-1"><R2ImageUpload value={form.branding.logo} onChange={(url) => updateBranding("logo", url)} campaignId="store-logo" placeholder="https://..." /></div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Favicon URL</label>
-                <Input value={form.branding.favicon} onChange={e => updateBranding("favicon", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." />
+                <label className="text-xs text-muted-foreground">Favicon</label>
+                <div className="mt-1"><R2ImageUpload value={form.branding.favicon} onChange={(url) => updateBranding("favicon", url)} campaignId="store-favicon" placeholder="https://..." /></div>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Primary Color</label>

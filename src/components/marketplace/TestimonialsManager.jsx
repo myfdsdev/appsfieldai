@@ -5,6 +5,7 @@ import { Plus, Trash2, Edit2, Star, MessageSquare, Save, X, Eye, EyeOff } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { toast } from "sonner";
 
 const EMPTY = { authorName: "", authorRole: "", authorAvatar: "", rating: 5, content: "", isPublished: true, sortOrder: 0 };
@@ -72,7 +73,7 @@ export default function TestimonialsManager({ marketplaceId }) {
           <div className="grid sm:grid-cols-2 gap-4">
             <div><label className="text-xs text-muted-foreground">Author Name *</label><Input value={form.authorName} onChange={e => setForm(f => ({ ...f, authorName: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Jane Doe" /></div>
             <div><label className="text-xs text-muted-foreground">Role / Company</label><Input value={form.authorRole} onChange={e => setForm(f => ({ ...f, authorRole: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Founder at Acme" /></div>
-            <div><label className="text-xs text-muted-foreground">Avatar Image URL</label><Input value={form.authorAvatar} onChange={e => setForm(f => ({ ...f, authorAvatar: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." /></div>
+            <div><label className="text-xs text-muted-foreground">Avatar Image</label><div className="mt-1"><R2ImageUpload value={form.authorAvatar} onChange={(url) => setForm(f => ({ ...f, authorAvatar: url }))} campaignId="testimonial-avatar" placeholder="https://..." /></div></div>
             <div>
               <label className="text-xs text-muted-foreground">Rating</label>
               <div className="flex items-center gap-1 mt-2">

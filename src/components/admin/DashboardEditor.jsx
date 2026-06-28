@@ -6,6 +6,7 @@ import { Pencil, Save, Globe, Type, AlignLeft, MousePointer, RotateCcw, Palette 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { toast } from "sonner";
 import { buildHeroBackground } from "@/lib/heroBackground";
 
@@ -272,12 +273,12 @@ export default function DashboardEditor() {
           {/* Image URL */}
           {form.hero_bg_type === "image" && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Background Image URL</p>
-              <Input
-                placeholder="https://example.com/image.jpg"
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Background Image</p>
+              <R2ImageUpload
                 value={form.hero_bg_image_url || ""}
-                onChange={e => set("hero_bg_image_url", e.target.value)}
-                className="bg-[#252525] border-border/30 rounded-xl text-xs"
+                onChange={(url) => set("hero_bg_image_url", url)}
+                campaignId="dashboard-hero-bg"
+                placeholder="https://example.com/image.jpg"
               />
             </div>
           )}
