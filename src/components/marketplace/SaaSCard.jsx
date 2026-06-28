@@ -131,6 +131,9 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
       </div>
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
+        {/* Title */}
+        <h3 className="font-display font-bold text-base leading-snug line-clamp-1">{title}</h3>
+
         {/* Category + Marketplace + Seller Row */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <Badge variant="outline" className="text-[10px] border-border/40">{category}</Badge>

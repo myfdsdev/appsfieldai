@@ -40,9 +40,18 @@ const DEMO_SLIDES = [
   "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&h=600&fit=crop",
 ];
 
-function ImageSlider({ images }) {
+const VIDEO_RE = /\.(mp4|webm|mov|ogg|m4v)(\?|$)/i;
+const isVideoUrl = (url) => typeof url === "string" && VIDEO_RE.test(url);
+
+function ImageSlider({ images, videoUrl }) {
   const [current, setCurrent] = useState(0);
-  const slides = images && images.length > 0 ? images : DEMO_SLIDES;
+  // Demo video (if any) leads the slideshow, followed by screenshots.
+  const media = [
+    ...(videoUrl ? [{ type: "video", url: videoUrl }] : []),
+    ...((images && images.length > 0 ? images : DEMO_SLIDES).map((url) => ({ type: isVideoUrl(url) ? "video" : "image", url }))),
+  ];
+  const slides = media.length > 0 ? media : DEMO_SLIDES.map((url) => ({ type: "image", url }));
+  const active = slides[current] || slides[0];
 
   const prev = () => setCurrent((c) => (c - 1 + slides.length) % slides.length);
   const next = () => setCurrent((c) => (c + 1) % slides.length);
@@ -50,16 +59,33 @@ function ImageSlider({ images }) {
   return (
     <div className="relative w-full h-full bg-black/20 group">
       <AnimatePresence mode="wait">
-        <motion.img
-          key={current}
-          src={slides[current]}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="w-full h-full object-cover"
-          alt={`Slide ${current + 1}`}
-        />
+        {active.type === "video" ? (
+          <motion.video
+            key={current}
+            src={active.url}
+            controls
+            autoPlay
+            muted
+            loop
+            playsInline
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full object-cover bg-black"
+          />
+        ) : (
+          <motion.img
+            key={current}
+            src={active.url}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full object-cover"
+            alt={`Slide ${current + 1}`}
+          />
+        )}
       </AnimatePresence>
 
       {/* Gradient overlay */}
@@ -178,7 +204,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
               <>
                 {/* LEFT — Image Slider (60%) */}
                 <div className="w-[58%] flex-shrink-0 h-full">
-                  <ImageSlider images={listing.screenshots} />
+                  <ImageSlider images={listing.screenshots} videoUrl={listing.demoVideoUrl} />
                 </div>
 
                 {/* RIGHT — Details (40%) */}
