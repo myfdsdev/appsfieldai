@@ -33,14 +33,10 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Path: {timestamp}_{clean_filename} at the bucket root.
+    // Path: uploads/{user_id}/{campaign_id}_{timestamp}.{ext}
     const nameExt = (file.name || '').includes('.') ? file.name.split('.').pop().toLowerCase() : '';
     const ext = nameExt || ((file.type || '').split('/')[1] || 'bin');
-    const baseName = (file.name || campaignId)
-      .replace(/\.[^.]+$/, '')
-      .replace(/[^a-zA-Z0-9._-]/g, '-')
-      .slice(0, 80) || campaignId;
-    const key = `${Date.now()}_${baseName}.${ext}`;
+    const key = `uploads/${user.id}/${campaignId}_${Date.now()}.${ext}`;
 
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
