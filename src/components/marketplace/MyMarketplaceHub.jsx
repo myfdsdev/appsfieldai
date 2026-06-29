@@ -103,11 +103,6 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     heroGradientEnd: marketplace?.pageSections?.heroGradientEnd || "",
     heroSolidColor: marketplace?.pageSections?.heroSolidColor || "",
     heroBgOpacity: marketplace?.pageSections?.heroBgOpacity ?? 100,
-    statsBarEnabled: marketplace?.pageSections?.statsBarEnabled ?? false,
-    statsBarTitle: marketplace?.pageSections?.statsBarTitle || "",
-    statsCards: marketplace?.pageSections?.statsCards?.length
-      ? marketplace.pageSections.statsCards
-      : [{ label: "Active Deals", value: "50+" }, { label: "Total Savings", value: "$2M+" }, { label: "Happy Buyers", value: "1,200+" }],
     productsEnabled: marketplace?.pageSections?.productsEnabled ?? true,
     productsSectionTitle: marketplace?.pageSections?.productsSectionTitle || "",
     testimonialsEnabled: marketplace?.pageSections?.testimonialsEnabled ?? false,
@@ -219,41 +214,6 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <SectionCard title="Hero Section" icon={Image}
                   enabled={pageForm.headerEnabled} onToggle={() => setPageForm(f => ({ ...f, headerEnabled: !f.headerEnabled }))}>
                   <HeroSectionEditor form={pageForm} setForm={setPageForm} marketplace={marketplace} />
-                </SectionCard>
-                <SectionCard title="Stats Bar" icon={Layers}
-                  enabled={pageForm.statsBarEnabled} onToggle={() => setPageForm(f => ({ ...f, statsBarEnabled: !f.statsBarEnabled }))}>
-                  <div><label className="text-xs text-muted-foreground">Section Title (optional)</label><Input value={pageForm.statsBarTitle} onChange={e => setPageForm(f => ({ ...f, statsBarTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Trusted by thousands" /></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {[0, 1, 2].map(n => (
-                      <div key={n} className="bg-secondary/40 rounded-xl p-3 space-y-2 border border-border/20">
-                        <p className="text-[11px] font-medium text-muted-foreground">Stat Card {n + 1}</p>
-                        <div>
-                          <label className="text-[10px] text-muted-foreground">Value</label>
-                          <Input
-                            value={pageForm.statsCards?.[n]?.value || ""}
-                            onChange={e => setPageForm(f => {
-                              const cards = [...(f.statsCards || [])];
-                              cards[n] = { ...cards[n], value: e.target.value };
-                              return { ...f, statsCards: cards };
-                            })}
-                            className="bg-secondary/50 border-border/30 rounded-lg mt-0.5 h-8 text-xs" placeholder="50+"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-muted-foreground">Label</label>
-                          <Input
-                            value={pageForm.statsCards?.[n]?.label || ""}
-                            onChange={e => setPageForm(f => {
-                              const cards = [...(f.statsCards || [])];
-                              cards[n] = { ...cards[n], label: e.target.value };
-                              return { ...f, statsCards: cards };
-                            })}
-                            className="bg-secondary/50 border-border/30 rounded-lg mt-0.5 h-8 text-xs" placeholder="Active Deals"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </SectionCard>
                 <SectionCard title="Product Sections" icon={Package}
                   enabled={pageForm.productsEnabled} onToggle={() => setPageForm(f => ({ ...f, productsEnabled: !f.productsEnabled }))}>

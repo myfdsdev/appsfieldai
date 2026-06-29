@@ -327,30 +327,6 @@
           "default": 100,
           "description": "Hero background opacity percentage"
         },
-        "statsBarEnabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether the stats bar (3 metric cards) shows on the store page"
-        },
-        "statsBarTitle": {
-          "type": "string",
-          "description": "Optional heading shown above the stats bar"
-        },
-        "statsCards": {
-          "type": "array",
-          "description": "Stat cards shown in the stats bar (label + value)",
-          "items": {
-            "type": "object",
-            "properties": {
-              "label": {
-                "type": "string"
-              },
-              "value": {
-                "type": "string"
-              }
-            }
-          }
-        },
         "productsEnabled": {
           "type": "boolean",
           "default": true
