@@ -3,9 +3,9 @@ import { Gem, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import SaaSCard from "@/components/marketplace/SaaSCard";
 
-const STORE_DEFAULTS = { title: "One In A Lifetime Deals", subtitle: "Exclusive lifetime offers from this store" };
+const STORE_DEFAULTS = { title: "Once In A Lifetime Deals", subtitle: "Exclusive lifetime offers from this store" };
 
-export default function OneInALifetimeDeals({ listings = [], onViewDetails, onReserveSpot, onAddToCart, onBuyNow }) {
+export default function OneInALifetimeDeals({ listings = [], title, subtitle, onViewDetails, onReserveSpot, onAddToCart, onBuyNow }) {
   const [search, setSearch] = useState("");
 
   const filtered = listings.filter(l => {
@@ -24,8 +24,8 @@ export default function OneInALifetimeDeals({ listings = [], onViewDetails, onRe
             <Gem className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-display font-bold">{STORE_DEFAULTS.title}</h2>
-            <p className="text-xs text-muted-foreground">{STORE_DEFAULTS.subtitle}</p>
+            <h2 className="text-xl font-display font-bold">{title?.trim() || STORE_DEFAULTS.title}</h2>
+            <p className="text-xs text-muted-foreground">{subtitle?.trim() || STORE_DEFAULTS.subtitle}</p>
           </div>
         </div>
         <div className="relative w-full sm:w-72">

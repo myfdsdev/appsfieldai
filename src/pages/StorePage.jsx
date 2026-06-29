@@ -168,6 +168,8 @@ export default function StorePage() {
           <div id="store-lifetime-deals">
             <OneInALifetimeDeals
               listings={categoryFilter ? software.filter(l => l.category === categoryFilter) : software}
+              title={sections.productsSectionTitle}
+              subtitle={sections.productsSectionSubtitle}
               onViewDetails={setViewDetailListing}
               onReserveSpot={handleReserve}
               onAddToCart={handleAddToCart}
