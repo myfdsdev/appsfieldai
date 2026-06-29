@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Save, Palette, RotateCcw } from "lucide-react";
+import { Save, Palette, RotateCcw, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { toast } from "sonner";
+import { buildHeroBackground } from "@/lib/heroBackground";
 
 const CONFIG_KEY = "marketplace_dashboard_banner";
 
@@ -55,6 +56,10 @@ export default function MarketplaceBannerEditor() {
   }, [configs]);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+  const previewBg = (form.hero_bg_type === "image" && form.hero_bg_image_url)
+    ? { backgroundImage: `url(${form.hero_bg_image_url})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : buildHeroBackground(form);
 
   const handleSave = async () => {
     setSaving(true);
@@ -174,6 +179,13 @@ export default function MarketplaceBannerEditor() {
               />
             </div>
           )}
+
+          <div>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1"><Eye className="w-3 h-3" />Live Preview</p>
+            <div className="relative h-32 rounded-xl overflow-hidden border border-border/20" style={previewBg}>
+              <div className="absolute inset-0 bg-black/20" />
+            </div>
+          </div>
 
           <Button onClick={handleSave} disabled={saving || isLoading} size="sm" className="bg-violet-600 hover:bg-violet-700 rounded-xl h-8 text-xs">
             <Save className="w-3.5 h-3.5 mr-1.5" />{saving ? "Saving..." : "Save Background"}
