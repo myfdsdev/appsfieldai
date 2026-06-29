@@ -24,6 +24,7 @@ import FooterPagesList from "@/components/marketplace/FooterPagesList";
 import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -421,8 +422,14 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   <div className="grid grid-cols-2 gap-4">
                     <div><label className="text-xs text-muted-foreground">Store Name</label><Input value={storeForm.name} onChange={e => setStoreForm(f => ({ ...f, name: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
                     <div><label className="text-xs text-muted-foreground">Store Slug</label><Input value={storeForm.slug} onChange={e => setStoreForm(f => ({ ...f, slug: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-                    <div><label className="text-xs text-muted-foreground">Store Logo URL</label><Input value={storeForm.branding.logo} onChange={e => setStoreForm(f => ({ ...f, branding: { ...f.branding, logo: e.target.value } }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." /></div>
-                    <div><label className="text-xs text-muted-foreground">Favicon URL</label><Input value={storeForm.branding.favicon} onChange={e => setStoreForm(f => ({ ...f, branding: { ...f.branding, favicon: e.target.value } }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." /></div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Store Logo</label>
+                      <div className="mt-1"><R2ImageUpload value={storeForm.branding.logo} onChange={url => setStoreForm(f => ({ ...f, branding: { ...f.branding, logo: url } }))} campaignId="store-logo" placeholder="https://..." /></div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Favicon</label>
+                      <div className="mt-1"><R2ImageUpload value={storeForm.branding.favicon} onChange={url => setStoreForm(f => ({ ...f, branding: { ...f.branding, favicon: url } }))} campaignId="store-favicon" placeholder="https://..." /></div>
+                    </div>
                   </div>
                 </div>
                 <div>
