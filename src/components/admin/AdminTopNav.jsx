@@ -20,6 +20,7 @@ const NAV_GROUPS = [
       { id: "invite",      label: "Invite User",          icon: UserPlus },
       { id: "roles",       label: "Roles & Permissions",  icon: ShieldCheck },
       { id: "access_logs", label: "Access Logs",          icon: FileText },
+      { id: "plans",       label: "Subscription Plans",   icon: Star },
     ],
   },
   {
@@ -79,7 +80,6 @@ const NAV_GROUPS = [
     id: "integrations_group",
     label: "Integrations",
     items: [
-      { id: "plans",         label: "Subscription Plans", icon: Star },
       { id: "int_stripe",    label: "Stripe",         icon: CreditCard },
       { id: "int_razorpay",  label: "Razorpay",       icon: Plug },
       { id: "int_gmail",     label: "Gmail / SMTP",   icon: MailCheck },
