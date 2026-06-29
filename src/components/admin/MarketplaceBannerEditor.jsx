@@ -74,7 +74,7 @@ export default function MarketplaceBannerEditor() {
     setSaving(false);
   };
 
-  const previewBg = form.hero_bg_image_url
+  const previewBg = (form.hero_bg_type === "image" && form.hero_bg_image_url)
     ? { backgroundImage: `url(${form.hero_bg_image_url})`, backgroundSize: "cover", backgroundPosition: "center" }
     : buildHeroBackground(form);
 
@@ -98,16 +98,6 @@ export default function MarketplaceBannerEditor() {
             <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><AlignLeft className="w-3 h-3 text-muted-foreground" />Subheadline</label>
             <Input value={form.hero_subtitle || ""} onChange={e => set("hero_subtitle", e.target.value)} className="bg-[#252525] border-border/30 rounded-xl text-sm" />
           </div>
-          <div>
-            <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><ImageIcon className="w-3 h-3 text-cyan-400" />Cover Image</label>
-            <R2ImageUpload
-              value={form.hero_bg_image_url || ""}
-              onChange={(url) => set("hero_bg_image_url", url)}
-              campaignId="marketplace-banner"
-              placeholder="https://example.com/banner.jpg"
-            />
-            <p className="text-[11px] text-muted-foreground mt-1">Leave empty to use the background below instead.</p>
-          </div>
         </CardContent>
       </Card>
 
@@ -124,7 +114,7 @@ export default function MarketplaceBannerEditor() {
           <div>
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Background Type</p>
             <div className="flex gap-2">
-              {[{ val: "gradient", label: "Gradient" }, { val: "solid", label: "Solid Color" }].map(opt => (
+              {[{ val: "gradient", label: "Gradient" }, { val: "solid", label: "Solid Color" }, { val: "image", label: "Image" }].map(opt => (
                 <button
                   key={opt.val}
                   onClick={() => set("hero_bg_type", opt.val)}
@@ -196,6 +186,18 @@ export default function MarketplaceBannerEditor() {
                 <input type="color" value={form.hero_bg_solid_color || "#0a0603"} onChange={e => set("hero_bg_solid_color", e.target.value)} className="w-8 h-8 rounded-lg border border-border/30 cursor-pointer bg-transparent p-0.5" />
                 <Input value={form.hero_bg_solid_color || ""} onChange={e => set("hero_bg_solid_color", e.target.value)} className="bg-[#252525] border-border/30 rounded-lg text-xs h-8 font-mono w-40" />
               </div>
+            </div>
+          )}
+
+          {form.hero_bg_type === "image" && (
+            <div>
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Cover Image</p>
+              <R2ImageUpload
+                value={form.hero_bg_image_url || ""}
+                onChange={(url) => set("hero_bg_image_url", url)}
+                campaignId="marketplace-banner"
+                placeholder="https://example.com/banner.jpg"
+              />
             </div>
           )}
 

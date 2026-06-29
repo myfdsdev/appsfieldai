@@ -18,7 +18,7 @@ export default function MarketplaceDashboardBanner({ title, subtitle, children }
   const heading = config?.hero_title_line1 || title;
   const sub = config?.hero_subtitle || subtitle;
 
-  const bgStyle = config?.hero_bg_image_url
+  const bgStyle = (config?.hero_bg_type === "image" && config?.hero_bg_image_url)
     ? { backgroundImage: `url(${config.hero_bg_image_url})`, backgroundSize: "cover", backgroundPosition: "center" }
     : config
       ? buildHeroBackground(config)
