@@ -7,11 +7,9 @@ import DividendPanel from "@/components/admin/DividendPanel";
 import PlatformDomainConfig from "@/components/admin/PlatformDomainConfig";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
-import PlatformOverview from "@/components/admin/PlatformOverview";
 import PlanManager from "@/components/admin/PlanManager";
 import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
-import MarketplaceBannerEditor from "@/components/admin/MarketplaceBannerEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
 import DFYProductManager from "@/components/admin/DFYProductManager";
@@ -751,10 +749,12 @@ export default function AdminPanel() {
       case "dashboard":
       case "hero_background":
         return (
-          <div className="space-y-5">
-            <PlatformOverview />
-            <MarketplaceBannerEditor />
-          </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Image className="w-4 h-4 text-violet-400" />Dashboard</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">No dashboard settings here.</p></CardContent>
+            </Card>
+          </motion.div>
         );
       case "ai":
         return (
