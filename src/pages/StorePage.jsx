@@ -11,6 +11,7 @@ import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
 import StoreFAQ from "@/components/store/StoreFAQ";
 import StoreHero from "@/components/store/StoreHero";
+import StoreStatsBar from "@/components/store/StoreStatsBar";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
@@ -143,6 +144,11 @@ export default function StorePage() {
       {/* Store hero */}
       {headerEnabled && (
         <StoreHero marketplace={marketplace} sections={sections} listingsCount={software.length} />
+      )}
+
+      {/* Stats bar */}
+      {(sections.statsBarEnabled ?? false) && (
+        <StoreStatsBar title={sections.statsBarTitle} cards={sections.statsCards} brandColor={brandColor} />
       )}
 
       <div id="store-listings" />
