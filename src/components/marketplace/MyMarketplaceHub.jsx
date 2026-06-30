@@ -90,6 +90,10 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
   const [saving, setSaving] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
 
+  // "Publish to Theme" is an admin-only capability.
+  const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
+
   const [pageForm, setPageForm] = useState({
     headerEnabled: marketplace?.pageSections?.headerEnabled ?? true,
     headerTitle: marketplace?.pageSections?.headerTitle || "",
@@ -253,13 +257,17 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
                   <Save className="w-4 h-4" /> Save Page Settings
                 </Button>
-                <Button onClick={() => setPublishOpen(true)} variant="outline" className="border-violet-500/40 text-violet-400 hover:bg-violet-500/10 rounded-xl gap-1.5">
-                  <Palette className="w-4 h-4" /> Publish to Theme
-                </Button>
+                {isAdmin && (
+                  <Button onClick={() => setPublishOpen(true)} variant="outline" className="border-violet-500/40 text-violet-400 hover:bg-violet-500/10 rounded-xl gap-1.5">
+                    <Palette className="w-4 h-4" /> Publish to Theme
+                  </Button>
+                )}
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Publishing saves these sections as a reusable store theme template you can apply to other stores later.
-              </p>
+              {isAdmin && (
+                <p className="text-[11px] text-muted-foreground">
+                  Publishing saves these sections as a reusable store theme template you can apply to other stores later.
+                </p>
+              )}
             </div>
           )}
 
