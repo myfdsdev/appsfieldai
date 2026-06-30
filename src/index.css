@@ -99,6 +99,62 @@
   border-color: #2f2f2f !important;
 }
 
+/* ───────────────────────────────────────────────────────────────
+   Light-mode surface remapping.
+   Much of the app uses hardcoded dark hex backgrounds (e.g. bg-[#1a1a1a]).
+   These ignore the theme, so in LIGHT mode we remap them to light surfaces
+   and fix text contrast. Dark mode is untouched (keeps the original hexes).
+   ─────────────────────────────────────────────────────────────── */
+:root:not(.dark) {
+  /* Panel / card surfaces (darkest -> lightest tints) */
+  --surface-1: #ffffff;   /* was #1a1a1a, #1e1e1e, #161312 */
+  --surface-2: #f4f1ee;   /* was #252525, #2b2b2b, #222 */
+  --surface-0: #f7f5f3;   /* was #111111, #131313, #151515, #0a0a0f, #111116 */
+}
+
+/* Map every hardcoded dark surface to a light surface in light mode */
+:root:not(.dark) .bg-\[\#1a1a1a\],
+:root:not(.dark) .bg-\[\#1e1e1e\],
+:root:not(.dark) .bg-\[\#161312\] {
+  background-color: var(--surface-1) !important;
+}
+:root:not(.dark) .bg-\[\#252525\],
+:root:not(.dark) .bg-\[\#2b2b2b\],
+:root:not(.dark) .bg-\[\#222\] {
+  background-color: var(--surface-2) !important;
+}
+:root:not(.dark) .bg-\[\#111111\],
+:root:not(.dark) .bg-\[\#131313\],
+:root:not(.dark) .bg-\[\#151515\],
+:root:not(.dark) .bg-\[\#0a0a0f\],
+:root:not(.dark) .bg-\[\#111116\] {
+  background-color: var(--surface-0) !important;
+}
+
+/* Inputs: in light mode the dark fill should become a light field */
+:root:not(.dark) input:not(.no-global-input-style input),
+:root:not(.dark) textarea:not(.no-global-input-style textarea),
+:root:not(.dark) select:not(.no-global-input-style select) {
+  background-color: #ffffff !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Black & translucent-white surfaces flip to light equivalents in light mode */
+:root:not(.dark) .bg-black { background-color: var(--surface-0) !important; }
+:root:not(.dark) .bg-black\/30,
+:root:not(.dark) .bg-black\/40,
+:root:not(.dark) .bg-black\/50,
+:root:not(.dark) .bg-black\/60 { background-color: rgba(0,0,0,0.04) !important; }
+:root:not(.dark) .bg-white\/5,
+:root:not(.dark) .bg-white\/6,
+:root:not(.dark) .bg-white\/8,
+:root:not(.dark) .bg-white\/10 { background-color: rgba(0,0,0,0.04) !important; }
+:root:not(.dark) .border-white\/5,
+:root:not(.dark) .border-white\/6,
+:root:not(.dark) .border-white\/8,
+:root:not(.dark) .border-white\/10,
+:root:not(.dark) .border-white\/20 { border-color: hsl(var(--border)) !important; }
+
 /* Hide scrollbar for horizontal sliders */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -108,10 +164,10 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(220, 15%, 5%);
+  background: hsl(var(--secondary));
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(220, 10%, 20%);
+  background: hsl(var(--muted-foreground) / 0.4);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
