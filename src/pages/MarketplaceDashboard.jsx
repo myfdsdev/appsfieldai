@@ -161,7 +161,7 @@ export default function MarketplaceDashboard() {
       )}
 
       {/* Sales analytics: chart with day/week/year + marketplace selector + profit/activity card */}
-      {!isAdmin && !isLoading && marketplaces.length > 0 && (
+      {!isLoading && marketplaces.length > 0 && (
         <SalesAnalytics marketplaces={marketplaces} />
       )}
 
