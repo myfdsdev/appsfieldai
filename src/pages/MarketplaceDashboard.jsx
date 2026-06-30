@@ -133,7 +133,7 @@ export default function MarketplaceDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 w-screen relative left-1/2 right-1/2 -mx-[50vw]">
       <MarketplaceDashboardBanner
         title={isAdmin ? "Admin Marketplace" : "My Marketplaces"}
         subtitle={isAdmin ? "Manage every user's marketplace across the platform." : "Build and manage your SaaS marketplace sites."}
