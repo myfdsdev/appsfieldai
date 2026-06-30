@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 import { base44 } from "@/api/base44Client";
 
 const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
@@ -89,6 +90,7 @@ export default function Topbar() {
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
+              <ThemeToggle />
               <NotificationBell />
               {/* Profile Dropdown */}
               <div className="relative" ref={dropdownRef}>
@@ -134,6 +136,7 @@ export default function Topbar() {
             </>
           ) : (
             <>
+              <ThemeToggle />
               <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground rounded-xl">
                 <Link to="/login">Login</Link>
               </Button>
@@ -161,6 +164,10 @@ export default function Topbar() {
           ))}
 
           <div className="pt-3 border-t border-white/5 space-y-1">
+            <div className="flex items-center justify-between px-4 py-2">
+              <p className="text-[10px] uppercase text-muted-foreground tracking-wider">Appearance</p>
+              <ThemeToggle />
+            </div>
             <p className="px-4 py-1 text-[10px] uppercase text-muted-foreground tracking-wider">Account</p>
             {isAuthenticated && user ? (
               <>

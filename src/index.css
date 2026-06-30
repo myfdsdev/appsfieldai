@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 20 10% 4%;
-    --foreground: 30 10% 96%;
-    --card: 20 10% 7%;
-    --card-foreground: 30 10% 96%;
-    --popover: 20 10% 7%;
-    --popover-foreground: 30 10% 96%;
-    --primary: 25 95% 55%;
+    --background: 30 30% 98%;
+    --foreground: 20 14% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 10%;
+    --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 20 8% 12%;
-    --secondary-foreground: 30 10% 88%;
-    --muted: 20 8% 12%;
-    --muted-foreground: 25 5% 50%;
+    --secondary: 30 12% 94%;
+    --secondary-foreground: 20 14% 18%;
+    --muted: 30 12% 94%;
+    --muted-foreground: 25 8% 42%;
     --accent: 35 90% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 20 8% 14%;
-    --input: 20 8% 14%;
-    --ring: 25 95% 55%;
+    --border: 25 12% 88%;
+    --input: 25 12% 88%;
+    --ring: 25 95% 53%;
     --chart-1: 25 95% 55%;
     --chart-2: 35 90% 50%;
     --chart-3: 15 80% 45%;
@@ -35,14 +35,14 @@
     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Unbounded', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --sidebar-background: 20 10% 4%;
-    --sidebar-foreground: 30 10% 90%;
-    --sidebar-primary: 25 95% 55%;
+    --sidebar-background: 30 30% 98%;
+    --sidebar-foreground: 20 14% 18%;
+    --sidebar-primary: 25 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 8% 12%;
-    --sidebar-accent-foreground: 30 10% 90%;
-    --sidebar-border: 20 8% 14%;
-    --sidebar-ring: 25 95% 55%;
+    --sidebar-accent: 30 12% 94%;
+    --sidebar-accent-foreground: 20 14% 18%;
+    --sidebar-border: 25 12% 88%;
+    --sidebar-ring: 25 95% 53%;
   }
 
   .dark {
@@ -91,10 +91,10 @@
   }
 }
 
-/* Global input/textarea/select styles (opt-out with .no-global-input-style on an ancestor) */
-input:not(.no-global-input-style input),
-textarea:not(.no-global-input-style textarea),
-select:not(.no-global-input-style select) {
+/* Global input/textarea/select styles for dark mode (opt-out with .no-global-input-style on an ancestor) */
+.dark input:not(.no-global-input-style input),
+.dark textarea:not(.no-global-input-style textarea),
+.dark select:not(.no-global-input-style select) {
   background-color: #212121 !important;
   border-color: #2f2f2f !important;
 }
