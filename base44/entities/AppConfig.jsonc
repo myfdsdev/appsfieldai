@@ -26,6 +26,24 @@
       "type": "string",
       "description": "Custom app favicon image URL"
     },
+    "themeColors": {
+      "type": "object",
+      "description": "Dynamic light/dark mode color scheme (hex values per token)",
+      "properties": {
+        "light": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "dark": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "hero_badge_text": {
       "type": "string"
     },
