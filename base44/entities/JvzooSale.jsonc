@@ -1,0 +1,109 @@
+{
+  "name": "JvzooSale",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the User this transaction is linked to"
+    },
+    "ccustname": {
+      "type": "string",
+      "description": "Customer name"
+    },
+    "ccustemail": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "ccuststate": {
+      "type": "string",
+      "description": "Customer state"
+    },
+    "ccustcc": {
+      "type": "string",
+      "description": "Customer country code"
+    },
+    "cproditem": {
+      "type": "string",
+      "description": "JVZoo product ID"
+    },
+    "cprodtitle": {
+      "type": "string",
+      "description": "Product title"
+    },
+    "cprodtype": {
+      "type": "string",
+      "description": "Product type (e.g. RECURRING, STANDARD)"
+    },
+    "ctransaction": {
+      "type": "string",
+      "enum": [
+        "SALE",
+        "RFND",
+        "CGBK",
+        "INSF",
+        "CANCEL-REBILL",
+        "BILL",
+        "OTHER"
+      ],
+      "description": "Transaction type from JVZoo"
+    },
+    "ctransaffiliate": {
+      "type": "string",
+      "description": "Affiliate ID"
+    },
+    "ctransamount": {
+      "type": "number",
+      "description": "Transaction amount"
+    },
+    "ctranspaymentmethod": {
+      "type": "string",
+      "description": "Payment method (e.g. PYPL)"
+    },
+    "ctransvendor": {
+      "type": "string",
+      "description": "Vendor ID"
+    },
+    "ctransreceipt": {
+      "type": "string",
+      "description": "Transaction receipt / ID"
+    },
+    "cupsellreceipt": {
+      "type": "string",
+      "description": "Upsell receipt"
+    },
+    "caffitid": {
+      "type": "string",
+      "description": "Affiliate transaction ID"
+    },
+    "cvendthru": {
+      "type": "string",
+      "description": "Vendor through / order form info"
+    },
+    "cverify": {
+      "type": "string",
+      "description": "JVZoo verification hash"
+    },
+    "ctranstime": {
+      "type": "string",
+      "description": "Transaction time (unix timestamp string from JVZoo)"
+    },
+    "assignedPlanId": {
+      "type": "string",
+      "description": "The SubscriptionPlan ID assigned/removed for this transaction"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the JVZoo signature (cverify) was validated successfully"
+    },
+    "processedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this IPN was processed"
+    }
+  },
+  "required": [
+    "ccustemail",
+    "ctransaction"
+  ]
+}

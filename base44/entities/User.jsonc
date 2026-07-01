@@ -46,6 +46,13 @@
       "type": "string",
       "description": "Active SubscriptionPlan ID"
     },
+    "jvzooPlanIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of SubscriptionPlan IDs assigned via JVZoo purchases"
+    },
     "marketplaceCount": {
       "type": "number",
       "default": 0,

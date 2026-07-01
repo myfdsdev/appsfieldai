@@ -30,6 +30,10 @@
       "type": "string",
       "description": "Custom app favicon image URL"
     },
+    "jvzooSecretKey": {
+      "type": "string",
+      "description": "JVZoo IPN secret key used to verify incoming webhook signatures"
+    },
     "themeColors": {
       "type": "object",
       "description": "Dynamic light/dark mode color scheme (hex values per token)",

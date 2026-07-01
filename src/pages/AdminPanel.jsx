@@ -13,6 +13,7 @@ import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import MarketplaceBannerEditor from "@/components/admin/MarketplaceBannerEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
+import JvzooManager from "@/components/admin/JvzooManager";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
@@ -823,7 +824,7 @@ export default function AdminPanel() {
       case "chat_monitor":
       case "analytics":
         return aiContent;
-      case "stripe_int": case "razorpay_int": case "gmail_int": case "jvzoo_int": case "webhooks_int":
+      case "stripe_int": case "razorpay_int": case "gmail_int": case "webhooks_int":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
@@ -898,25 +899,8 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "int_jvzoo":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><ShoppingBag className="w-4 h-4 text-amber-400" />JVZoo Integration</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><ShoppingBag className="w-4 h-4 text-amber-400" /></div>
-                  <div><p className="text-sm font-medium text-foreground">JVZoo Marketplace</p><p className="text-xs text-muted-foreground">Sync products and affiliates from JVZoo</p></div>
-                  <Badge className="ml-auto bg-secondary text-muted-foreground border-border/30 text-[10px]">Not Connected</Badge>
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  <div><label className="text-xs text-muted-foreground">API Key</label><Input placeholder="Your JVZoo API key" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
-                  <div><label className="text-xs text-muted-foreground">Secret Key</label><Input type="password" placeholder="Your JVZoo secret" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
-                </div>
-                <Button size="sm" className="bg-amber-600 hover:bg-amber-700 rounded-xl text-xs">Connect JVZoo</Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
+      case "jvzoo_int":
+        return <JvzooManager />;
       case "int_webhooks":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
