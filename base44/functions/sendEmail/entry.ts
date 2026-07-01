@@ -19,22 +19,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing to, subject, or html' }, { status: 400 });
     }
 
-    // Resolve the from address. Prefer an explicit verified sender, else pull the
-    // configured support email from AppConfig, else use Resend's shared onboarding domain.
-    let resolvedFromEmail = fromEmail || '';
-    let resolvedFromName = fromName || 'Notifications';
-    if (!resolvedFromEmail) {
-      try {
-        const base44 = createClientFromRequest(req);
-        const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'general' });
-        const cfg = cfgs[0];
-        if (cfg) {
-          resolvedFromName = fromName || cfg.siteName || resolvedFromName;
-        }
-      } catch (_) { /* config optional */ }
-      // Resend's shared testing sender (works without domain verification).
-      resolvedFromEmail = 'onboarding@resend.dev';
-    }
+    // Resolve the from address. Prefer an explicit sender, else fall back to the
+    // app's verified sending address on appsfieldai.com.
+    const resolvedFromEmail = fromEmail || 'info@appsfieldai.com';
+    const resolvedFromName = fromName || 'AppsField AI';
 
     const from = `${resolvedFromName} <${resolvedFromEmail}>`;
 
