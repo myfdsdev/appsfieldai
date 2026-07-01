@@ -21,6 +21,7 @@ const NAV_GROUPS = [
       { id: "roles",       label: "Roles & Permissions",  icon: ShieldCheck },
       { id: "access_logs", label: "Access Logs",          icon: FileText },
       { id: "plans",       label: "Subscription Plans",   icon: Star },
+      { id: "int_jvzoo",   label: "JVZoo",                icon: ShoppingBag },
     ],
   },
   {
