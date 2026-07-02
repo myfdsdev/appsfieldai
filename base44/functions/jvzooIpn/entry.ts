@@ -113,7 +113,8 @@ Deno.serve(async (req) => {
           await base44.functions.invoke('sendEmail', {
             to: email,
             fromName: siteName,
-            fromEmail: supportEmail || undefined,
+            fromEmail: 'info@appsfieldai.com',
+            replyTo: supportEmail || undefined,
             subject: `Welcome to ${siteName} — Complete your signup`,
             html: body,
           });
