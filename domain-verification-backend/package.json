@@ -1,0 +1,19 @@
+{
+  "name": "domain-verification-backend",
+  "version": "1.0.0",
+  "description": "Standalone custom-domain verification microservice for a Base44 marketplace app",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}
