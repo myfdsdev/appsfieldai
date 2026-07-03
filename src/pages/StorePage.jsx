@@ -9,7 +9,9 @@ import OneInALifetimeDeals from "@/components/store/OneInALifetimeDeals";
 import StoreTestimonials from "@/components/store/StoreTestimonials";
 import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
+import StoreTrustBadges from "@/components/store/StoreTrustBadges";
 import StoreFAQ from "@/components/store/StoreFAQ";
+import { useCustomCode } from "@/hooks/useCustomCode";
 import StoreHero from "@/components/store/StoreHero";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
@@ -43,6 +45,12 @@ export default function StorePage() {
   const marketplaceId = data?.marketplace?.id;
   const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
   const cart = useStoreCart(marketplaceId);
+
+  // Inject the store owner's custom head/body code (FB/Google pixel, analytics, etc.).
+  useCustomCode(
+    data?.marketplace?.pageSections?.customCodeHead,
+    data?.marketplace?.pageSections?.customCodeBody
+  );
 
   // Reserve a spot: must be signed in. Opens the store reserve modal.
   const handleReserve = (listing) => {
@@ -125,6 +133,7 @@ export default function StorePage() {
   const testimonialsEnabled = sections.testimonialsEnabled ?? false;
   const footerEnabled = sections.footerEnabled ?? true;
   const faqEnabled = sections.faqEnabled ?? false;
+  const trustBadgesEnabled = sections.trustBadgesEnabled ?? false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -184,6 +193,9 @@ export default function StorePage() {
         </>
       )}
 
+      {/* Trust / policy badges */}
+      {trustBadgesEnabled && <StoreTrustBadges badges={sections.trustBadges} title={sections.trustBadgesTitle} brandColor={brandColor} />}
+
       {/* Testimonials */}
       {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={brandColor} title={sections.testimonialsTitle} />}
 
@@ -191,7 +203,7 @@ export default function StorePage() {
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}
 
       {/* Footer */}
-      {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} customPages={customPages} storeBasePath={storeBasePath} />}
+      {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} footerLogoUrl={sections.footerLogoUrl} socialLinks={sections.socialLinks} customPages={customPages} storeBasePath={storeBasePath} />}
 
       {/* FAQ — below the footer */}
       {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={brandColor} />}

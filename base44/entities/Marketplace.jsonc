@@ -346,6 +346,40 @@
         "testimonialsTitle": {
           "type": "string"
         },
+        "trustBadgesEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the trust/policy badges strip is shown on the store page"
+        },
+        "trustBadgesTitle": {
+          "type": "string",
+          "description": "Optional heading above the trust badges strip"
+        },
+        "trustBadges": {
+          "type": "array",
+          "description": "Trust/policy factors shown to buyers (GDPR, verified payments, verified by AppsfieldAI, etc.)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "icon": {
+                "type": "string",
+                "description": "Preset icon key (shield, lock, gdpr, paypal, stripe, verified, badge, award)"
+              },
+              "imageUrl": {
+                "type": "string",
+                "description": "Optional custom badge image URL (overrides preset icon)"
+              },
+              "text": {
+                "type": "string",
+                "description": "Badge label / caption"
+              },
+              "link": {
+                "type": "string",
+                "description": "Optional URL the badge links to"
+              }
+            }
+          }
+        },
         "faqEnabled": {
           "type": "boolean",
           "default": false,
@@ -386,6 +420,42 @@
         },
         "footerText": {
           "type": "string"
+        },
+        "footerLogoUrl": {
+          "type": "string",
+          "description": "Logo image shown in the store footer (falls back to store logo)"
+        },
+        "socialLinks": {
+          "type": "object",
+          "description": "Social media profile links shown in the footer",
+          "properties": {
+            "facebook": {
+              "type": "string"
+            },
+            "instagram": {
+              "type": "string"
+            },
+            "twitter": {
+              "type": "string"
+            },
+            "linkedin": {
+              "type": "string"
+            },
+            "youtube": {
+              "type": "string"
+            },
+            "tiktok": {
+              "type": "string"
+            }
+          }
+        },
+        "customCodeHead": {
+          "type": "string",
+          "description": "Custom HTML/JS injected into the page head (e.g. FB/Google pixel, analytics)"
+        },
+        "customCodeBody": {
+          "type": "string",
+          "description": "Custom HTML/JS injected at the end of the page body"
         }
       }
     },
