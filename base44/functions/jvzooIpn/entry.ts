@@ -17,7 +17,7 @@ async function loadBranding(base44) {
   let supportEmail = '';
   let logoUrl = '';
   try {
-    const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'general' });
+    const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
     const cfg = cfgs[0];
     if (cfg) {
       siteName = cfg.siteName || siteName;
@@ -26,6 +26,25 @@ async function loadBranding(base44) {
     }
   } catch (_) { /* config optional */ }
   return { siteName, supportEmail, logoUrl };
+}
+
+// Send email directly via Resend. The JVZoo webhook runs unauthenticated, so it
+// cannot invoke the sendEmail backend function (that returns 403); call Resend here.
+async function sendEmailDirect({ to, subject, html, fromName, fromEmail, replyTo }) {
+  const apiKey = Deno.env.get('RESEND_API_KEY');
+  if (!apiKey) throw new Error('RESEND_API_KEY not set');
+  const from = `${fromName || 'AppsField AI'} <${fromEmail || 'info@appsfieldai.com'}>`;
+  const payload: Record<string, unknown> = { from, to, subject, html };
+  if (replyTo) payload.reply_to = replyTo;
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.message || `Resend failed with status ${res.status}`);
+  }
 }
 
 // Sends a plan-change email (assigned or removed) to an existing customer.
@@ -51,7 +70,7 @@ async function sendPlanUpdateEmail(base44, { email, firstName, planName, action,
     </div>
   `;
 
-  await base44.functions.invoke('sendEmail', {
+  await sendEmailDirect({
     to: email,
     fromName: siteName,
     fromEmail: 'info@appsfieldai.com',
@@ -115,7 +134,7 @@ Deno.serve(async (req) => {
           let supportEmail = '';
           let logoUrl = '';
           try {
-            const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'general' });
+            const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
             const cfg = cfgs[0];
             if (cfg) {
               siteName = cfg.siteName || siteName;
@@ -159,7 +178,7 @@ Deno.serve(async (req) => {
             </div>
           `;
 
-          await base44.functions.invoke('sendEmail', {
+          await sendEmailDirect({
             to: email,
             fromName: siteName,
             fromEmail: 'info@appsfieldai.com',
