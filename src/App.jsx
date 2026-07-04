@@ -15,7 +15,6 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import Dashboard from '@/pages/Dashboard';
 import Marketplace from '@/pages/Marketplace';
 import SaaSDetail from '@/pages/SaaSDetail';
 import LiveAuctions from '@/pages/LiveAuctions';
@@ -112,7 +111,7 @@ const AuthenticatedApp = () => {
       {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<MarketplaceDashboard />} />
           <Route path="/dashboard" element={<MarketplaceDashboard />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/requests" element={<MyRequests />} />
