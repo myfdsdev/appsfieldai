@@ -19,7 +19,6 @@ import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
 import StoreAffiliatePanel from "@/components/store/StoreAffiliatePanel";
-import StoreAffiliateLanding from "@/components/store/StoreAffiliateLanding";
 import { fetchAffiliateApplications } from "@/lib/storeCustomerAuth";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
 import StoreCartDrawer from "@/components/store/StoreCartDrawer";
@@ -231,15 +230,6 @@ export default function StorePage() {
 
       {/* Custom Section */}
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}
-
-      {/* Affiliate program landing */}
-      {affiliateEnabled && (
-        <StoreAffiliateLanding
-          affiliateSettings={affiliateSettings}
-          brandColor={brandColor}
-          onApply={() => (customer ? setAffiliatePanelOpen(true) : setAuthModal({ open: true, mode: "register" }))}
-        />
-      )}
 
       {/* Footer */}
       {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} footerLogoUrl={sections.footerLogoUrl} socialLinks={sections.socialLinks} customPages={customPages} storeBasePath={storeBasePath} affiliateEnabled={affiliateEnabled} />}

@@ -37,12 +37,9 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
               </Link>
             ))}
             {affiliateEnabled && (
-              <button
-                onClick={() => document.getElementById("affiliate-program")?.scrollIntoView({ behavior: "smooth" })}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
+              <Link to={`${storeBasePath}/affiliates`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                 Affiliate Program
-              </button>
+              </Link>
             )}
           </div>
         )}
