@@ -1,16 +1,15 @@
 const express = require("express");
-const crypto = require("crypto");
 const { domains } = require("../db");
 const { requireBearer } = require("../lib/auth");
-const { dnsQuery } = require("../lib/dnsQuery");
+const render = require("../lib/renderClient");
 
 const router = express.Router();
 
+// The CNAME target (our Render service host) and apex A-record IP shown to
+// customers. Both are Render's — a subdomain CNAMEs to our onrender host, an
+// apex domain uses an A record to Render's shared IP.
 const PUBLIC_SERVICE_HOST = process.env.PUBLIC_SERVICE_HOST || "";
-const PUBLIC_SERVICE_IP = process.env.PUBLIC_SERVICE_IP || "";
-// Namespace for the TXT verification record — stable regardless of Base44's own
-// platform-domain configuration, since this service no longer depends on it.
-const TXT_KEY = process.env.TXT_KEY || "appsfieldai";
+const PUBLIC_SERVICE_IP = process.env.PUBLIC_SERVICE_IP || "216.24.57.1";
 
 function cleanHost(host) {
   return (host || "")
@@ -30,22 +29,13 @@ function sanitizeDomain(input) {
   return domain;
 }
 
-function genToken() {
-  return "vk_" + crypto.randomBytes(12).toString("hex");
-}
-
-function dnsInstructionsFor(domain) {
+// The single DNS record a customer must add. Render verifies ownership and
+// issues the TLS cert once this resolves to our Render service.
+function dnsInstructionFor(domain) {
   const isRoot = domain.split(".").length === 2;
-  return {
-    txt: {
-      name: isRoot ? `_${TXT_KEY}-verify` : `_${TXT_KEY}-verify.${domain.split(".")[0]}`,
-    },
-    cname: {
-      type: isRoot ? "A" : "CNAME",
-      name: isRoot ? "@" : domain.split(".")[0],
-      target: isRoot ? PUBLIC_SERVICE_IP : PUBLIC_SERVICE_HOST,
-    },
-  };
+  return isRoot
+    ? { type: "A", name: "@", target: PUBLIC_SERVICE_IP }
+    : { type: "CNAME", name: domain.split(".")[0], target: PUBLIC_SERVICE_HOST };
 }
 
 function docToState(doc) {
@@ -58,10 +48,11 @@ function docToState(doc) {
     redirectEnabled: !!doc.redirect_enabled,
     createdAt: doc.created_at,
     verifiedAt: doc.verified_at,
+    dns: dnsInstructionFor(doc.domain),
   };
 }
 
-// POST /api/admin/domains — connect a domain, get DNS instructions.
+// POST /api/admin/domains — connect a domain: register it on Render, return DNS.
 router.post("/domains", requireBearer, async (req, res) => {
   const { domain: rawDomain, storeSlug, marketplaceId, userId } = req.body || {};
   const domain = sanitizeDomain(rawDomain);
@@ -73,7 +64,15 @@ router.post("/domains", requireBearer, async (req, res) => {
     return res.status(403).json({ error: "This domain is already connected to another store." });
   }
 
-  const token = existing?.verification_token || genToken();
+  // Register the domain on our Render service (idempotent — 409 returns existing).
+  let renderDomain;
+  try {
+    renderDomain = await render.addDomain(domain);
+  } catch (err) {
+    console.error("Render addDomain failed", err.response?.data || err.message);
+    return res.status(502).json({ error: "Could not register the domain with the hosting provider." });
+  }
+
   const now = new Date().toISOString();
   await domains().updateOne(
     { domain },
@@ -82,6 +81,7 @@ router.post("/domains", requireBearer, async (req, res) => {
         store_slug: storeSlug,
         marketplace_id: marketplaceId || null,
         owner_user_id: userId || null,
+        render_domain_id: renderDomain?.id || null,
         verification_status: "pending",
         ssl_status: "pending",
         is_active: false,
@@ -89,7 +89,6 @@ router.post("/domains", requireBearer, async (req, res) => {
       },
       $setOnInsert: {
         domain,
-        verification_token: token,
         redirect_enabled: true,
         created_at: now,
         verified_at: null,
@@ -98,35 +97,19 @@ router.post("/domains", requireBearer, async (req, res) => {
     { upsert: true }
   );
 
-  const dns = dnsInstructionsFor(domain);
-  return res.json({
-    domain,
-    verificationToken: token,
-    dns: {
-      txt: { name: dns.txt.name, value: `${TXT_KEY}-verify=${token}` },
-      cname: { type: dns.cname.type, name: dns.cname.name, target: dns.cname.target },
-    },
-  });
+  return res.json({ domain, dns: dnsInstructionFor(domain) });
 });
 
-// GET /api/admin/domains/:domain — current state + DNS instructions (so the UI
-// can restore the DNS panel after a page reload, not just right after Connect).
+// GET /api/admin/domains/:domain — current state + DNS instruction.
 router.get("/domains/:domain", requireBearer, async (req, res) => {
   const domain = sanitizeDomain(req.params.domain);
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
   const doc = await domains().findOne({ domain });
   if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
-  const dns = dnsInstructionsFor(domain);
-  return res.json({
-    ...docToState(doc),
-    dns: {
-      txt: { name: dns.txt.name, value: `${TXT_KEY}-verify=${doc.verification_token}` },
-      cname: { type: dns.cname.type, name: dns.cname.name, target: dns.cname.target },
-    },
-  });
+  return res.json(docToState(doc));
 });
 
-// POST /api/admin/domains/:domain/verify — re-check DNS, flip status.
+// POST /api/admin/domains/:domain/verify — ask Render to (re)verify, read status.
 router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
   const domain = sanitizeDomain(req.params.domain);
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
@@ -137,24 +120,20 @@ router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
     return res.status(403).json({ error: "You do not own this domain mapping." });
   }
 
-  const isRoot = domain.split(".").length === 2;
+  const idOrName = doc.render_domain_id || domain;
+  let renderDomain;
+  try {
+    await render.verifyDomain(idOrName);
+    renderDomain = await render.getDomain(idOrName);
+  } catch (err) {
+    console.error("Render verify failed", err.response?.data || err.message);
+    return res.status(502).json({ error: "Could not check domain verification with the hosting provider." });
+  }
 
-  // TXT check — absolute name is always "_<key>-verify.<domain>", root or not.
-  const txtName = `_${TXT_KEY}-verify.${domain}`;
-  const txtRecords = await dnsQuery(txtName, "TXT");
-  const txtValues = txtRecords.map((r) => (r.data || "").replace(/^"|"$/g, ""));
-  const txtMatch = txtValues.some((v) => v.includes(`${TXT_KEY}-verify=${doc.verification_token}`));
-
-  // CNAME/A check
-  const cnameRecords = await dnsQuery(domain, isRoot ? "A" : "CNAME");
-  const cnameValues = cnameRecords.map((r) => (r.data || "").replace(/\.$/, "").toLowerCase());
-  const expectedTarget = isRoot ? PUBLIC_SERVICE_IP : PUBLIC_SERVICE_HOST;
-  const cnameMatch = cnameValues.some((v) => v === expectedTarget);
-
-  const verified = txtMatch && cnameMatch;
-
+  const verified = renderDomain?.verificationStatus === "verified";
   const set = {
     verification_status: verified ? "verified" : "failed",
+    // Render issues the TLS cert automatically once the domain is verified.
     ssl_status: verified ? "active" : "pending",
     is_active: verified,
     updated_at: new Date().toISOString(),
@@ -164,25 +143,18 @@ router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
 
   const message = verified
     ? "Domain verified and SSL activated."
-    : !txtMatch && !cnameMatch
-    ? "Neither the TXT nor CNAME record was found yet. DNS can take up to 48h to propagate."
-    : !txtMatch
-    ? "CNAME found, but the TXT verification record is missing or incorrect."
-    : "TXT record verified, but the CNAME record is missing or incorrect.";
+    : "DNS not verified yet. Add the record below and allow a few minutes to propagate (up to 48h).";
 
   return res.json({
     verified,
-    verificationStatus: verified ? "verified" : "failed",
-    sslStatus: verified ? "active" : "pending",
-    checks: {
-      txt: { name: txtName, found: txtMatch, records: txtValues },
-      cname: { name: domain, found: cnameMatch, target: expectedTarget, records: cnameValues },
-    },
+    verificationStatus: set.verification_status,
+    sslStatus: set.ssl_status,
+    dns: dnsInstructionFor(domain),
     message,
   });
 });
 
-// DELETE /api/admin/domains/:domain — remove mapping.
+// DELETE /api/admin/domains/:domain — remove from Render and our DB.
 router.delete("/domains/:domain", requireBearer, async (req, res) => {
   const domain = sanitizeDomain(req.params.domain);
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
@@ -191,6 +163,13 @@ router.delete("/domains/:domain", requireBearer, async (req, res) => {
   if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
   if (req.authUserId && doc.owner_user_id && doc.owner_user_id !== req.authUserId) {
     return res.status(403).json({ error: "You do not own this domain mapping." });
+  }
+
+  try {
+    await render.deleteDomain(doc.render_domain_id || domain);
+  } catch (err) {
+    console.error("Render deleteDomain failed", err.response?.data || err.message);
+    // Continue — we still remove our own mapping so the store stops routing here.
   }
 
   await domains().deleteOne({ domain });

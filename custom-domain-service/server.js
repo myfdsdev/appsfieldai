@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const { connect } = require("./db");
 const adminDomainRoutes = require("./routes/domain");
-const askRoutes = require("./routes/ask");
 const publicRoutes = require("./routes/public");
 const storeProxy = require("./middleware/storeProxy");
 
@@ -25,7 +24,6 @@ app.use("/api", (req, res, next) => {
 app.get("/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api/admin", adminDomainRoutes);
-app.use("/api", askRoutes);
 app.use("/api", publicRoutes);
 
 // Anything else is a custom-domain request — look it up and reverse-proxy it

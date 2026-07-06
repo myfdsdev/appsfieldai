@@ -1,25 +1,27 @@
 # Custom Domain Service
 
-A standalone Node/Express + Caddy service for AppsfieldAI (a Base44-hosted
-store-builder SaaS) that lets store owners map their own domain (e.g.
-`deals.yourbrand.com`) to their store, with TXT-record ownership verification,
-automatic SSL, and reverse-proxying to the existing Base44 app.
+A standalone Node/Express service for AppsfieldAI (a Base44-hosted store-builder
+SaaS) that lets store owners map their own domain (e.g. `deals.yourbrand.com`)
+to their store. It runs on **Render**, which handles ownership verification and
+automatic SSL for each customer domain, then reverse-proxies the traffic to the
+existing Base44 app.
 
 The Base44 app itself is untouched — stores still render exactly as they do
-today (client-side SPA, `getMarketplacePublic`, etc.). This service just sits
-in front of arbitrary customer-owned domains, confirms ownership, terminates
-TLS, and forwards the request to `app.appsfieldai.com`.
+today (client-side SPA, `getMarketplacePublic`, etc.). This service just sits in
+front of arbitrary customer-owned domains and forwards each request to
+`app.appsfieldai.com`.
 
 ## How it works
 
 ```
 Customer's domain (deals.yourbrand.com)
-      │  CNAME/A → PUBLIC_SERVICE_HOST (this service)
+      │  CNAME → PUBLIC_SERVICE_HOST (this service's *.onrender.com host)
+      │  (apex domains use an A record → 216.24.57.1)
       ▼
-   Caddy (80/443) — on-demand TLS, gated by /api/ask
+   Render edge — verifies the domain and issues a TLS cert automatically
       ▼
-   Node/Express (port 4000, internal)
-      1. Look up Host header in MongoDB → verified + active?
+   Node/Express (this service)
+      1. Look up Host header in MongoDB → known mapping?
       2. Reverse-proxy to UPSTREAM_ORIGIN (https://app.appsfieldai.com)
       3. Rewrite <title>/canonical/OG tags in the HTML shell only
       ▼
@@ -28,9 +30,22 @@ Customer's domain (deals.yourbrand.com)
    and renders the right store, no /store/{slug} prefix needed.
 ```
 
-`app.appsfieldai.com` traffic never passes through this service — it resolves
-to Base44 directly, as it always has. This service is only ever reached via a
-verified customer domain.
+`app.appsfieldai.com` traffic never passes through this service — it resolves to
+Base44 directly, as it always has. This service is only ever reached via a
+customer domain that Render has verified and routed here.
+
+## Why Render's API (not Caddy)
+
+Render terminates TLS at its own edge, so a container can't run its own
+on-demand TLS. Instead this service calls Render's custom-domains API to
+register each customer domain on itself; Render then verifies ownership (by
+checking the customer's DNS points at Render) and issues a Let's Encrypt cert
+automatically. That means **customers add a single DNS record** and this service
+reads verification status from Render — no separate TXT record, no Caddy.
+
+> **Scale note:** Render caps custom domains per service (roughly 50 on standard
+> plans). For large numbers of customer domains you'd move to Cloudflare for
+> SaaS or a VPS + Caddy model instead.
 
 ## Endpoints
 
@@ -40,38 +55,22 @@ All require `Authorization: Bearer <VERIFICATION_SECRET>`.
 
 | Method | Path | Body | Purpose |
 |---|---|---|---|
-| POST | `/api/admin/domains` | `{ domain, storeSlug, marketplaceId, userId }` | Connect a domain, get DNS instructions |
-| GET | `/api/admin/domains/:domain` | — | Current status + DNS instructions |
-| POST | `/api/admin/domains/:domain/verify` | `{ userId }` | Re-check DNS, flip status |
-| DELETE | `/api/admin/domains/:domain` | `{ userId }` | Remove the mapping |
+| POST | `/api/admin/domains` | `{ domain, storeSlug, marketplaceId, userId }` | Register the domain on Render, return the DNS record to add |
+| GET | `/api/admin/domains/:domain` | — | Current status + DNS record |
+| POST | `/api/admin/domains/:domain/verify` | `{ userId }` | Ask Render to (re)verify, read status back |
+| DELETE | `/api/admin/domains/:domain` | `{ userId }` | Remove from Render and this DB |
 
-### Public endpoints (no auth)
+The DNS record returned is a single object: `{ type, name, target }` — a
+`CNAME` → `PUBLIC_SERVICE_HOST` for subdomains, or an `A` → `PUBLIC_SERVICE_IP`
+for apex/root domains.
+
+### Public endpoint (no auth)
 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/domain-for-store?slug=X` | `{ customDomain, redirectEnabled }` — used by `StorePage.jsx` to redirect `app.appsfieldai.com/store/{slug}` to the custom domain |
-| GET | `/api/ask?domain=X` | Caddy's on-demand TLS callback — `200` if verified+active, else `403` |
 
-### Verification logic
-
-Same TXT + CNAME/A check pattern as the original Base44 `verifyCustomDomain`
-function, resolved via Cloudflare DNS-over-HTTPS (`lib/dnsQuery.js`):
-
-- **TXT**: `_<TXT_KEY>-verify.<domain>` must contain `<TXT_KEY>-verify=<token>`.
-- **CNAME** (subdomain domains) or **A** (apex/root domains): must equal
-  `PUBLIC_SERVICE_HOST` / `PUBLIC_SERVICE_IP` — i.e. point at *this* service,
-  not directly at Base44.
-
-Message wording on verify:
-
-| Situation | Message |
-|-----------|---------|
-| Both missing | `Neither the TXT nor CNAME record was found yet. DNS can take up to 48h to propagate.` |
-| Only TXT missing | `CNAME found, but the TXT verification record is missing or incorrect.` |
-| Only CNAME missing | `TXT record verified, but the CNAME record is missing or incorrect.` |
-| Verified | `Domain verified and SSL activated.` |
-
-## Setup
+## Setup (local)
 
 ```bash
 cd custom-domain-service
@@ -87,47 +86,76 @@ Requires **Node 18+**. Domain mappings are stored in **MongoDB** (collection
 
 | Var | Purpose |
 |-----|---------|
-| `PORT` | Internal Node port (default `4000`). Caddy is the public entry point. |
+| `PORT` | Node port (Render sets this automatically; `4000` for local dev). |
 | `VERIFICATION_SECRET` | Shared bearer token the Base44 frontend must send for admin calls. |
 | `MONGODB_URI` | MongoDB connection string (e.g. an Atlas `mongodb+srv://...` URI). |
 | `MONGODB_DB` | Database name (default `appsfieldai`). |
 | `MONGODB_COLLECTION` | Collection name (default `domain_mappings`). |
-| `UPSTREAM_ORIGIN` | The live Base44 app to proxy verified custom-domain traffic to (`https://app.appsfieldai.com`). Must be a normal HTTPS origin — do not point this at `base44.onrender.com` directly, Cloudflare blocks mismatched Host/SNI requests as domain fronting. |
+| `UPSTREAM_ORIGIN` | The live Base44 app to proxy custom-domain traffic to (`https://app.appsfieldai.com`). |
 | `BASE44_FUNCTIONS_ORIGIN` | Base44 app host used to call `getMarketplacePublic` for SEO tag rewriting. |
-| `PUBLIC_SERVICE_HOST` | This service's own public hostname — the CNAME target for subdomain custom domains. |
-| `PUBLIC_SERVICE_IP` | This service's own public static IP — the A-record target for apex/root custom domains. |
+| `RENDER_API_KEY` | Render API key (dashboard → Account Settings → API Keys). |
+| `RENDER_SERVICE_ID` | The `srv-xxxx` id of this Render service. |
+| `PUBLIC_SERVICE_HOST` | This service's own `*.onrender.com` host — the CNAME target for subdomain custom domains. |
+| `PUBLIC_SERVICE_IP` | Render's shared apex A-record IP (`216.24.57.1`). |
 | `CORS_ORIGIN` | Optional — lock CORS to one origin instead of `*`. |
 
 The main Base44 app also needs two Vite env vars (`.env` at the repo root) to
 call this service:
 
 ```
-VITE_DOMAIN_SERVICE_URL=https://connect.appsfieldai.com
+VITE_DOMAIN_SERVICE_URL=https://<this-service>.onrender.com
 VITE_DOMAIN_SERVICE_SECRET=<same value as VERIFICATION_SECRET>
 ```
 
-Note `VITE_`-prefixed vars are bundled into client-side JS and visible to
-anyone inspecting the app — this matches how the shared bearer secret was
-always intended to be used here (called directly from the browser), not a
-new limitation introduced by this service.
+Note `VITE_`-prefixed vars are bundled into client-side JS and visible to anyone
+inspecting the app — this matches how the shared bearer secret was always
+intended to be used here (called directly from the browser).
+
+## Deploy to Render
+
+1. **Push this repo to GitHub** (the service lives in `custom-domain-service/`).
+2. In Render, **New → Web Service** from the repo. Set **Root Directory** to
+   `custom-domain-service`, Build `npm ci`, Start `node server.js`. (Or use the
+   included `render.yaml` via **New → Blueprint**.) Pick a **paid instance type**
+   — custom domains aren't available on the free tier.
+3. After the first deploy, note two things from the service's dashboard:
+   - its public URL, e.g. `custom-domain-service-xxxx.onrender.com`
+   - its service id from the URL, e.g. `srv-abc123...`
+4. Create a **Render API key** (Account Settings → API Keys).
+5. Set the service's **environment variables** (from the table above), including
+   `RENDER_API_KEY`, `RENDER_SERVICE_ID`, and `PUBLIC_SERVICE_HOST` (the
+   onrender.com host from step 3). Redeploy.
+6. In the **main Base44 app**, set `VITE_DOMAIN_SERVICE_URL` (the onrender URL)
+   and `VITE_DOMAIN_SERVICE_SECRET` (= `VERIFICATION_SECRET`), then republish.
+
+### Customer flow
+
+1. Owner enters their domain in the app's Custom Domain page and clicks Connect.
+2. This service registers it on Render and shows the one DNS record to add.
+3. Owner adds that record at their DNS provider (CNAME → the onrender host, or
+   A → `216.24.57.1` for a root domain).
+4. Owner clicks Verify. Once Render confirms the DNS, it issues the SSL cert and
+   the store goes live on the custom domain automatically.
 
 ## curl examples
 
 ```bash
-# Connect a domain (returns DNS instructions)
-curl -X POST https://connect.appsfieldai.com/api/admin/domains \
+BASE=https://custom-domain-service-xxxx.onrender.com
+
+# Connect a domain (returns the DNS record to add)
+curl -X POST $BASE/api/admin/domains \
   -H "Authorization: Bearer YOUR_VERIFICATION_SECRET" \
   -H "Content-Type: application/json" \
   -d '{ "domain": "deals.yourbrand.com", "storeSlug": "my-test-saas", "marketplaceId": "mp1", "userId": "user1" }'
 
-# Verify DNS
-curl -X POST https://connect.appsfieldai.com/api/admin/domains/deals.yourbrand.com/verify \
+# Verify
+curl -X POST $BASE/api/admin/domains/deals.yourbrand.com/verify \
   -H "Authorization: Bearer YOUR_VERIFICATION_SECRET" \
   -H "Content-Type: application/json" \
   -d '{ "userId": "user1" }'
 
 # Public lookup (used by StorePage.jsx's redirect check)
-curl "https://connect.appsfieldai.com/api/domain-for-store?slug=my-test-saas"
+curl "$BASE/api/domain-for-store?slug=my-test-saas"
 ```
 
 ## Base44 fields this service reads/writes
@@ -138,39 +166,7 @@ external callers) — the only Base44 dependency is calling the existing public
 verification state live entirely in this service's own MongoDB collection.
 
 The main app's `Marketplace.customDomain` field is still kept in sync from
-`DomainManager.jsx` (since `getMarketplacePublic` resolves stores by that
-field for the SPA's own client-side custom-domain detection) — but
-`verificationToken`/`verificationStatus`/`sslStatus`/`connectedAt` on that
-entity are no longer read or written; this service is now the source of truth
-for those.
-
-## Deploy
-
-**Use a VPS or Fly.io, not Railway/Render.** Caddy's on-demand TLS needs
-direct control of ports 80/443 and persistent certificate storage — typical
-PaaS platforms terminate TLS at their own edge and don't support issuing
-certs for arbitrary customer-supplied hostnames this way.
-
-```bash
-docker build -t custom-domain-service .
-docker run -d -p 80:80 -p 443:443 \
-  --env-file .env \
-  -v caddy_data:/data \
-  custom-domain-service
-```
-
-The `caddy_data` volume persists issued TLS certificates across restarts.
-Domain mappings persist in MongoDB (`MONGODB_URI`), so they survive independently
-of the container. Point your customer domains' CNAME/A records at wherever this
-container is publicly reachable (`PUBLIC_SERVICE_HOST` / `PUBLIC_SERVICE_IP`).
-
-## Local testing without real DNS/TLS
-
-```bash
-# Simulate a verified custom domain hitting the proxy directly (no Caddy needed)
-curl -H "Host: deals.yourbrand.com" http://localhost:4000/
-```
-
-A full on-demand TLS handshake can't be faked locally — Let's Encrypt requires
-genuine public reachability. Test that part with a real cheap test domain +
-ngrok/Cloudflare Tunnel pointed at a deployed instance.
+`DomainManager.jsx` (since `getMarketplacePublic` resolves stores by that field
+for the SPA's own client-side custom-domain detection) — but
+`verificationToken`/`verificationStatus`/`sslStatus`/`connectedAt` on that entity
+are no longer read or written; this service is now the source of truth for those.

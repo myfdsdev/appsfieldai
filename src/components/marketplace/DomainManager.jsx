@@ -253,20 +253,14 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
               </div>
             ) : (
               <>
-                {/* DNS Records to add */}
+                {/* DNS record to add */}
                 <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20">
-                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add these DNS records at your domain provider</p>
+                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add this DNS record at your domain provider</p>
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
-                    <CopyField label="Type" value={dns?.cname?.type || "CNAME"} />
-                    <CopyField label="Host / Name" value={dns?.cname?.name || ""} />
-                    <CopyField label="Value" value={dns?.cname?.target || "—"} />
-                  </div>
-
-                  <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
-                    <CopyField label="Type" value="TXT" />
-                    <CopyField label="Host / Name" value={dns?.txt?.name || ""} />
-                    <CopyField label="Value" value={dns?.txt?.value || "—"} />
+                    <CopyField label="Type" value={dns?.type || "CNAME"} />
+                    <CopyField label="Host / Name" value={dns?.name || ""} />
+                    <CopyField label="Value" value={dns?.target || "—"} />
                   </div>
 
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">

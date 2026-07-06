@@ -1,7 +1,7 @@
 {
   "name": "custom-domain-service",
   "version": "1.0.0",
-  "description": "Standalone Node/Express + Caddy service that verifies customer-owned domain ownership, issues automatic SSL, and reverse-proxies verified custom domains to the AppsfieldAI Base44 app",
+  "description": "Standalone Node/Express service (deployed on Render) that registers customer-owned custom domains via Render's API for automatic SSL and reverse-proxies them to the AppsfieldAI Base44 app",
   "main": "server.js",
   "type": "commonjs",
   "engines": {

@@ -20,14 +20,16 @@ const proxy = createProxyMiddleware({
   },
 });
 
-// Host-based routing: only known, verified custom domains get proxied through
-// to the Base44 app. Anything else is rejected outright so this service can
-// never be used as an open proxy.
+// Host-based routing: only domains we have a mapping for get proxied through to
+// the Base44 app. Render only routes a custom domain to this service once it has
+// verified the domain and issued a cert, so a request arriving here for a mapped
+// domain is already trusted; requiring our own is_active flag would wrongly 404
+// a domain Render verified before the owner clicked "Verify" in the UI.
 async function storeProxy(req, res, next) {
   const domain = (req.headers.host || "").toLowerCase().split(":")[0];
   let doc;
   try {
-    doc = await domains().findOne({ domain, is_active: true });
+    doc = await domains().findOne({ domain });
   } catch (err) {
     console.error("storeProxy lookup failed", err.message);
     return res.status(503).type("text/plain").send("Service temporarily unavailable.");
