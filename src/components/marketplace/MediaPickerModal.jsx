@@ -35,6 +35,16 @@ export default function MediaPickerModal({ open, onClose, onSelect, campaignId =
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Files are sent to the backend as base64 in the request body — very large
+    // files exceed the payload limit and make the worker throw. Guard here with
+    // a clear message (10MB images / 40MB videos).
+    const isVid = file.type.startsWith("video");
+    const maxBytes = isVid ? 40 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      toast.error(`File too large. Max ${isVid ? "40MB for videos" : "10MB for images"}.`);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setUploading(true);
     try {
       const fileData = await new Promise((resolve, reject) => {
