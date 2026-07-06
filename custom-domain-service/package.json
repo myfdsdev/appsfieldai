@@ -1,7 +1,7 @@
 {
-  "name": "domain-verification-backend",
+  "name": "custom-domain-service",
   "version": "1.0.0",
-  "description": "Standalone custom-domain verification microservice for a Base44 marketplace app",
+  "description": "Standalone Node/Express + Caddy service that verifies customer-owned domain ownership, issues automatic SSL, and reverse-proxies verified custom domains to the AppsfieldAI Base44 app",
   "main": "server.js",
   "type": "commonjs",
   "engines": {
@@ -14,6 +14,8 @@
   "dependencies": {
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "http-proxy-middleware": "^3.0.3",
+    "mongodb": "^6.9.0"
   }
 }

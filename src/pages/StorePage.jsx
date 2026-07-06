@@ -29,6 +29,33 @@ export default function StorePage() {
   const customDomain = getCustomDomainFromHost();
   // On a wildcard store subdomain the key comes from the hostname, not the path.
   const slug = slugParam || getStoreKeyFromHost();
+
+  // When on the path-based platform URL (app.appsfieldai.com/store/:slug), check
+  // whether this store has an active, verified custom domain and redirect there
+  // instead. Blocks rendering while checking so the platform-hosted page never
+  // flashes first. Fails open (no redirect) on any error/timeout/missing config
+  // so an outage in the custom-domain-service never breaks the platform store.
+  const [checkingRedirect, setCheckingRedirect] = useState(!customDomain && !!slugParam);
+  useEffect(() => {
+    if (customDomain || !slugParam) { setCheckingRedirect(false); return; }
+    const serviceUrl = import.meta.env.VITE_DOMAIN_SERVICE_URL;
+    if (!serviceUrl) { setCheckingRedirect(false); return; }
+    let active = true;
+    fetch(`${serviceUrl}/api/domain-for-store?slug=${encodeURIComponent(slugParam)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((info) => {
+        if (!active) return;
+        if (info?.customDomain && info?.redirectEnabled) {
+          const suffix = window.location.pathname.replace(`/store/${slugParam}`, "") || "/";
+          window.location.replace(`https://${info.customDomain}${suffix}${window.location.search}`);
+          return;
+        }
+        setCheckingRedirect(false);
+      })
+      .catch(() => { if (active) setCheckingRedirect(false); });
+    return () => { active = false; };
+  }, [slugParam, customDomain]);
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -90,7 +117,7 @@ export default function StorePage() {
     return () => { active = false; };
   }, [slug, customDomain]);
 
-  if (loading) {
+  if (checkingRedirect || loading) {
     return (
       <div className="flex justify-center py-32">
         <div className="w-8 h-8 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />

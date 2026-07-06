@@ -7,8 +7,24 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-function genToken() {
-  return "vk_" + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
+// Standalone custom-domain service (verification + SSL + reverse proxy) —
+// see custom-domain-service/. Requires VITE_DOMAIN_SERVICE_URL and
+// VITE_DOMAIN_SERVICE_SECRET to be set in this app's .env.
+const DOMAIN_SERVICE_URL = import.meta.env.VITE_DOMAIN_SERVICE_URL || "";
+const DOMAIN_SERVICE_SECRET = import.meta.env.VITE_DOMAIN_SERVICE_SECRET || "";
+
+async function domainServiceFetch(path, options = {}) {
+  const res = await fetch(`${DOMAIN_SERVICE_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${DOMAIN_SERVICE_SECRET}`,
+      ...options.headers,
+    },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
 }
 
 function statusBadge(status) {
@@ -54,7 +70,9 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const [verifying, setVerifying] = useState(false);
   const [platformDomain, setPlatformDomain] = useState("");
   const [domainSource, setDomainSource] = useState("");
-  const [cnameTarget, setCnameTarget] = useState("");
+  // Verification/SSL status + DNS instructions now live in the standalone
+  // custom-domain-service, not on the Marketplace entity.
+  const [domainState, setDomainState] = useState(null);
 
   useEffect(() => { setMp(marketplaceProp); }, [marketplaceProp]);
 
@@ -63,30 +81,22 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
       .then(res => {
         setPlatformDomain(res.data?.platformDomain || "");
         setDomainSource(res.data?.source || "");
-        setCnameTarget(res.data?.cnameTarget || "");
       })
       .catch(() => {});
   }, []);
 
-  const refreshMp = async () => {
-    try {
-      const fresh = await base44.entities.Marketplace.get(marketplace.id);
-      if (fresh) setMp(fresh);
-    } catch { /* ignore */ }
-  };
+  // Restore verification status + DNS instructions for an already-connected domain.
+  useEffect(() => {
+    const existing = marketplaceProp?.customDomain;
+    if (!existing || !DOMAIN_SERVICE_URL) return;
+    domainServiceFetch(`/api/admin/domains/${encodeURIComponent(existing)}`)
+      .then(setDomainState)
+      .catch(() => {});
+  }, [marketplaceProp?.customDomain]);
 
   const PLATFORM_DOMAIN = platformDomain || "your-platform.com";
-  const txtKey = PLATFORM_DOMAIN.split(".")[0];
 
-  // The real Base44 host every custom domain must CNAME to (NOT the platform root domain,
-  // which would cause Cloudflare Error 1000). Comes from getPlatformDomain.
-  const CNAME_TARGET = cnameTarget || "base44.onrender.com";
-  // A-record IP for root domains (matches the platform's own root A record).
-  const ROOT_A_IP = "216.24.57.1";
-
-  const token = marketplace?.verificationToken;
   const domain = marketplace?.customDomain;
-  const isRoot = domain && domain.split(".").length === 2;
 
   const handleSaveSubdomain = async () => {
     if (!subdomain.trim()) return toast.error("Subdomain is required");
@@ -102,30 +112,56 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
     if (!customDomain.trim()) return;
     setSaving(true);
     const clean = customDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
-    await base44.entities.Marketplace.update(marketplace.id, {
-      customDomain: clean,
-      verificationToken: marketplace?.verificationToken || genToken(),
-      verificationStatus: "in_progress",
-      sslStatus: "pending",
-    });
-    setCustomDomain(clean);
-    await refreshMp();
-    onUpdate?.();
+    try {
+      const res = await domainServiceFetch("/api/admin/domains", {
+        method: "POST",
+        body: JSON.stringify({
+          domain: clean,
+          storeSlug: marketplace?.subdomain || marketplace?.slug,
+          marketplaceId: marketplace.id,
+          userId: marketplace?.ownerId,
+        }),
+      });
+      // Keep Base44's own customDomain field in sync — getMarketplacePublic still
+      // resolves stores by this field for the SPA's client-side custom-domain detection.
+      await base44.entities.Marketplace.update(marketplace.id, { customDomain: clean });
+      setCustomDomain(clean);
+      setDomainState({
+        domain: clean,
+        verificationStatus: "pending",
+        sslStatus: "pending",
+        isActive: false,
+        dns: res.dns,
+      });
+      await refreshMp();
+      onUpdate?.();
+      toast.success("Domain connected — add the DNS records below, then verify.");
+    } catch (err) {
+      toast.error(err.message || "Could not connect domain. Try again.");
+    }
     setSaving(false);
-    toast.success("Domain connected — add the DNS records below, then verify.");
+  };
+
+  const refreshMp = async () => {
+    try {
+      const fresh = await base44.entities.Marketplace.get(marketplace.id);
+      if (fresh) setMp(fresh);
+    } catch { /* ignore */ }
   };
 
   const handleVerify = async () => {
     setVerifying(true);
     try {
-      const res = await base44.functions.invoke("verifyCustomDomain", { marketplaceId: marketplace.id });
-      const data = res.data || {};
+      const data = await domainServiceFetch(
+        `/api/admin/domains/${encodeURIComponent(domain)}/verify`,
+        { method: "POST", body: JSON.stringify({ userId: marketplace?.ownerId }) }
+      );
       if (data.verified) toast.success(data.message || "Domain verified — your store is connected!");
       else toast.error(data.message || "Verification failed. Check your DNS records.");
-      await refreshMp();
+      setDomainState((prev) => ({ ...prev, ...data }));
       onUpdate?.();
     } catch (err) {
-      toast.error("Could not verify domain. Try again shortly.");
+      toast.error(err.message || "Could not verify domain. Try again shortly.");
     }
     setVerifying(false);
   };
@@ -133,9 +169,8 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const subLabel = subdomain || marketplace?.slug;
   // Path-based store URL on the main app domain — always live, no DNS needed.
   const storeUrl = `https://${PLATFORM_DOMAIN}/store/${subLabel}`;
-  const recordHost = domain ? (isRoot ? "@" : domain.split(".")[0]) : "";
-  // Relative TXT host (relative to the domain's DNS zone): "@"/sub label only, no domain repeated.
-  const txtHost = domain ? (isRoot ? `_${txtKey}-verify` : `_${txtKey}-verify.${domain.split(".")[0]}`) : "";
+  // DNS instructions now come entirely from the custom-domain-service response.
+  const dns = domainState?.dns;
 
   return (
     <div className="space-y-6">
@@ -202,15 +237,15 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
             <div className="flex items-center gap-4 p-3 rounded-xl bg-secondary/30">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Domain</span>
-                {statusBadge(marketplace.verificationStatus)}
+                {statusBadge(domainState?.verificationStatus)}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">SSL</span>
-                {statusBadge(marketplace.sslStatus)}
+                {statusBadge(domainState?.sslStatus)}
               </div>
             </div>
 
-            {marketplace.verificationStatus === "verified" ? (
+            {domainState?.verificationStatus === "verified" ? (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                 <a href={`https://${domain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">https://{domain}</a>
@@ -223,15 +258,15 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
                   <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add these DNS records at your domain provider</p>
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
-                    <CopyField label="Type" value={isRoot ? "A" : "CNAME"} />
-                    <CopyField label="Host / Name" value={recordHost} />
-                    <CopyField label="Value" value={isRoot ? ROOT_A_IP : CNAME_TARGET} />
+                    <CopyField label="Type" value={dns?.cname?.type || "CNAME"} />
+                    <CopyField label="Host / Name" value={dns?.cname?.name || ""} />
+                    <CopyField label="Value" value={dns?.cname?.target || "—"} />
                   </div>
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
                     <CopyField label="Type" value="TXT" />
-                    <CopyField label="Host / Name" value={txtHost} />
-                    <CopyField label="Value" value={`${txtKey}-verify=${token || "—"}`} />
+                    <CopyField label="Host / Name" value={dns?.txt?.name || ""} />
+                    <CopyField label="Value" value={dns?.txt?.value || "—"} />
                   </div>
 
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">

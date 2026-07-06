@@ -1,17 +1,17 @@
 const express = require("express");
+const crypto = require("crypto");
+const { domains } = require("../db");
 const { requireBearer } = require("../lib/auth");
 const { dnsQuery } = require("../lib/dnsQuery");
-const {
-  getMarketplace,
-  updateMarketplace,
-  getConfiguredPlatformDomain,
-} = require("../lib/base44Client");
 
 const router = express.Router();
 
-const CNAME_TARGET = process.env.CNAME_TARGET || "base44.onrender.com";
+const PUBLIC_SERVICE_HOST = process.env.PUBLIC_SERVICE_HOST || "";
+const PUBLIC_SERVICE_IP = process.env.PUBLIC_SERVICE_IP || "";
+// Namespace for the TXT verification record — stable regardless of Base44's own
+// platform-domain configuration, since this service no longer depends on it.
+const TXT_KEY = process.env.TXT_KEY || "appsfieldai";
 
-// Normalize a host string: lowercase, drop scheme/path/port, trim.
 function cleanHost(host) {
   return (host || "")
     .toLowerCase()
@@ -30,147 +30,171 @@ function sanitizeDomain(input) {
   return domain;
 }
 
-// Resolve the platform domain: AppConfig (key "main") wins, else PLATFORM_DOMAIN.
-// Returns { platformDomain, source }.
-async function resolvePlatformDomain() {
-  const configured = await getConfiguredPlatformDomain();
-  if (configured) {
-    return { platformDomain: cleanHost(configured), source: "configured" };
-  }
+function genToken() {
+  return "vk_" + crypto.randomBytes(12).toString("hex");
+}
+
+function dnsInstructionsFor(domain) {
+  const isRoot = domain.split(".").length === 2;
   return {
-    platformDomain: cleanHost(process.env.PLATFORM_DOMAIN),
-    source: "default",
+    txt: {
+      name: isRoot ? `_${TXT_KEY}-verify` : `_${TXT_KEY}-verify.${domain.split(".")[0]}`,
+    },
+    cname: {
+      type: isRoot ? "A" : "CNAME",
+      name: isRoot ? "@" : domain.split(".")[0],
+      target: isRoot ? PUBLIC_SERVICE_IP : PUBLIC_SERVICE_HOST,
+    },
   };
 }
 
-// GET /api/platform-domain — public, no auth.
-router.get("/platform-domain", async (req, res) => {
-  try {
-    const { platformDomain, source } = await resolvePlatformDomain();
-    return res.json({
-      platformDomain,
-      cnameTarget: CNAME_TARGET,
-      source,
-    });
-  } catch (error) {
-    console.error("platform-domain error", error);
-    return res.status(500).json({ error: error.message });
+function docToState(doc) {
+  return {
+    domain: doc.domain,
+    storeSlug: doc.store_slug,
+    verificationStatus: doc.verification_status,
+    sslStatus: doc.ssl_status,
+    isActive: !!doc.is_active,
+    redirectEnabled: !!doc.redirect_enabled,
+    createdAt: doc.created_at,
+    verifiedAt: doc.verified_at,
+  };
+}
+
+// POST /api/admin/domains — connect a domain, get DNS instructions.
+router.post("/domains", requireBearer, async (req, res) => {
+  const { domain: rawDomain, storeSlug, marketplaceId, userId } = req.body || {};
+  const domain = sanitizeDomain(rawDomain);
+  if (!domain) return res.status(400).json({ error: "A valid domain is required." });
+  if (!storeSlug) return res.status(400).json({ error: "storeSlug is required." });
+
+  const existing = await domains().findOne({ domain });
+  if (existing && existing.owner_user_id && userId && existing.owner_user_id !== userId) {
+    return res.status(403).json({ error: "This domain is already connected to another store." });
   }
+
+  const token = existing?.verification_token || genToken();
+  const now = new Date().toISOString();
+  await domains().updateOne(
+    { domain },
+    {
+      $set: {
+        store_slug: storeSlug,
+        marketplace_id: marketplaceId || null,
+        owner_user_id: userId || null,
+        verification_status: "pending",
+        ssl_status: "pending",
+        is_active: false,
+        updated_at: now,
+      },
+      $setOnInsert: {
+        domain,
+        verification_token: token,
+        redirect_enabled: true,
+        created_at: now,
+        verified_at: null,
+      },
+    },
+    { upsert: true }
+  );
+
+  const dns = dnsInstructionsFor(domain);
+  return res.json({
+    domain,
+    verificationToken: token,
+    dns: {
+      txt: { name: dns.txt.name, value: `${TXT_KEY}-verify=${token}` },
+      cname: { type: dns.cname.type, name: dns.cname.name, target: dns.cname.target },
+    },
+  });
 });
 
-// POST /api/verify-custom-domain — requires bearer auth.
-router.post("/verify-custom-domain", requireBearer, async (req, res) => {
-  try {
-    const { marketplaceId } = req.body || {};
-    if (!marketplaceId) {
-      return res.status(400).json({ error: "marketplaceId is required" });
-    }
+// GET /api/admin/domains/:domain — current state + DNS instructions (so the UI
+// can restore the DNS panel after a page reload, not just right after Connect).
+router.get("/domains/:domain", requireBearer, async (req, res) => {
+  const domain = sanitizeDomain(req.params.domain);
+  if (!domain) return res.status(400).json({ error: "Invalid domain." });
+  const doc = await domains().findOne({ domain });
+  if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
+  const dns = dnsInstructionsFor(domain);
+  return res.json({
+    ...docToState(doc),
+    dns: {
+      txt: { name: dns.txt.name, value: `${TXT_KEY}-verify=${doc.verification_token}` },
+      cname: { type: dns.cname.type, name: dns.cname.name, target: dns.cname.target },
+    },
+  });
+});
 
-    // 1) Fetch the marketplace and enforce ownership.
-    let marketplace;
-    try {
-      marketplace = await getMarketplace(marketplaceId);
-    } catch (err) {
-      console.error("Base44 getMarketplace failed", err.message);
-      return res
-        .status(500)
-        .json({ error: "Failed to read marketplace from Base44." });
-    }
-    if (!marketplace) {
-      return res.status(404).json({ error: "Marketplace not found" });
-    }
-    // Only enforce when an acting user id was supplied (see lib/auth.js).
-    if (req.authUserId && marketplace.ownerId !== req.authUserId) {
-      return res
-        .status(403)
-        .json({ error: "You do not own this marketplace." });
-    }
+// POST /api/admin/domains/:domain/verify — re-check DNS, flip status.
+router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
+  const domain = sanitizeDomain(req.params.domain);
+  if (!domain) return res.status(400).json({ error: "Invalid domain." });
 
-    // 2) Require a custom domain and verification token.
-    const domain = sanitizeDomain(marketplace.customDomain);
-    if (!domain) {
-      return res
-        .status(400)
-        .json({ error: "No valid custom domain set on this marketplace." });
-    }
-    const expectedToken = marketplace.verificationToken;
-    if (!expectedToken) {
-      return res.status(400).json({
-        error: "No verification token. Re-save the domain first.",
-      });
-    }
-
-    // 3) Resolve platform domain and derive the TXT key.
-    const { platformDomain } = await resolvePlatformDomain();
-    const txtKey = platformDomain.split(".")[0];
-
-    // 4) The store's live platform address is the required CNAME target.
-    const storeSubdomain =
-      marketplace.subdomain || marketplace.slug || "store";
-    const PLATFORM_CNAME_TARGET = `${storeSubdomain}.${platformDomain}`;
-
-    // 5) TXT record check on _<txtKey>-verify.<domain>
-    const txtName = `_${txtKey}-verify.${domain}`;
-    const txtRecords = await dnsQuery(txtName, "TXT");
-    const txtValues = txtRecords.map((r) =>
-      (r.data || "").replace(/^"|"$/g, "")
-    );
-    const txtMatch = txtValues.some((v) =>
-      v.includes(`${txtKey}-verify=${expectedToken}`)
-    );
-
-    // 6) CNAME record check — must point at PLATFORM_CNAME_TARGET.
-    const cnameRecords = await dnsQuery(domain, "CNAME");
-    const cnameValues = cnameRecords.map((r) =>
-      (r.data || "").replace(/\.$/, "").toLowerCase()
-    );
-    const cnameMatch = cnameValues.some((v) => v === PLATFORM_CNAME_TARGET);
-
-    // 7) Both must pass.
-    const verified = txtMatch && cnameMatch;
-
-    // 8) Persist the result to Base44.
-    const update = {
-      verificationStatus: verified ? "verified" : "failed",
-      sslStatus: verified ? "active" : "pending",
-    };
-    if (verified) update.connectedAt = new Date().toISOString();
-
-    try {
-      await updateMarketplace(marketplaceId, update);
-    } catch (err) {
-      console.error("Base44 updateMarketplace failed", err.message);
-      return res
-        .status(500)
-        .json({ error: "Failed to update marketplace in Base44." });
-    }
-
-    // 9) Build the response.
-    const message = verified
-      ? "Domain verified and SSL activated."
-      : !txtMatch && !cnameMatch
-      ? "Neither the TXT nor CNAME record was found yet. DNS can take up to 48h to propagate."
-      : !txtMatch
-      ? "CNAME found, but the TXT verification record is missing or incorrect."
-      : "TXT record verified, but the CNAME record is missing or incorrect.";
-
-    return res.json({
-      verified,
-      checks: {
-        txt: { name: txtName, found: txtMatch, records: txtValues },
-        cname: {
-          name: domain,
-          found: cnameMatch,
-          target: PLATFORM_CNAME_TARGET,
-          records: cnameValues,
-        },
-      },
-      message,
-    });
-  } catch (error) {
-    console.error("verify-custom-domain error", error);
-    return res.status(500).json({ error: error.message });
+  const doc = await domains().findOne({ domain });
+  if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
+  if (req.authUserId && doc.owner_user_id && doc.owner_user_id !== req.authUserId) {
+    return res.status(403).json({ error: "You do not own this domain mapping." });
   }
+
+  const isRoot = domain.split(".").length === 2;
+
+  // TXT check — absolute name is always "_<key>-verify.<domain>", root or not.
+  const txtName = `_${TXT_KEY}-verify.${domain}`;
+  const txtRecords = await dnsQuery(txtName, "TXT");
+  const txtValues = txtRecords.map((r) => (r.data || "").replace(/^"|"$/g, ""));
+  const txtMatch = txtValues.some((v) => v.includes(`${TXT_KEY}-verify=${doc.verification_token}`));
+
+  // CNAME/A check
+  const cnameRecords = await dnsQuery(domain, isRoot ? "A" : "CNAME");
+  const cnameValues = cnameRecords.map((r) => (r.data || "").replace(/\.$/, "").toLowerCase());
+  const expectedTarget = isRoot ? PUBLIC_SERVICE_IP : PUBLIC_SERVICE_HOST;
+  const cnameMatch = cnameValues.some((v) => v === expectedTarget);
+
+  const verified = txtMatch && cnameMatch;
+
+  const set = {
+    verification_status: verified ? "verified" : "failed",
+    ssl_status: verified ? "active" : "pending",
+    is_active: verified,
+    updated_at: new Date().toISOString(),
+  };
+  if (verified) set.verified_at = new Date().toISOString();
+  await domains().updateOne({ domain }, { $set: set });
+
+  const message = verified
+    ? "Domain verified and SSL activated."
+    : !txtMatch && !cnameMatch
+    ? "Neither the TXT nor CNAME record was found yet. DNS can take up to 48h to propagate."
+    : !txtMatch
+    ? "CNAME found, but the TXT verification record is missing or incorrect."
+    : "TXT record verified, but the CNAME record is missing or incorrect.";
+
+  return res.json({
+    verified,
+    verificationStatus: verified ? "verified" : "failed",
+    sslStatus: verified ? "active" : "pending",
+    checks: {
+      txt: { name: txtName, found: txtMatch, records: txtValues },
+      cname: { name: domain, found: cnameMatch, target: expectedTarget, records: cnameValues },
+    },
+    message,
+  });
+});
+
+// DELETE /api/admin/domains/:domain — remove mapping.
+router.delete("/domains/:domain", requireBearer, async (req, res) => {
+  const domain = sanitizeDomain(req.params.domain);
+  if (!domain) return res.status(400).json({ error: "Invalid domain." });
+
+  const doc = await domains().findOne({ domain });
+  if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
+  if (req.authUserId && doc.owner_user_id && doc.owner_user_id !== req.authUserId) {
+    return res.status(403).json({ error: "You do not own this domain mapping." });
+  }
+
+  await domains().deleteOne({ domain });
+  return res.json({ ok: true });
 });
 
 module.exports = router;
