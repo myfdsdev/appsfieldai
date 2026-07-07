@@ -7,28 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// Standalone custom-domain service (verification + SSL + reverse proxy) —
-// see custom-domain-service/. Requires VITE_DOMAIN_SERVICE_URL and
-// VITE_DOMAIN_SERVICE_SECRET to be set in this app's .env.
-const DOMAIN_SERVICE_URL = import.meta.env.VITE_DOMAIN_SERVICE_URL || "";
-const DOMAIN_SERVICE_SECRET = import.meta.env.VITE_DOMAIN_SERVICE_SECRET || "";
-
-async function domainServiceFetch(path, options = {}) {
-  // Without a configured service URL the fetch would hit this app's own origin
-  // and get a misleading 405 from the static host. Fail with a clear message.
-  if (!DOMAIN_SERVICE_URL) {
-    throw new Error("Custom domain service is not configured. Set VITE_DOMAIN_SERVICE_URL and VITE_DOMAIN_SERVICE_SECRET.");
-  }
-  const res = await fetch(`${DOMAIN_SERVICE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${DOMAIN_SERVICE_SECRET}`,
-      ...options.headers,
-    },
+// Custom-domain service (verification + SSL + reverse proxy) — see
+// custom-domain-service/. Requests are proxied through the backend function
+// `domainServiceProxy`, which holds DOMAIN_SERVICE_URL and DOMAIN_SERVICE_SECRET
+// (Application Secrets) so the bearer secret never reaches the browser.
+async function domainServiceFetch(path, { method = "GET", body } = {}) {
+  const res = await base44.functions.invoke("domainServiceProxy", {
+    path,
+    method,
+    body: body ? JSON.parse(body) : undefined,
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  const data = res.data || {};
+  if (data.error) throw new Error(data.error);
   return data;
 }
 
@@ -93,7 +83,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   // Restore verification status + DNS instructions for an already-connected domain.
   useEffect(() => {
     const existing = marketplaceProp?.customDomain;
-    if (!existing || !DOMAIN_SERVICE_URL) return;
+    if (!existing) return;
     domainServiceFetch(`/api/admin/domains/${encodeURIComponent(existing)}`)
       .then(setDomainState)
       .catch(() => {});
