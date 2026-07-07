@@ -6,6 +6,7 @@ import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDashboard } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
+import BecomeAffiliateModal from "@/components/store/BecomeAffiliateModal";
 
 const RES_STATUS = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -80,6 +81,24 @@ export default function StoreDashboard() {
   const [products, setProducts] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [affiliateDash, setAffiliateDash] = useState(null);
+  const [affiliateListing, setAffiliateListing] = useState(null); // product being promoted in the modal
+
+  // Resolve the listing to promote from an order — pick the first item that maps to
+  // a live, affiliate-enabled product in this store.
+  const openAffiliateFor = (order) => {
+    const items = order.items || [];
+    let match = null;
+    for (const it of items) {
+      const l = software.find((s) => s.id === it.listingId || s.softwareName === it.listingTitle);
+      if (l && l.affiliateEnabled) { match = l; break; }
+    }
+    if (!match) {
+      // Fall back to the first matching product even if not flagged, else the affiliate hub.
+      match = software.find((s) => items.some((it) => it.listingId === s.id || it.listingTitle === s.softwareName));
+    }
+    if (match) setAffiliateListing(match);
+    else navigate(`${storeBasePath}/affiliates`);
+  };
 
   const affiliateSettings = marketplace?.affiliateSettings || null;
   const affiliateEnabled = !!affiliateSettings?.enabled;
@@ -229,7 +248,7 @@ export default function StoreDashboard() {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-3">
-                  {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={() => navigate(`${storeBasePath}/affiliates`)} />)}
+                  {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={openAffiliateFor} />)}
                 </div>
               )}
             </section>
@@ -269,6 +288,16 @@ export default function StoreDashboard() {
           </>
         )}
       </div>
+
+      <BecomeAffiliateModal
+        open={!!affiliateListing}
+        listing={affiliateListing}
+        marketplaceId={marketplaceId}
+        storeBaseUrl={storeBaseUrl}
+        affiliateSettings={affiliateSettings}
+        brandColor={brandColor}
+        onClose={() => { setAffiliateListing(null); if (affiliateEnabled) fetchAffiliateDashboard(marketplaceId).then(setAffiliateDash); }}
+      />
     </div>
   );
 }
