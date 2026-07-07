@@ -18,7 +18,7 @@ import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
-import { fetchAffiliateApplications } from "@/lib/storeCustomerAuth";
+import { fetchAffiliateApplications, capturePaypalOrder } from "@/lib/storeCustomerAuth";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
 import StoreCartDrawer from "@/components/store/StoreCartDrawer";
 import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
@@ -86,6 +86,27 @@ export default function StorePage() {
   }, [marketplaceId, customer]);
 
   useEffect(() => { loadAffiliateInfo(); }, [loadAffiliateInfo]);
+
+  // Returning from PayPal approval (?paypal=<orderId>) → capture the payment.
+  useEffect(() => {
+    if (!marketplaceId) return;
+    const params = new URLSearchParams(window.location.search);
+    const paypalOrderId = params.get("paypal");
+    if (params.get("paypal_cancel")) {
+      toast.error("PayPal payment was cancelled.");
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
+    if (!paypalOrderId) return;
+    // Clean the URL so a refresh doesn't re-trigger.
+    window.history.replaceState({}, "", window.location.pathname);
+    capturePaypalOrder({ marketplaceId, paypalOrderId })
+      .then(() => {
+        toast.success("Payment successful! Your order is confirmed.");
+        setAccountPanel({ open: true, tab: "account" });
+      })
+      .catch((e) => toast.error(e.message || "We couldn't confirm your PayPal payment."));
+  }, [marketplaceId]);
 
   // Inject the store owner's custom head/body code (FB/Google pixel, analytics, etc.).
   useCustomCode(

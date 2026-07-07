@@ -13,8 +13,10 @@ function readCart(marketplaceId) {
   }
 }
 
-// Single-purchase deal price = sharePrice * totalShares.
+// Deal price prefers the owner-edited `price` field; falls back to
+// spots × per-spot price for older group deals that never set `price`.
 export function listingPrice(listing) {
+  if (listing?.price && listing.price > 0) return listing.price;
   return (listing?.sharePrice || 0) * (listing?.totalShares || 0);
 }
 

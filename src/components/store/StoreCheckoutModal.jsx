@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Loader2, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
-import { checkoutStoreOrder } from "@/lib/storeCustomerAuth";
+import { checkoutStoreOrder, createPaypalOrder } from "@/lib/storeCustomerAuth";
 import { toast } from "sonner";
 
 // Final checkout step: pick a payment method (based on what the store enabled)
@@ -40,6 +40,22 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
         phone,
         notes,
       });
+
+      // PayPal → create a PayPal order and redirect the buyer to PayPal's approval page.
+      // On return, the store page captures the payment via the ?paypal= param.
+      if (method === "paypal") {
+        const base = window.location.origin + window.location.pathname;
+        const pay = await createPaypalOrder({
+          marketplaceId: marketplace.id,
+          orderId: res.order.id,
+          returnUrl: `${base}?paypal=${res.order.id}`,
+          cancelUrl: `${base}?paypal_cancel=1`,
+        });
+        onPlaced?.();
+        window.location.href = pay.approveUrl;
+        return;
+      }
+
       setDone({ codInstructions: res.codInstructions });
       onPlaced?.();
     } catch (e) {

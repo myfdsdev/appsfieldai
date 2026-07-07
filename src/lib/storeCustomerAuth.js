@@ -67,6 +67,24 @@ export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, 
   return res.data;
 }
 
+// Create a PayPal order for a pending StoreOrder and get the approval URL to redirect to.
+export async function createPaypalOrder({ marketplaceId, orderId, returnUrl, cancelUrl }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in to pay");
+  const res = await base44.functions.invoke("storePaypalCreateOrder", { marketplaceId, token, orderId, returnUrl, cancelUrl });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
+// Capture a PayPal payment after the buyer approves and returns to the store.
+export async function capturePaypalOrder({ marketplaceId, paypalOrderId }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("storePaypalCapture", { marketplaceId, token, paypalOrderId });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
 // Fetch the store customer's reserved products with live status.
 export async function fetchStoreCustomerProducts(marketplaceId) {
   const token = getStoredToken(marketplaceId);
