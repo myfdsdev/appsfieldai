@@ -144,13 +144,18 @@ Deno.serve(async (req) => {
       } catch (_) { /* non-fatal */ }
     }
 
-    // Fire-and-forget order confirmation email (respects the store's email settings/template).
+    // Fire-and-forget order confirmation email with a full branded invoice.
     if (customer.email) {
       try {
+        const dashboardUrl = marketplace.customDomain
+          ? `https://${marketplace.customDomain}/dashboard`
+          : (marketplace.storeLink ? `${marketplace.storeLink.replace(/\/$/, '')}/dashboard` : undefined);
         await base44.asServiceRole.functions.invoke('sendStoreEmail', {
           marketplaceId,
           templateKey: 'orderConfirmation',
           to: customer.email,
+          order,
+          dashboardUrl,
           vars: {
             customer_name: customer.fullName || 'there',
             order_id: order.id,

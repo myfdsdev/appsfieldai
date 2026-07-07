@@ -66,6 +66,27 @@ Deno.serve(async (req) => {
       paidAt: new Date().toISOString(),
     });
 
+    // Fire-and-forget order confirmation email with a full branded invoice.
+    if (customer.email) {
+      try {
+        const dashboardUrl = marketplace?.customDomain
+          ? `https://${marketplace.customDomain}/dashboard`
+          : (marketplace?.storeLink ? `${marketplace.storeLink.replace(/\/$/, '')}/dashboard` : undefined);
+        await base44.asServiceRole.functions.invoke('sendStoreEmail', {
+          marketplaceId,
+          templateKey: 'orderConfirmation',
+          to: customer.email,
+          order: updated,
+          dashboardUrl,
+          vars: {
+            customer_name: customer.fullName || 'there',
+            order_id: updated.id,
+            order_total: `${marketplace?.currency || 'USD'} ${(updated.total || 0).toLocaleString()}`,
+          },
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+
     return Response.json({ success: true, order: updated });
   } catch (error) {
     console.error('storePaypalCapture error:', error);
