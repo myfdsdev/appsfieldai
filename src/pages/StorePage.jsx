@@ -41,7 +41,7 @@ export default function StorePage() {
   const [checkingRedirect, setCheckingRedirect] = useState(!customDomain && !!slugParam);
   useEffect(() => {
     if (customDomain || !slugParam) { setCheckingRedirect(false); return; }
-    const serviceUrl = import.meta.env.VITE_DOMAIN_SERVICE_URL || "https://appsfieldai.onrender.com";
+    const serviceUrl = import.meta.env.VITE_DOMAIN_SERVICE_URL || "https://app.appsfieldai.onrender.com";
     if (!serviceUrl) { setCheckingRedirect(false); return; }
     let active = true;
     fetch(`${serviceUrl}/api/domain-for-store?slug=${encodeURIComponent(slugParam)}`)
