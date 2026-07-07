@@ -63,7 +63,11 @@ Deno.serve(async (req) => {
       if (listing.salesPaused) {
         return Response.json({ error: `"${listing.softwareName}" is not available for purchase right now.` }, { status: 409 });
       }
-      const unitPrice = (listing.sharePrice || 0) * (listing.totalShares || 0);
+      // Prefer the authoritative `price` field the owner edits; fall back to
+      // spots × per-spot price for older group deals that never set `price`.
+      const unitPrice = (listing.price && listing.price > 0)
+        ? listing.price
+        : (listing.sharePrice || 0) * (listing.totalShares || 0);
       const quantity = Math.max(1, parseInt(it.quantity) || 1);
       const lineTotal = unitPrice * quantity;
       lineItems.push({ listingId: listing.id, listingTitle: listing.softwareName || '', unitPrice, quantity });

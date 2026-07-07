@@ -67,11 +67,13 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
     toast.success("Affiliate link copied!");
     setTimeout(() => setLinkCopied(false), 1500);
   };
-  const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
+  const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, price = 0, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
   const thumbnail = logo || screenshots?.[0];
   const displaySeller = resolvedSellerName || sellerName;
   const title = softwareName || "Untitled";
-  const fullPrice = (sharePrice || 0) * (totalShares || 0);
+  // Full/deal price prefers the actual `price` field the owner edits; falls back to
+  // spots × per-spot price for older group deals that never set `price`.
+  const fullPrice = (price && price > 0) ? price : (sharePrice || 0) * (totalShares || 0);
   const isSold = status === "sold";
   const sharesLeft = totalShares - soldShares;
   const sharePercent = totalShares > 0 ? (soldShares / totalShares) * 100 : 0;

@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
         settings: m.settings,
         pageSections: m.pageSections,
         affiliateSettings: m.affiliateSettings || null,
+        payment: m.payment || null,
       },
       software,
       categories,
