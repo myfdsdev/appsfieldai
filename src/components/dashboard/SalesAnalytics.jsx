@@ -50,31 +50,14 @@ export default function SalesAnalytics({ marketplaces = [] }) {
   const marketplaceIds = useMemo(() => marketplaces.map((m) => m.id), [marketplaces]);
   const activeIds = selectedMpId === "all" ? marketplaceIds : [selectedMpId];
 
-  const { data: listings = [] } = useQuery({
-    queryKey: ["analyticsListings", marketplaceIds],
+  // Real store sales come from StoreOrder records created at checkout.
+  const { data: orders = [] } = useQuery({
+    queryKey: ["analyticsStoreOrders", marketplaceIds],
     queryFn: async () => {
-      const results = await Promise.all(marketplaceIds.map((id) => base44.entities.SaaSListing.filter({ marketplaceId: id })));
+      const results = await Promise.all(marketplaceIds.map((id) => base44.entities.StoreOrder.filter({ marketplaceId: id })));
       return results.flat();
     },
     enabled: marketplaceIds.length > 0,
-  });
-
-  // Map each listing to its marketplace so we can filter purchases by selected store.
-  const listingMpMap = useMemo(() => {
-    const map = {};
-    listings.forEach((l) => { map[l.id] = l.marketplaceId; });
-    return map;
-  }, [listings]);
-
-  const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-
-  const { data: purchases = [] } = useQuery({
-    queryKey: ["analyticsPurchases", listingIds],
-    queryFn: async () => {
-      const results = await Promise.all(listingIds.map((id) => base44.entities.SharePurchase.filter({ listingId: id })));
-      return results.flat();
-    },
-    enabled: listingIds.length > 0,
   });
 
   const { data: customers = [] } = useQuery({
@@ -86,10 +69,10 @@ export default function SalesAnalytics({ marketplaces = [] }) {
     enabled: marketplaceIds.length > 0,
   });
 
-  // Purchases scoped to the selected marketplace.
-  const scopedPurchases = useMemo(
-    () => purchases.filter((p) => activeIds.includes(listingMpMap[p.listingId])),
-    [purchases, listingMpMap, activeIds]
+  // Paid orders scoped to the selected marketplace drive revenue.
+  const scopedOrders = useMemo(
+    () => orders.filter((o) => activeIds.includes(o.marketplaceId) && o.paymentStatus === "paid"),
+    [orders, activeIds]
   );
   const scopedCustomers = useMemo(
     () => customers.filter((c) => activeIds.includes(c.marketplaceId)),
@@ -99,22 +82,22 @@ export default function SalesAnalytics({ marketplaces = [] }) {
   // Aggregate sales into time buckets.
   const chartData = useMemo(() => {
     const buckets = buildBuckets(range);
-    scopedPurchases.forEach((p) => {
-      const t = new Date(p.created_date || p.updated_date || Date.now()).getTime();
+    scopedOrders.forEach((o) => {
+      const t = new Date(o.paidAt || o.created_date || o.updated_date || Date.now()).getTime();
       const b = buckets.find((bk) => t >= bk.start && t < bk.end);
-      if (b) b.sales += p.totalAmount || 0;
+      if (b) b.sales += o.total || 0;
     });
     return buckets;
-  }, [scopedPurchases, range]);
+  }, [scopedOrders, range]);
 
-  const totalProfit = useMemo(() => scopedPurchases.reduce((s, p) => s + (p.totalAmount || 0), 0), [scopedPurchases]);
-  const totalSold = scopedPurchases.length;
+  const totalProfit = useMemo(() => scopedOrders.reduce((s, o) => s + (o.total || 0), 0), [scopedOrders]);
+  const totalSold = scopedOrders.length;
 
   const recentSold = useMemo(
-    () => [...scopedPurchases]
+    () => [...scopedOrders]
       .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
       .slice(0, 5),
-    [scopedPurchases]
+    [scopedOrders]
   );
   const recentCustomers = useMemo(
     () => [...scopedCustomers]
@@ -206,10 +189,10 @@ export default function SalesAnalytics({ marketplaces = [] }) {
           <div className="space-y-2">
             {recentSold.length === 0 ? (
               <p className="text-xs text-muted-foreground py-2">No sales yet.</p>
-            ) : recentSold.map((p) => (
-              <div key={p.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border/20 last:border-0">
-                <span className="truncate max-w-[55%]">{p.listingTitle || "Product"}</span>
-                <span className="text-emerald-400 font-medium shrink-0">${(p.totalAmount || 0).toLocaleString()}</span>
+            ) : recentSold.map((o) => (
+              <div key={o.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border/20 last:border-0">
+                <span className="truncate max-w-[55%]">{o.items?.[0]?.listingTitle || "Product"}{o.items?.length > 1 ? ` +${o.items.length - 1}` : ""}</span>
+                <span className="text-emerald-400 font-medium shrink-0">${(o.total || 0).toLocaleString()}</span>
               </div>
             ))}
           </div>
