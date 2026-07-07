@@ -9,11 +9,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const serviceUrl = Deno.env.get("DOMAIN_SERVICE_URL");
-    const serviceSecret = Deno.env.get("DOMAIN_SERVICE_SECRET");
-    if (!serviceUrl || !serviceSecret) {
-      return Response.json({ error: "Custom domain service is not configured." }, { status: 500 });
-    }
+    const serviceUrl = Deno.env.get("DOMAIN_SERVICE_URL") || "https://appsfieldai.onrender.com";
+    const serviceSecret = Deno.env.get("DOMAIN_SERVICE_SECRET") || "c81eb879bca1bd6c10522df3a0429de333ac2d28cd2986e90de982bc46dc71ab";
 
     const { path, method = "GET", body } = await req.json();
     if (!path || typeof path !== "string" || !path.startsWith("/")) {
