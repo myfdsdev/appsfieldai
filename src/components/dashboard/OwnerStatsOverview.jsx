@@ -19,13 +19,14 @@ export default function OwnerStatsOverview({ marketplaces = [] }) {
 
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
 
-  const { data: purchases = [] } = useQuery({
-    queryKey: ["ownerPurchases", listingIds],
+  // Real store sales come from StoreOrder records created at checkout.
+  const { data: orders = [] } = useQuery({
+    queryKey: ["ownerStoreOrders", marketplaceIds],
     queryFn: async () => {
-      const results = await Promise.all(listingIds.map((id) => base44.entities.SharePurchase.filter({ listingId: id })));
+      const results = await Promise.all(marketplaceIds.map((id) => base44.entities.StoreOrder.filter({ marketplaceId: id })));
       return results.flat();
     },
-    enabled: listingIds.length > 0,
+    enabled: marketplaceIds.length > 0,
   });
 
   const { data: customers = [] } = useQuery({
@@ -38,12 +39,14 @@ export default function OwnerStatsOverview({ marketplaces = [] }) {
   });
 
   const liveProducts = listings.filter((l) => ["active", "approved", "live"].includes(l.status) || l.dealStatus === "live").length;
-  const soldReserved = listings.reduce((sum, l) => sum + (l.soldShares || 0), 0);
-  const revenue = purchases.reduce((sum, p) => sum + (p.totalAmount || 0), 0);
+  // Paid store orders drive revenue; total units sold = sum of purchased quantities.
+  const paidOrders = orders.filter((o) => o.paymentStatus === "paid");
+  const unitsSold = orders.reduce((sum, o) => sum + (o.items || []).reduce((q, it) => q + (it.quantity || 1), 0), 0);
+  const revenue = paidOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
   const stats = [
     { icon: Package, label: "Live Products", value: liveProducts, color: "from-violet-600 to-purple-600" },
-    { icon: ShoppingBag, label: "Sold / Reserved", value: soldReserved, color: "from-orange-500 to-amber-500" },
+    { icon: ShoppingBag, label: "Orders Sold", value: unitsSold, color: "from-orange-500 to-amber-500" },
     { icon: Users, label: "Customers", value: customers.length, color: "from-cyan-600 to-blue-600" },
     { icon: DollarSign, label: "Revenue", value: `$${revenue.toLocaleString()}`, color: "from-emerald-600 to-green-600" },
   ];
