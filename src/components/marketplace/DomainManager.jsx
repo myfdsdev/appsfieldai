@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Globe, CheckCircle2, XCircle, Clock, Copy, Check, RefreshCw, ShieldCheck, Info } from "lucide-react";
+import { Globe, CheckCircle2, XCircle, Clock, Copy, Check, RefreshCw, ShieldCheck, Info, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +63,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const [customDomain, setCustomDomain] = useState(marketplaceProp?.customDomain || "");
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [platformDomain, setPlatformDomain] = useState("");
   const [domainSource, setDomainSource] = useState("");
   // Verification/SSL status + DNS instructions now live in the standalone
@@ -105,8 +106,13 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
 
   const handleConnectDomain = async () => {
     if (!customDomain.trim()) return;
-    setSaving(true);
     const clean = customDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+    // Already connected to this exact domain — don't re-register, just tell the user.
+    if (marketplace?.customDomain && marketplace.customDomain === clean) {
+      toast.info("This domain is already connected. Disconnect it first to reconnect or change it.");
+      return;
+    }
+    setSaving(true);
     try {
       const res = await domainServiceFetch("/api/admin/domains", {
         method: "POST",
@@ -135,6 +141,26 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
       toast.error(err.message || "Could not connect domain. Try again.");
     }
     setSaving(false);
+  };
+
+  const handleDisconnectDomain = async () => {
+    if (!domain) return;
+    setDisconnecting(true);
+    try {
+      await domainServiceFetch(`/api/admin/domains/${encodeURIComponent(domain)}`, {
+        method: "DELETE",
+        body: JSON.stringify({ userId: marketplace?.ownerId }),
+      });
+      await base44.entities.Marketplace.update(marketplace.id, { customDomain: "" });
+      setCustomDomain("");
+      setDomainState(null);
+      await refreshMp();
+      onUpdate?.();
+      toast.success("Custom domain disconnected.");
+    } catch (err) {
+      toast.error(err.message || "Could not disconnect domain. Try again.");
+    }
+    setDisconnecting(false);
   };
 
   const refreshMp = async () => {
@@ -246,7 +272,9 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
                 <a href={`https://${domain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">https://{domain}</a>
                 <span className="ml-auto text-[10px] text-emerald-400/70">SSL active</span>
               </div>
-            ) : (
+            ) : null}
+
+            {domainState?.verificationStatus !== "verified" && (
               <>
                 {/* DNS record to add */}
                 <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20">
@@ -270,6 +298,12 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
                 </Button>
               </>
             )}
+
+            {/* Disconnect — always available when a custom domain is connected */}
+            <Button onClick={handleDisconnectDomain} disabled={disconnecting} variant="outline" className="w-full rounded-xl gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400">
+              {disconnecting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              {disconnecting ? "Disconnecting..." : "Disconnect Domain"}
+            </Button>
           </div>
         )}
       </motion.div>
