@@ -59,6 +59,21 @@ Deno.serve(async (req) => {
       });
     } catch (_) { /* notification is best-effort */ }
 
+    // Fire-and-forget reservation email to the customer (respects the store's email settings/template).
+    if (customer.email) {
+      try {
+        await base44.asServiceRole.functions.invoke('sendStoreEmail', {
+          marketplaceId,
+          templateKey: 'reservation',
+          to: customer.email,
+          vars: {
+            customer_name: customer.fullName || 'there',
+            product_name: listing.softwareName || '',
+          },
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+
     return Response.json({ success: true, reservation });
   } catch (error) {
     console.error('storeCustomerReserve error:', error);

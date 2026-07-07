@@ -144,6 +144,22 @@ Deno.serve(async (req) => {
       } catch (_) { /* non-fatal */ }
     }
 
+    // Fire-and-forget order confirmation email (respects the store's email settings/template).
+    if (customer.email) {
+      try {
+        await base44.asServiceRole.functions.invoke('sendStoreEmail', {
+          marketplaceId,
+          templateKey: 'orderConfirmation',
+          to: customer.email,
+          vars: {
+            customer_name: customer.fullName || 'there',
+            order_id: order.id,
+            order_total: `${marketplace.currency || 'USD'} ${total.toLocaleString()}`,
+          },
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+
     return Response.json({
       success: true,
       order,

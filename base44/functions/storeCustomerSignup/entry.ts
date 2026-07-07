@@ -51,6 +51,16 @@ Deno.serve(async (req) => {
       sessionToken,
     });
 
+    // Fire-and-forget welcome email (respects the store's email settings/template).
+    try {
+      await base44.asServiceRole.functions.invoke('sendStoreEmail', {
+        marketplaceId,
+        templateKey: 'welcome',
+        to: cleanEmail,
+        vars: { customer_name: fullName || 'there' },
+      });
+    } catch (_) { /* non-fatal */ }
+
     return Response.json({
       token: sessionToken,
       customer: { id: customer.id, fullName: customer.fullName, email: customer.email, marketplaceId },
