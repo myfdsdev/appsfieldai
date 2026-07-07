@@ -55,21 +55,21 @@ export default function StoreAuthModal({ open, onClose, marketplace, brandColor 
           {mode === "signup" && (
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input className={inputCls} placeholder="Full name" value={form.fullName} onChange={set("fullName")} style={{ "--tw-ring-color": brandColor }} />
+              <input className={inputCls} name="name" autoComplete="name" placeholder="Full name" value={form.fullName} onChange={set("fullName")} style={{ "--tw-ring-color": brandColor }} />
             </div>
           )}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input className={inputCls} type="email" placeholder="Email" required value={form.email} onChange={set("email")} style={{ "--tw-ring-color": brandColor }} />
+            <input className={inputCls} type="email" name="email" autoComplete="email" placeholder="Email" required value={form.email} onChange={set("email")} style={{ "--tw-ring-color": brandColor }} />
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input className={inputCls} type="password" placeholder="Password" required value={form.password} onChange={set("password")} style={{ "--tw-ring-color": brandColor }} />
+            <input className={inputCls} type="password" name="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} placeholder="Password" required value={form.password} onChange={set("password")} style={{ "--tw-ring-color": brandColor }} />
           </div>
           {mode === "signup" && (
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input className={inputCls} placeholder="Phone (optional)" value={form.phone} onChange={set("phone")} style={{ "--tw-ring-color": brandColor }} />
+              <input className={inputCls} name="phone" autoComplete="tel" placeholder="Phone (optional)" value={form.phone} onChange={set("phone")} style={{ "--tw-ring-color": brandColor }} />
             </div>
           )}
 
