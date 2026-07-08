@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Loader2, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
 import { checkoutStoreOrder, createPaypalOrder } from "@/lib/storeCustomerAuth";
+import { getAffiliateRef, clearAffiliateRef } from "@/lib/affiliateRef";
 import { toast } from "sonner";
 
 // Final checkout step: pick a payment method (based on what the store enabled)
@@ -39,7 +40,10 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
         paymentMethod: method,
         phone,
         notes,
+        refCode: getAffiliateRef(marketplace.id) || undefined,
       });
+      // Attribution recorded — clear the stored ref so it isn't reused on a later unrelated order.
+      clearAffiliateRef(marketplace.id);
 
       // PayPal → create a PayPal order and redirect the buyer to PayPal's approval page.
       // On return, the store page captures the payment via the ?paypal= param.

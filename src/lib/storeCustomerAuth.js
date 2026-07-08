@@ -59,10 +59,10 @@ export async function reserveStoreSpot({ marketplaceId, listingId, spots, phone,
 }
 
 // Place a store order (cart checkout) as the logged-in store customer.
-export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, phone, notes }) {
+export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, phone, notes, refCode }) {
   const token = getStoredToken(marketplaceId);
   if (!token) throw new Error("Please sign in to checkout");
-  const res = await base44.functions.invoke("storeCheckout", { marketplaceId, token, items, paymentMethod, phone, notes });
+  const res = await base44.functions.invoke("storeCheckout", { marketplaceId, token, items, paymentMethod, phone, notes, refCode });
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }

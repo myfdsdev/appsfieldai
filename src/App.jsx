@@ -98,6 +98,7 @@ const AuthenticatedApp = () => {
       <Route path="/global" element={<Home />} />
       {/* Public store pages — accessible without login, no app chrome */}
       <Route path="/store/:slug" element={<StorePage />} />
+      <Route path="/store/:slug/saas/:id" element={<StorePage />} />
       <Route path="/store/:slug/dashboard" element={<StoreDashboard />} />
       <Route path="/store/:slug/affiliates" element={<StoreAffiliatePage />} />
       <Route path="/store/:slug/page/:pageSlug" element={<StoreCustomPage />} />

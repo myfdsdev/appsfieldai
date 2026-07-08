@@ -24,10 +24,11 @@ import StoreCartDrawer from "@/components/store/StoreCartDrawer";
 import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { useStoreCart } from "@/hooks/useStoreCart";
+import { getRefFromUrl, saveAffiliateRef } from "@/lib/affiliateRef";
 import { toast } from "sonner";
 
 export default function StorePage() {
-  const { slug: slugParam } = useParams();
+  const { slug: slugParam, id: deepLinkListingId } = useParams();
   // A customer's own domain (e.g. deals.brand.com) resolves the store by customDomain.
   const customDomain = getCustomDomainFromHost();
   // On a wildcard store subdomain the key comes from the hostname, not the path.
@@ -86,6 +87,21 @@ export default function StorePage() {
   }, [marketplaceId, customer]);
 
   useEffect(() => { loadAffiliateInfo(); }, [loadAffiliateInfo]);
+
+  // Capture an affiliate referral code (?ref=) and persist it for this store so
+  // the referring affiliate is credited when this visitor eventually buys.
+  useEffect(() => {
+    if (!marketplaceId) return;
+    const ref = getRefFromUrl();
+    if (ref) saveAffiliateRef(marketplaceId, ref);
+  }, [marketplaceId]);
+
+  // Deep link from a referral link (/saas/:id) → open that product's detail modal.
+  useEffect(() => {
+    if (!deepLinkListingId || !data?.software) return;
+    const listing = data.software.find((l) => l.id === deepLinkListingId);
+    if (listing) setViewDetailListing(listing);
+  }, [deepLinkListingId, data]);
 
   // Returning from PayPal approval (?paypal=<orderId>) → capture the payment.
   useEffect(() => {
