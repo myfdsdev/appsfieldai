@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/AuthContext";
 
 // Profile settings for the logged-in app user (store admin / customer).
 // Name, phone and avatar are persisted on the User entity via auth.updateMe().
 export default function UserAccountSettings({ user }) {
   const queryClient = useQueryClient();
+  const { checkUserAuth } = useAuth();
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
@@ -36,6 +38,7 @@ export default function UserAccountSettings({ user }) {
     try {
       await base44.auth.updateMe({ full_name: fullName, phone, avatarUrl });
       await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      await checkUserAuth?.();
       toast.success("Profile updated.");
     } catch (e) {
       toast.error(e.message || "Could not save profile.");

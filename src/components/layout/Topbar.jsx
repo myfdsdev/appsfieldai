@@ -102,18 +102,31 @@ export default function Topbar() {
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setProfileOpen(!profileOpen)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 transition-colors">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
-                    <User className="w-3.5 h-3.5 text-white" />
-                  </div>
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
+                      <User className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  )}
                   <span className="text-sm font-medium text-foreground max-w-[120px] truncate">{user.full_name || user.email}</span>
                   <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", profileOpen && "rotate-180")} />
                 </button>
 
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-card border border-border/40 rounded-xl shadow-2xl shadow-black/40 py-2 z-50 backdrop-blur-xl">
-                    <div className="px-3 py-2 border-b border-border/30 mb-1">
-                      <p className="text-sm font-medium truncate">{user.full_name || "User"}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+                    <div className="px-3 py-2 border-b border-border/30 mb-1 flex items-center gap-2.5">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shrink-0">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{user.full_name || "User"}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+                      </div>
                     </div>
 
                     {profileMenuItems.map(({ to, label, icon: Icon }) => (

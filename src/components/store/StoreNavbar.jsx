@@ -51,17 +51,30 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
             onClick={() => setAccountOpen((o) => !o)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5 hover:bg-secondary/80 transition-colors"
           >
-            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: brandColor }}>
-              <User className="w-3.5 h-3.5 text-white" />
-            </div>
+            {customer.avatarUrl ? (
+              <img src={customer.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+            ) : (
+              <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: brandColor }}>
+                <User className="w-3.5 h-3.5 text-white" />
+              </div>
+            )}
             <span className="text-sm font-medium max-w-[120px] truncate">{customer.fullName || customer.email}</span>
             <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${accountOpen ? "rotate-180" : ""}`} />
           </button>
           {accountOpen && (
             <div className="absolute right-0 mt-2 w-52 bg-card border border-border/40 rounded-xl shadow-2xl shadow-black/40 py-2 z-50">
-              <div className="px-3 py-2 border-b border-border/30 mb-1">
-                <p className="text-sm font-medium truncate">{customer.fullName || "Customer"}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
+              <div className="px-3 py-2 border-b border-border/30 mb-1 flex items-center gap-2.5">
+                {customer.avatarUrl ? (
+                  <img src={customer.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: brandColor }}>
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{customer.fullName || "Customer"}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
+                </div>
               </div>
               <button
                 onClick={() => { setAccountOpen(false); goToDashboard(); }}
