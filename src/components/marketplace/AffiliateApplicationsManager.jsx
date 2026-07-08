@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Users, Check, X, Send, Percent, Wallet } from "lucide-react";
+import { Loader2, Users, Check, X, Send, Percent, Wallet, Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import AffiliatePayoutsManager from "@/components/marketplace/AffiliatePayoutsManager";
+import AnnounceProductPanel from "@/components/marketplace/AnnounceProductPanel";
 
 const badgeColors = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -142,6 +143,7 @@ export default function AffiliateApplicationsManager({ marketplaceId }) {
         {[
           { id: "applications", label: `Applications${pending ? ` (${pending})` : ""}` },
           { id: "payouts", label: "Affiliates & Payouts" },
+          { id: "announce", label: "Announce" },
         ].map((t) => (
           <button
             key={t.id}
@@ -151,6 +153,7 @@ export default function AffiliateApplicationsManager({ marketplaceId }) {
             }`}
           >
             {t.id === "payouts" && <Wallet className="w-3.5 h-3.5 inline mr-1.5" />}
+            {t.id === "announce" && <Megaphone className="w-3.5 h-3.5 inline mr-1.5" />}
             {t.label}
           </button>
         ))}
@@ -169,13 +172,15 @@ export default function AffiliateApplicationsManager({ marketplaceId }) {
             ))}
           </div>
         )
-      ) : (
+      ) : tab === "payouts" ? (
         <AffiliatePayoutsManager
           affiliates={affiliates}
           applications={applications}
           holdDaysDefault={holdDaysDefault}
           onRefresh={refresh}
         />
+      ) : (
+        <AnnounceProductPanel marketplaceId={marketplaceId} />
       )}
     </div>
   );
