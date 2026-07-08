@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Users, Check, X, Send, Percent } from "lucide-react";
+import { Loader2, Users, Check, X, Send, Percent, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import AffiliatePayoutsManager from "@/components/marketplace/AffiliatePayoutsManager";
 
 const badgeColors = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -96,6 +97,7 @@ function ApplicationCard({ app, affiliate, onChanged }) {
 
 export default function AffiliateApplicationsManager({ marketplaceId }) {
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState("applications");
   const { data, isLoading } = useQuery({
     queryKey: ["marketplaceAffiliates", marketplaceId],
     queryFn: async () => {
@@ -108,10 +110,12 @@ export default function AffiliateApplicationsManager({ marketplaceId }) {
 
   const applications = data?.applications || [];
   const affiliates = data?.affiliates || [];
+  const holdDaysDefault = data?.holdDaysDefault ?? 14;
   const affById = Object.fromEntries(affiliates.map((a) => [a.id, a]));
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["marketplaceAffiliates", marketplaceId] });
 
   const pending = applications.filter((a) => a.status === "pending").length;
+  const totalPayable = affiliates.reduce((sum, a) => sum + (a.summary?.payable || 0), 0);
 
   if (isLoading) {
     return <div className="text-center py-8 text-muted-foreground text-sm flex items-center justify-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>;
@@ -124,27 +128,54 @@ export default function AffiliateApplicationsManager({ marketplaceId }) {
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</p>
           <p className="text-lg font-display font-bold text-amber-400">{pending}</p>
         </div>
-        <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Applications</p>
-          <p className="text-lg font-display font-bold text-blue-400">{applications.length}</p>
-        </div>
         <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Affiliates</p>
           <p className="text-lg font-display font-bold text-emerald-400">{affiliates.length}</p>
         </div>
+        <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Payable Now</p>
+          <p className="text-lg font-display font-bold text-emerald-400">${totalPayable.toLocaleString()}</p>
+        </div>
       </div>
 
-      {applications.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground rounded-xl border border-dashed border-border/40">
-          <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">No affiliate applications yet.</p>
-        </div>
+      <div className="flex gap-2 border-b border-border/40">
+        {[
+          { id: "applications", label: `Applications${pending ? ` (${pending})` : ""}` },
+          { id: "payouts", label: "Affiliates & Payouts" },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              tab === t.id ? "border-orange-500 text-orange-400" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.id === "payouts" && <Wallet className="w-3.5 h-3.5 inline mr-1.5" />}
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "applications" ? (
+        applications.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground rounded-xl border border-dashed border-border/40">
+            <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No affiliate applications yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {applications.map((app) => (
+              <ApplicationCard key={app.id} app={app} affiliate={affById[app.affiliateId]} onChanged={refresh} />
+            ))}
+          </div>
+        )
       ) : (
-        <div className="space-y-3">
-          {applications.map((app) => (
-            <ApplicationCard key={app.id} app={app} affiliate={affById[app.affiliateId]} onChanged={refresh} />
-          ))}
-        </div>
+        <AffiliatePayoutsManager
+          affiliates={affiliates}
+          applications={applications}
+          holdDaysDefault={holdDaysDefault}
+          onRefresh={refresh}
+        />
       )}
     </div>
   );
