@@ -22,6 +22,10 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: 'Your spot is reserved',
     body: 'Hi {{customer_name}},\n\nYour spot for "{{product_name}}" at {{store_name}} is reserved. We\'ll be in touch with next steps.\n\n— {{store_name}}',
   },
+  commissionEarned: {
+    subject: '💵 [Cha-Ching] You\'ve earned {{commission_amount}} from: {{store_name}}',
+    body: 'Hi {{affiliate_name}},\n\nCha-ching! Your referral for "{{product_name}}" just converted and earned you {{commission_amount}} in commission.\n\nKeep up the great work!\n\n— {{store_name}}',
+  },
 };
 
 function applyVars(text: string, vars: Record<string, string>): string {
@@ -133,6 +137,37 @@ function orderConfirmationHtml(opts: {
   `;
 }
 
+// Builds the branded "Cha-Ching" commission-earned body for affiliates.
+function commissionEarnedHtml(opts: {
+  brand: string; storeName: string; affiliateName: string;
+  commissionAmount: string; productName: string; commissionRate?: string; dashboardUrl?: string;
+}): string {
+  const { brand, storeName, affiliateName, commissionAmount, productName, commissionRate } = opts;
+  const rateLine = commissionRate
+    ? `<p style="margin:0 0 16px;color:#555;">That's your <strong>${esc(commissionRate)}</strong> commission on the sale — nicely done.</p>`
+    : '';
+  const dashboardBtn = opts.dashboardUrl
+    ? `<div style="margin:24px 0 8px;">
+        <a href="${esc(opts.dashboardUrl)}" style="display:inline-block;background:${esc(brand)};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 26px;border-radius:10px;">View your earnings</a>
+      </div>`
+    : '';
+  return `
+    <div style="text-align:center;margin-bottom:8px;font-size:40px;">💵</div>
+    <h1 style="margin:0 0 6px;font-size:22px;color:#111;text-align:center;">Cha-Ching! You just got paid a commission</h1>
+    <p style="margin:0 0 20px;color:#555;text-align:center;">Hi ${esc(affiliateName)}, you actually heard the sound of money landing, amiright?</p>
+
+    <div style="margin:0 0 20px;padding:24px;background:#e7f7ee;border-radius:14px;text-align:center;">
+      <div style="font-size:12px;font-weight:700;color:#1a8a4f;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Commission earned</div>
+      <div style="font-size:36px;font-weight:800;color:#1a8a4f;">${esc(commissionAmount)}</div>
+    </div>
+
+    <p style="margin:0 0 12px;color:#555;">Congrats! Your referral for <strong>"${esc(productName)}"</strong> at <strong>${esc(storeName)}</strong> just purchased and earned you a sweet ${esc(commissionAmount)} in commissions.</p>
+    ${rateLine}
+    <p style="margin:0 0 16px;color:#555;">Keep up the good work and remember — money trees are the perfect place for shade. 🌳</p>
+    ${dashboardBtn}
+  `;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -171,6 +206,16 @@ Deno.serve(async (req) => {
       const inner = orderConfirmationHtml({
         brand, logo, storeName, supportEmail: marketplace.supportEmail,
         customerName: mergedVars.customer_name || 'there', order, currency, dashboardUrl,
+      });
+      html = shell({ brand, logo, storeName, inner, footer });
+    } else if (templateKey === 'commissionEarned') {
+      const inner = commissionEarnedHtml({
+        brand, storeName,
+        affiliateName: mergedVars.affiliate_name || 'there',
+        commissionAmount: mergedVars.commission_amount || '',
+        productName: mergedVars.product_name || '',
+        commissionRate: mergedVars.commission_rate || '',
+        dashboardUrl,
       });
       html = shell({ brand, logo, storeName, inner, footer });
     } else {

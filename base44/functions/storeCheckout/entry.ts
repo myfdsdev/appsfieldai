@@ -142,6 +142,29 @@ Deno.serve(async (req) => {
           totalPending: (affiliate.totalPending || 0) + holdSum,
         });
       } catch (_) { /* non-fatal */ }
+
+      // Fire-and-forget "Cha-Ching" commission email to the affiliate for each earned commission.
+      if (affiliate.email) {
+        const affDashboardUrl = marketplace.customDomain
+          ? `https://${marketplace.customDomain}/dashboard`
+          : (marketplace.storeLink ? `${marketplace.storeLink.replace(/\/$/, '')}/dashboard` : undefined);
+        for (const d of commissionDrafts) {
+          try {
+            await base44.asServiceRole.functions.invoke('sendStoreEmail', {
+              marketplaceId,
+              templateKey: 'commissionEarned',
+              to: affiliate.email,
+              dashboardUrl: affDashboardUrl,
+              vars: {
+                affiliate_name: affiliate.fullName || 'there',
+                product_name: d.listingTitle,
+                commission_amount: `${marketplace.currency || 'USD'} ${d.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                commission_rate: `${d.commissionRate}%`,
+              },
+            });
+          } catch (_) { /* non-fatal */ }
+        }
+      }
     }
 
     // Fire-and-forget order confirmation email with a full branded invoice.
