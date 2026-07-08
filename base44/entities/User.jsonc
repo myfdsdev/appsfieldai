@@ -27,6 +27,10 @@
       "type": "string",
       "description": "Phone number"
     },
+    "avatarUrl": {
+      "type": "string",
+      "description": "Profile picture URL"
+    },
     "businessName": {
       "type": "string",
       "description": "Business name (for marketplace owners)"
