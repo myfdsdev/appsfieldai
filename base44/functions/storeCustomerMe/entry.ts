@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({
-      customer: { id: customer.id, fullName: customer.fullName, email: customer.email, phone: customer.phone, marketplaceId },
+      customer: { id: customer.id, fullName: customer.fullName, email: customer.email, phone: customer.phone, avatarUrl: customer.avatarUrl || null, marketplaceId },
     });
   } catch (error) {
     console.error('storeCustomerMe error:', error);

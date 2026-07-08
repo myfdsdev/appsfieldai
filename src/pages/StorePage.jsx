@@ -338,6 +338,7 @@ export default function StorePage() {
         initialTab={accountPanel.tab}
         marketplaceId={marketplaceId}
         customer={customer}
+        setCustomer={setCustomer}
         brandColor={brandColor}
         affiliateEnabled={affiliateEnabled}
         affiliatePath={`${storeBasePath}/affiliates`}

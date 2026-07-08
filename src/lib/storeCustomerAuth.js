@@ -49,6 +49,15 @@ export function logoutStoreCustomer(marketplaceId) {
   setStoredToken(marketplaceId, null);
 }
 
+// Update the customer's profile (name, phone, avatar) and optionally reset password.
+export async function updateStoreCustomerProfile({ marketplaceId, fullName, phone, avatarUrl, currentPassword, newPassword }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("storeCustomerUpdateProfile", { marketplaceId, token, fullName, phone, avatarUrl, currentPassword, newPassword });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data.customer;
+}
+
 // Reserve spots on a listing as the logged-in store customer.
 export async function reserveStoreSpot({ marketplaceId, listingId, spots, phone, message }) {
   const token = getStoredToken(marketplaceId);

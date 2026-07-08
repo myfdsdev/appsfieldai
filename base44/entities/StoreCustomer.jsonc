@@ -26,6 +26,10 @@
       "type": "string",
       "description": "Optional phone number"
     },
+    "avatarUrl": {
+      "type": "string",
+      "description": "Customer profile picture URL"
+    },
     "status": {
       "type": "string",
       "enum": [

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { X, User, Package, Mail, Phone, LogOut, Loader2, CheckCircle2, Clock, CircleDollarSign, ShoppingBag, CalendarCheck, Share2 } from "lucide-react";
 import { fetchStoreCustomerProducts, fetchStoreCustomerOrders } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
+import StoreAccountSettings from "@/components/store/StoreAccountSettings";
 
 const STATUS_STYLES = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -74,7 +75,7 @@ function ProductRow({ p, brandColor }) {
   );
 }
 
-export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, brandColor = "#f97316", onLogout, initialTab = "account", affiliateEnabled = false, affiliatePath }) {
+export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, setCustomer, brandColor = "#f97316", onLogout, initialTab = "account", affiliateEnabled = false, affiliatePath }) {
   const navigate = useNavigate();
   const goToAffiliate = () => { onClose(); if (affiliatePath) navigate(affiliatePath); };
   const [tab, setTab] = useState(initialTab);
@@ -171,29 +172,12 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
                   <Share2 className="w-4 h-4" /> Affiliate Dashboard
                 </button>
               )}
-              <div className="rounded-2xl border border-border/40 bg-card/60 p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Email</p>
-                    <p className="text-sm">{customer?.email || "—"}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Full name</p>
-                    <p className="text-sm">{customer?.fullName || "—"}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Phone</p>
-                    <p className="text-sm">{customer?.phone || "—"}</p>
-                  </div>
-                </div>
-              </div>
+              <StoreAccountSettings
+                marketplaceId={marketplaceId}
+                customer={customer}
+                brandColor={brandColor}
+                onUpdated={(c) => setCustomer?.((prev) => ({ ...prev, ...c }))}
+              />
               <button onClick={() => { onClose(); onLogout?.(); }}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors">
                 <LogOut className="w-4 h-4" /> Log out

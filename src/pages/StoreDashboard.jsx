@@ -7,6 +7,7 @@ import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDashboard } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
 import BecomeAffiliateModal from "@/components/store/BecomeAffiliateModal";
+import StoreAccountSettings from "@/components/store/StoreAccountSettings";
 
 const RES_STATUS = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -75,7 +76,9 @@ export default function StoreDashboard() {
   const [storeLoading, setStoreLoading] = useState(true);
 
   const marketplaceId = marketplace?.id;
-  const { customer, loading: customerLoading, logout } = useStoreCustomer(marketplaceId);
+  const { customer, loading: customerLoading, logout, setCustomer } = useStoreCustomer(marketplaceId);
+  const initialTab = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "account" ? "account" : "overview";
+  const [tab, setTab] = useState(initialTab);
 
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
@@ -181,8 +184,10 @@ export default function StoreDashboard() {
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         {/* Greeting */}
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: brandColor }}>
-            <User className="w-7 h-7 text-white" />
+          <div className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center shrink-0" style={{ background: customer.avatarUrl ? undefined : brandColor }}>
+            {customer.avatarUrl
+              ? <img src={customer.avatarUrl} alt="" className="w-full h-full object-cover" />
+              : <User className="w-7 h-7 text-white" />}
           </div>
           <div>
             <h1 className="text-2xl font-display font-bold">Welcome, {customer.fullName || "there"}</h1>
@@ -190,6 +195,31 @@ export default function StoreDashboard() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-border/40">
+          {[{ id: "overview", label: "Overview" }, { id: "account", label: "My Account" }].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                tab === t.id ? "text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+              style={tab === t.id ? { borderColor: brandColor } : {}}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "account" ? (
+          <StoreAccountSettings
+            marketplaceId={marketplaceId}
+            customer={customer}
+            brandColor={brandColor}
+            onUpdated={(c) => setCustomer((prev) => ({ ...prev, ...c }))}
+          />
+        ) : (
+        <div className="space-y-8">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {stats.map((s) => (
@@ -218,11 +248,20 @@ export default function StoreDashboard() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {affiliateDash?.totals && (
-                  <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
-                    <TrendingUp className="w-4 h-4" /> ${(affiliateDash.totals.cleared || 0).toLocaleString()} earned
-                  </div>
-                )}
+                {affiliateDash?.totals && (() => {
+                  const t = affiliateDash.totals;
+                  const earned = (t.cleared || 0) + (t.hold || 0) + (t.paid || 0);
+                  return (
+                    <div className="text-right">
+                      <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
+                        <TrendingUp className="w-4 h-4" /> ${earned.toLocaleString()} earned
+                      </div>
+                      {t.hold > 0 && (
+                        <p className="text-[11px] text-amber-400 mt-0.5">${t.hold.toLocaleString()} on hold</p>
+                      )}
+                    </div>
+                  );
+                })()}
                 <button onClick={() => navigate(`${storeBasePath}/affiliates`)}
                   className="px-4 py-2 rounded-xl text-white text-sm font-medium hover:opacity-90" style={{ background: brandColor }}>
                   {affiliateDash?.refCode ? "Open Affiliate Dashboard" : "Become an Affiliate"}
@@ -265,27 +304,9 @@ export default function StoreDashboard() {
               </section>
             )}
 
-            {/* Profile */}
-            <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
-                <User className="w-4 h-4" /> My Account
-              </h2>
-              <div className="rounded-2xl border border-border/40 bg-card/60 p-5 grid sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <div><p className="text-[11px] text-muted-foreground">Email</p><p className="text-sm">{customer.email || "—"}</p></div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <div><p className="text-[11px] text-muted-foreground">Full name</p><p className="text-sm">{customer.fullName || "—"}</p></div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  <div><p className="text-[11px] text-muted-foreground">Phone</p><p className="text-sm">{customer.phone || "—"}</p></div>
-                </div>
-              </div>
-            </section>
           </>
+        )}
+        </div>
         )}
       </div>
 
