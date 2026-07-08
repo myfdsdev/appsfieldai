@@ -1,15 +1,13 @@
 const express = require("express");
 const { domains } = require("../db");
 const { requireBearer } = require("../lib/auth");
-const render = require("../lib/renderClient");
+const cf = require("../lib/cloudflareClient");
 
 const router = express.Router();
 
-// The CNAME target (our Render service host) and apex A-record IP shown to
-// customers. Both are Render's — a subdomain CNAMEs to our onrender host, an
-// apex domain uses an A record to Render's shared IP.
-const PUBLIC_SERVICE_HOST = process.env.PUBLIC_SERVICE_HOST || "";
-const PUBLIC_SERVICE_IP = process.env.PUBLIC_SERVICE_IP || "216.24.57.1";
+// The CNAME value customers point their domain at (a hostname in our Cloudflare
+// zone that is designated as the Custom Hostnames fallback origin / target).
+const CF_CNAME_TARGET = process.env.CF_CNAME_TARGET || process.env.PUBLIC_SERVICE_HOST || "";
 
 function cleanHost(host) {
   return (host || "")
@@ -29,16 +27,37 @@ function sanitizeDomain(input) {
   return domain;
 }
 
-// The single DNS record a customer must add. Render verifies ownership and
-// issues the TLS cert once this resolves to our Render service.
-function dnsInstructionFor(domain) {
+// Build the list of DNS records the customer must add, from Cloudflare's
+// custom-hostname response. Always includes the routing CNAME; adds Cloudflare's
+// ownership-verification TXT and any SSL (DCV) validation records if present.
+function buildDnsRecords(domain, cfHostname) {
   const isRoot = domain.split(".").length === 2;
-  return isRoot
-    ? { type: "A", name: "@", target: PUBLIC_SERVICE_IP }
-    : { type: "CNAME", name: domain.split(".")[0], target: PUBLIC_SERVICE_HOST };
+  const records = [
+    {
+      type: "CNAME",
+      name: isRoot ? "@" : domain.split(".")[0],
+      value: CF_CNAME_TARGET,
+      purpose: "routing",
+    },
+  ];
+
+  const ov = cfHostname && cfHostname.ownership_verification;
+  if (ov && ov.type === "txt" && ov.name && ov.value) {
+    records.push({ type: "TXT", name: ov.name, value: ov.value, purpose: "ownership" });
+  }
+
+  const dcv = cfHostname && cfHostname.ssl && cfHostname.ssl.validation_records;
+  if (Array.isArray(dcv)) {
+    for (const r of dcv) {
+      if (r.txt_name && r.txt_value) {
+        records.push({ type: "TXT", name: r.txt_name, value: r.txt_value, purpose: "ssl" });
+      }
+    }
+  }
+  return records;
 }
 
-function docToState(doc) {
+function docToState(doc, records) {
   return {
     domain: doc.domain,
     storeSlug: doc.store_slug,
@@ -48,11 +67,11 @@ function docToState(doc) {
     redirectEnabled: !!doc.redirect_enabled,
     createdAt: doc.created_at,
     verifiedAt: doc.verified_at,
-    dns: dnsInstructionFor(doc.domain),
+    dns: { records: records || [{ type: "CNAME", name: doc.domain.split(".").length === 2 ? "@" : doc.domain.split(".")[0], value: CF_CNAME_TARGET, purpose: "routing" }] },
   };
 }
 
-// POST /api/admin/domains — connect a domain: register it on Render, return DNS.
+// POST /api/admin/domains — register the domain on Cloudflare, return DNS records.
 router.post("/domains", requireBearer, async (req, res) => {
   const { domain: rawDomain, storeSlug, marketplaceId, userId } = req.body || {};
   const domain = sanitizeDomain(rawDomain);
@@ -64,12 +83,11 @@ router.post("/domains", requireBearer, async (req, res) => {
     return res.status(403).json({ error: "This domain is already connected to another store." });
   }
 
-  // Register the domain on our Render service (idempotent — 409 returns existing).
-  let renderDomain;
+  let cfHostname;
   try {
-    renderDomain = await render.addDomain(domain);
+    cfHostname = await cf.createCustomHostname(domain);
   } catch (err) {
-    console.error("Render addDomain failed", err.response?.data || err.message);
+    console.error("Cloudflare createCustomHostname failed", err.cfErrors || err.message);
     return res.status(502).json({ error: "Could not register the domain with the hosting provider." });
   }
 
@@ -81,7 +99,7 @@ router.post("/domains", requireBearer, async (req, res) => {
         store_slug: storeSlug,
         marketplace_id: marketplaceId || null,
         owner_user_id: userId || null,
-        render_domain_id: renderDomain?.id || null,
+        cf_hostname_id: cfHostname.id || null,
         verification_status: "pending",
         ssl_status: "pending",
         is_active: false,
@@ -97,19 +115,29 @@ router.post("/domains", requireBearer, async (req, res) => {
     { upsert: true }
   );
 
-  return res.json({ domain, dns: dnsInstructionFor(domain) });
+  return res.json({ domain, dns: { records: buildDnsRecords(domain, cfHostname) } });
 });
 
-// GET /api/admin/domains/:domain — current state + DNS instruction.
+// GET /api/admin/domains/:domain — current state + DNS records (refreshed from CF).
 router.get("/domains/:domain", requireBearer, async (req, res) => {
   const domain = sanitizeDomain(req.params.domain);
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
   const doc = await domains().findOne({ domain });
   if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
-  return res.json(docToState(doc));
+
+  let records;
+  if (doc.cf_hostname_id) {
+    try {
+      const cfHostname = await cf.getCustomHostname(doc.cf_hostname_id);
+      if (cfHostname) records = buildDnsRecords(domain, cfHostname);
+    } catch (err) {
+      console.error("Cloudflare getCustomHostname failed", err.cfErrors || err.message);
+    }
+  }
+  return res.json(docToState(doc, records));
 });
 
-// POST /api/admin/domains/:domain/verify — ask Render to (re)verify, read status.
+// POST /api/admin/domains/:domain/verify — read Cloudflare status, flip our flags.
 router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
   const domain = sanitizeDomain(req.params.domain);
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
@@ -119,22 +147,25 @@ router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
   if (req.authUserId && doc.owner_user_id && doc.owner_user_id !== req.authUserId) {
     return res.status(403).json({ error: "You do not own this domain mapping." });
   }
-
-  const idOrName = doc.render_domain_id || domain;
-  let renderDomain;
-  try {
-    await render.verifyDomain(idOrName);
-    renderDomain = await render.getDomain(idOrName);
-  } catch (err) {
-    console.error("Render verify failed", err.response?.data || err.message);
-    return res.status(502).json({ error: "Could not check domain verification with the hosting provider." });
+  if (!doc.cf_hostname_id) {
+    return res.status(400).json({ error: "Domain is not registered. Re-connect it first." });
   }
 
-  const verified = renderDomain?.verificationStatus === "verified";
+  let cfHostname;
+  try {
+    cfHostname = await cf.getCustomHostname(doc.cf_hostname_id);
+  } catch (err) {
+    console.error("Cloudflare getCustomHostname failed", err.cfErrors || err.message);
+    return res.status(502).json({ error: "Could not check domain status with the hosting provider." });
+  }
+  if (!cfHostname) return res.status(404).json({ error: "Domain not found at the hosting provider." });
+
+  const sslActive = cfHostname.ssl && cfHostname.ssl.status === "active";
+  const verified = cfHostname.status === "active" && sslActive;
+
   const set = {
     verification_status: verified ? "verified" : "failed",
-    // Render issues the TLS cert automatically once the domain is verified.
-    ssl_status: verified ? "active" : "pending",
+    ssl_status: sslActive ? "active" : "pending",
     is_active: verified,
     updated_at: new Date().toISOString(),
   };
@@ -143,18 +174,18 @@ router.post("/domains/:domain/verify", requireBearer, async (req, res) => {
 
   const message = verified
     ? "Domain verified and SSL activated."
-    : "DNS not verified yet. Add the record below and allow a few minutes to propagate (up to 48h).";
+    : "Not verified yet. Add the DNS record(s) below and allow a few minutes for Cloudflare to validate (up to 48h for DNS to propagate).";
 
   return res.json({
     verified,
     verificationStatus: set.verification_status,
     sslStatus: set.ssl_status,
-    dns: dnsInstructionFor(domain),
+    dns: { records: buildDnsRecords(domain, cfHostname) },
     message,
   });
 });
 
-// DELETE /api/admin/domains/:domain — remove from Render and our DB.
+// DELETE /api/admin/domains/:domain — remove from Cloudflare and our DB.
 router.delete("/domains/:domain", requireBearer, async (req, res) => {
   const domain = sanitizeDomain(req.params.domain);
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
@@ -165,11 +196,13 @@ router.delete("/domains/:domain", requireBearer, async (req, res) => {
     return res.status(403).json({ error: "You do not own this domain mapping." });
   }
 
-  try {
-    await render.deleteDomain(doc.render_domain_id || domain);
-  } catch (err) {
-    console.error("Render deleteDomain failed", err.response?.data || err.message);
-    // Continue — we still remove our own mapping so the store stops routing here.
+  if (doc.cf_hostname_id) {
+    try {
+      await cf.deleteCustomHostname(doc.cf_hostname_id);
+    } catch (err) {
+      console.error("Cloudflare deleteCustomHostname failed", err.cfErrors || err.message);
+      // Continue — still remove our mapping so the store stops routing here.
+    }
   }
 
   await domains().deleteOne({ domain });

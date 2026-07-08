@@ -1,0 +1,36 @@
+# Fly.io config for the custom-domain-service.
+# Accepts any Host header (unlike Render), so it can serve as the Cloudflare for
+# SaaS fallback origin: Cloudflare forwards the customer's hostname here.
+#
+# Deploy:
+#   fly launch --no-deploy      # creates the app (edit app name below if taken)
+#   fly secrets set MONGODB_URI=... VERIFICATION_SECRET=... \
+#     UPSTREAM_ORIGIN=https://app.appsfieldai.com \
+#     BASE44_FUNCTIONS_ORIGIN=https://share-saas-hq.base44.app \
+#     CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ZONE_ID=... CF_CNAME_TARGET=custom.appsfieldai.com
+#   fly deploy
+
+app = "appsfieldai-custom-domains"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

@@ -21,10 +21,10 @@ const proxy = createProxyMiddleware({
 });
 
 // Host-based routing: only domains we have a mapping for get proxied through to
-// the Base44 app. Render only routes a custom domain to this service once it has
-// verified the domain and issued a cert, so a request arriving here for a mapped
-// domain is already trusted; requiring our own is_active flag would wrongly 404
-// a domain Render verified before the owner clicked "Verify" in the UI.
+// the Base44 app. Cloudflare only routes a custom hostname to this fallback origin
+// once it has validated the domain and issued a cert, so a request arriving here
+// for a mapped domain is already trusted; requiring our own is_active flag would
+// wrongly 404 a domain Cloudflare validated before the owner clicked "Verify".
 async function storeProxy(req, res, next) {
   const domain = (req.headers.host || "").toLowerCase().split(":")[0];
   let doc;
