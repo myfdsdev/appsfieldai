@@ -131,3 +131,12 @@ export async function applyAsAffiliate({ marketplaceId, listingId, answers }) {
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }
+
+// Save the affiliate's payout method + details (PayPal email, bank/wire info).
+export async function updateAffiliatePayout({ marketplaceId, payoutMethod, payoutDetails }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("affiliateUpdatePayout", { marketplaceId, token, payoutMethod, payoutDetails });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}

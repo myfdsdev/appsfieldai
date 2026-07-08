@@ -50,15 +50,29 @@
       "enum": [
         "hold",
         "sale",
+        "paid",
         "refunded"
       ],
       "default": "hold",
-      "description": "hold = within refund window, sale = cleared/payable, refunded = order was refunded"
+      "description": "hold = within refund window, sale = cleared/payable, paid = paid out to affiliate, refunded = order was refunded"
     },
     "clearedAt": {
       "type": "string",
       "format": "date-time",
       "description": "When the commission cleared the hold window"
+    },
+    "paidAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the commission was paid out to the affiliate"
+    },
+    "payoutMethod": {
+      "type": "string",
+      "description": "How the payout was made (e.g. paypal, wire, manual)"
+    },
+    "payoutReference": {
+      "type": "string",
+      "description": "External payout reference (transaction id, wire ref, note)"
     }
   },
   "required": [

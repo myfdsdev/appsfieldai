@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Package, DollarSign, Image, Rocket, Save, Plus, X,
-  Clock, Users, ShoppingCart, Layers, Info, KeyRound, Link2
+  Clock, Users, ShoppingCart, Layers, Info, KeyRound, Link2, Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import MediaPickerModal from "@/components/marketplace/MediaPickerModal";
+import PromotionKitEditor from "@/components/marketplace/PromotionKitEditor";
 
 const TABS = [
   { id: "details", label: "Details", icon: Package },
   { id: "deal", label: "Deal Setup", icon: DollarSign },
   { id: "media", label: "Media & Features", icon: Image },
+  { id: "affiliate", label: "Affiliate", icon: Share2 },
   { id: "publish", label: "Publish", icon: Rocket },
 ];
 
@@ -74,6 +76,10 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     refundPolicy: "",
     redemptionInstructions: "",
     delivery: { accessUrl: "", instructions: "" },
+    affiliateEnabled: false,
+    affiliateCommissionRate: 30,
+    affiliateCommissionRule: "",
+    promotionKit: { images: [], videos: [], emailSwipes: [], llmDescription: "" },
   });
 
   useEffect(() => {
@@ -111,6 +117,15 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         delivery: {
           accessUrl: listing.delivery?.accessUrl || "",
           instructions: listing.delivery?.instructions || "",
+        },
+        affiliateEnabled: listing.affiliateEnabled || false,
+        affiliateCommissionRate: listing.affiliateCommissionRate ?? 30,
+        affiliateCommissionRule: listing.affiliateCommissionRule || "",
+        promotionKit: {
+          images: listing.promotionKit?.images || [],
+          videos: listing.promotionKit?.videos || [],
+          emailSwipes: listing.promotionKit?.emailSwipes || [],
+          llmDescription: listing.promotionKit?.llmDescription || "",
         },
       });
     }
@@ -483,6 +498,42 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                 ))}
               </div>
             </div>
+          </>
+        )}
+
+        {/* TAB: Affiliate */}
+        {activeTab === "affiliate" && (
+          <>
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+              <input type="checkbox" checked={form.affiliateEnabled} onChange={e => update("affiliateEnabled", e.target.checked)} className="accent-orange-500 w-4 h-4" />
+              <div>
+                <p className="text-sm font-medium">Open for affiliates</p>
+                <p className="text-[10px] text-muted-foreground">Let approved affiliates promote this product and earn commission</p>
+              </div>
+            </label>
+
+            {form.affiliateEnabled && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Commission Rate (%)</label>
+                    <Input type="number" value={form.affiliateCommissionRate} onChange={e => update("affiliateCommissionRate", parseFloat(e.target.value) || 0)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="30" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Commission Rules / Notes</label>
+                  <Textarea value={form.affiliateCommissionRule} onChange={e => update("affiliateCommissionRule", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-16" placeholder="e.g. Paid after 14-day refund window, minimum $50 payout, no incentivized traffic" />
+                </div>
+
+                <div className="pt-3 border-t border-border/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Share2 className="w-4 h-4 text-orange-400" />
+                    <p className="text-sm font-semibold">Promotion Kit</p>
+                  </div>
+                  <PromotionKitEditor value={form.promotionKit} onChange={v => update("promotionKit", v)} />
+                </div>
+              </>
+            )}
           </>
         )}
 

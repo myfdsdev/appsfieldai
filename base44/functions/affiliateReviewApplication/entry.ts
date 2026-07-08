@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { applicationId, action, status, commissionRate, reviewNotes, text } = await req.json();
+    const { applicationId, action, status, commissionRate, reviewNotes, text, holdDays } = await req.json();
     if (!applicationId || !action) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -38,6 +38,14 @@ Deno.serve(async (req) => {
       }
     } else if (action === 'commission') {
       updates.commissionRate = Number(commissionRate) || 0;
+    } else if (action === 'holdDays') {
+      // Set a performance-based hold-window override on the affiliate (not the application).
+      const affs = await base44.asServiceRole.entities.Affiliate.filter({ id: application.affiliateId });
+      const aff = affs[0];
+      if (!aff) return Response.json({ error: 'Affiliate not found' }, { status: 404 });
+      const val = (holdDays === '' || holdDays == null) ? null : Number(holdDays);
+      await base44.asServiceRole.entities.Affiliate.update(aff.id, { holdDays: val });
+      return Response.json({ success: true, affiliate: { id: aff.id, holdDays: val } });
     } else if (action === 'reply') {
       const messages = Array.isArray(application.messages) ? application.messages : [];
       messages.push({

@@ -35,6 +35,18 @@
       "type": "number",
       "description": "Optional affiliate-wide commission override (percent). Product/application rate takes precedence when set."
     },
+    "holdDays": {
+      "type": "number",
+      "description": "Performance-based hold window override (days) for this affiliate. Falls back to the store's affiliateSettings.holdDays when empty. Owner lowers it for trusted, low-refund affiliates."
+    },
+    "payoutMethod": {
+      "type": "string",
+      "description": "Affiliate's preferred payout method (e.g. PayPal, Bank Wire)"
+    },
+    "payoutDetails": {
+      "type": "string",
+      "description": "Affiliate's payout account details (PayPal email, bank/wire info)"
+    },
     "totalEarned": {
       "type": "number",
       "default": 0,
@@ -44,6 +56,11 @@
       "type": "number",
       "default": 0,
       "description": "Commission currently on hold (within refund window)"
+    },
+    "totalPaid": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime commission actually paid out to the affiliate"
     }
   },
   "required": [

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { X, Share2, Loader2, TrendingUp, Clock, Undo2, Copy, Check, Send, MessageSquare } from "lucide-react";
+import { X, Share2, Loader2, TrendingUp, Clock, Undo2, Copy, Check, Send, MessageSquare, Wallet, CheckCircle2 } from "lucide-react";
 import { fetchAffiliateApplications, fetchAffiliateDashboard, applyAsAffiliate } from "@/lib/storeCustomerAuth";
+import AffiliatePromotionKit from "@/components/store/AffiliatePromotionKit";
+import AffiliatePayoutSettings from "@/components/store/AffiliatePayoutSettings";
 import { toast } from "sonner";
 
 const STATUS_STYLES = {
@@ -8,7 +10,8 @@ const STATUS_STYLES = {
   approved: { label: "Approved", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
   rejected: { label: "Rejected", cls: "bg-red-500/10 text-red-400 border-red-500/20" },
   hold: { label: "On hold", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  sale: { label: "Cleared", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  sale: { label: "Payable", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  paid: { label: "Paid", cls: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
   refunded: { label: "Refunded", cls: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
 };
 
@@ -83,7 +86,7 @@ export default function StoreAffiliateSection({ marketplaceId, affiliateSettings
 
   const refCode = appsData.refCode || dashboard?.refCode;
   const refLink = refCode ? `${storeBaseUrl}?ref=${refCode}` : null;
-  const totals = dashboard?.totals || { cleared: 0, hold: 0, refunded: 0, sales: 0 };
+  const totals = dashboard?.totals || { cleared: 0, hold: 0, paid: 0, refunded: 0, sales: 0 };
   const appliedIds = new Set((appsData.applications || []).map((a) => a.listingId));
   // Products the customer can still apply to (affiliate-enabled + not already applied).
   const openProducts = listings.filter((l) => l.affiliateEnabled && !appliedIds.has(l.id));
@@ -102,6 +105,7 @@ export default function StoreAffiliateSection({ marketplaceId, affiliateSettings
 
   const tabs = [
     { id: "earnings", label: "Earnings" },
+    { id: "kit", label: "Promotion Kit" },
     { id: "promote", label: "Promote" },
     { id: "applications", label: "Applications" },
   ];
@@ -141,16 +145,21 @@ export default function StoreAffiliateSection({ marketplaceId, affiliateSettings
             <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
           ) : tab === "earnings" ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-center">
                   <TrendingUp className="w-4 h-4 mx-auto text-emerald-400 mb-1" />
                   <p className="text-base font-display font-bold text-emerald-400">${totals.cleared.toLocaleString()}</p>
-                  <p className="text-[10px] text-muted-foreground">Cleared</p>
+                  <p className="text-[10px] text-muted-foreground">Payable</p>
                 </div>
                 <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3 text-center">
                   <Clock className="w-4 h-4 mx-auto text-amber-400 mb-1" />
                   <p className="text-base font-display font-bold text-amber-400">${totals.hold.toLocaleString()}</p>
                   <p className="text-[10px] text-muted-foreground">On hold</p>
+                </div>
+                <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-3 text-center">
+                  <Wallet className="w-4 h-4 mx-auto text-blue-400 mb-1" />
+                  <p className="text-base font-display font-bold text-blue-400">${(totals.paid || 0).toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">Paid out</p>
                 </div>
                 <div className="rounded-2xl border border-border/40 bg-card/60 p-3 text-center">
                   <Undo2 className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
@@ -158,6 +167,14 @@ export default function StoreAffiliateSection({ marketplaceId, affiliateSettings
                   <p className="text-[10px] text-muted-foreground">Refunded</p>
                 </div>
               </div>
+
+              {dashboard?.holdDays != null && (
+                <p className="text-[11px] text-muted-foreground text-center">
+                  Commissions are held for <b>{dashboard.holdDays} days</b> to cover refunds, then become payable. Payouts are sent manually by the store.
+                </p>
+              )}
+
+              <AffiliatePayoutSettings marketplaceId={marketplaceId} dashboard={dashboard} brandColor={brandColor} onSaved={load} />
 
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Commissions</p>
@@ -184,6 +201,8 @@ export default function StoreAffiliateSection({ marketplaceId, affiliateSettings
                 )}
               </div>
             </div>
+          ) : tab === "kit" ? (
+            <AffiliatePromotionKit applications={appsData.applications || []} brandColor={brandColor} />
           ) : tab === "promote" ? (
             <div className="space-y-3">
               {affiliateSettings?.terms && (
