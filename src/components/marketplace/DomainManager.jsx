@@ -95,11 +95,11 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
       .catch(() => {});
   }, []);
 
-  // Restore verification status + DNS instructions for an already-connected domain.
+  // Restore status + DNS instructions for an already-connected domain.
   useEffect(() => {
     const existing = marketplaceProp?.customDomain;
     if (!existing || !DOMAIN_SERVICE_URL) return;
-    domainServiceFetch(`/api/admin/domains/${encodeURIComponent(existing)}`)
+    domainServiceFetch(`/api/custom-domains/status?hostname=${encodeURIComponent(existing)}`)
       .then(setDomainState)
       .catch(() => {});
   }, [marketplaceProp?.customDomain]);
@@ -123,29 +123,23 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
     setSaving(true);
     const clean = customDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
     try {
-      const res = await domainServiceFetch("/api/admin/domains", {
+      const res = await domainServiceFetch("/api/custom-domains/register", {
         method: "POST",
         body: JSON.stringify({
-          domain: clean,
+          hostname: clean,
+          tenantId: marketplace.id,
+          originType: "app",
           storeSlug: marketplace?.subdomain || marketplace?.slug,
-          marketplaceId: marketplace.id,
-          userId: marketplace?.ownerId,
         }),
       });
       // Keep Base44's own customDomain field in sync — getMarketplacePublic still
       // resolves stores by this field for the SPA's client-side custom-domain detection.
       await base44.entities.Marketplace.update(marketplace.id, { customDomain: clean });
       setCustomDomain(clean);
-      setDomainState({
-        domain: clean,
-        verificationStatus: "pending",
-        sslStatus: "pending",
-        isActive: false,
-        dns: res.dns,
-      });
+      setDomainState({ hostname: clean, status: res.status || "pending", sslStatus: "pending", dnsRecords: res.dnsRecords });
       await refreshMp();
       onUpdate?.();
-      toast.success("Domain connected — add the DNS records below, then verify.");
+      toast.success("Domain connected — add the DNS record below, then check status.");
     } catch (err) {
       toast.error(err.message || "Could not connect domain. Try again.");
     }
@@ -163,24 +157,39 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
     setVerifying(true);
     try {
       const data = await domainServiceFetch(
-        `/api/admin/domains/${encodeURIComponent(domain)}/verify`,
-        { method: "POST", body: JSON.stringify({ userId: marketplace?.ownerId }) }
+        `/api/custom-domains/status?hostname=${encodeURIComponent(domain)}`
       );
-      if (data.verified) toast.success(data.message || "Domain verified — your store is connected!");
-      else toast.error(data.message || "Verification failed. Check your DNS records.");
+      if (data.status === "active") toast.success("Your domain is connected successfully.");
+      else toast.error("Not verified yet. Check your DNS record and try again shortly.");
       setDomainState((prev) => ({ ...prev, ...data }));
       onUpdate?.();
     } catch (err) {
-      toast.error(err.message || "Could not verify domain. Try again shortly.");
+      toast.error(err.message || "Could not check status. Try again shortly.");
     }
     setVerifying(false);
+  };
+
+  const handleDisconnect = async () => {
+    setSaving(true);
+    try {
+      await domainServiceFetch(`/api/custom-domains?hostname=${encodeURIComponent(domain)}`, { method: "DELETE" });
+      await base44.entities.Marketplace.update(marketplace.id, { customDomain: "" });
+      setCustomDomain("");
+      setDomainState(null);
+      await refreshMp();
+      onUpdate?.();
+      toast.success("Custom domain disconnected.");
+    } catch (err) {
+      toast.error(err.message || "Could not disconnect domain.");
+    }
+    setSaving(false);
   };
 
   const subLabel = subdomain || marketplace?.slug;
   // Path-based store URL on the main app domain — always live, no DNS needed.
   const storeUrl = `https://${PLATFORM_DOMAIN}/store/${subLabel}`;
-  // DNS instructions now come entirely from the custom-domain-service response.
-  const dns = domainState?.dns;
+  // DNS records come entirely from the custom-domain worker response.
+  const dnsRecords = domainState?.dnsRecords || [];
 
   return (
     <div className="space-y-6">
@@ -247,7 +256,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
             <div className="flex items-center gap-4 p-3 rounded-xl bg-secondary/30">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Domain</span>
-                {statusBadge(domainState?.verificationStatus)}
+                {statusBadge(domainState?.status)}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">SSL</span>
@@ -255,38 +264,46 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
               </div>
             </div>
 
-            {domainState?.verificationStatus === "verified" ? (
+            {domainState?.status === "active" ? (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                 <a href={`https://${domain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">https://{domain}</a>
-                <span className="ml-auto text-[10px] text-emerald-400/70">SSL active</span>
+                <span className="ml-auto text-[10px] text-emerald-400/70">Connected</span>
               </div>
             ) : (
               <>
                 {/* DNS records to add (routing CNAME, plus any ownership/SSL records) */}
                 <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20">
-                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add {(dns?.records?.length || 1) > 1 ? "these DNS records" : "this DNS record"} at your domain provider</p>
+                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add {dnsRecords.length > 1 ? "these DNS records" : "this DNS record"} at your domain provider</p>
 
-                  {(dns?.records || []).map((rec, i) => (
+                  {dnsRecords.map((rec, i) => (
                     <div key={i} className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
                       <CopyField label="Type" value={rec.type || "CNAME"} />
                       <CopyField label="Host / Name" value={rec.name || ""} />
-                      <CopyField label="Value" value={rec.value || "—"} />
+                      <CopyField label="Value" value={rec.target || "—"} />
                     </div>
                   ))}
 
+                  <p className="text-[11px] text-amber-400/80 flex items-start gap-1.5">
+                    <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                    Do not add this domain to Render. Your domain connects through Cloudflare — just add the CNAME record above at your domain provider.
+                  </p>
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                     <Clock className="w-3 h-3 mt-0.5 shrink-0" />
-                    DNS changes can take a few minutes to 48 hours to propagate. Click verify once added.
+                    DNS changes can take a few minutes to 48 hours to propagate. Check status once added.
                   </p>
                 </div>
 
                 <Button onClick={handleVerify} disabled={verifying} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1.5">
                   {verifying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                  {verifying ? "Checking DNS..." : "Verify Domain"}
+                  {verifying ? "Checking status..." : "Check Status"}
                 </Button>
               </>
             )}
+
+            <button onClick={handleDisconnect} disabled={saving} className="text-[11px] text-muted-foreground hover:text-red-400 transition-colors">
+              Disconnect this domain
+            </button>
           </div>
         )}
       </motion.div>
