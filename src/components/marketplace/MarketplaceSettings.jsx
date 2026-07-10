@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Store, Palette, Tag, Settings, Globe, Mail, Shield, FileText, ArrowLeft, Save } from "lucide-react";
+import { Store, Palette, Tag, Settings, Globe, Mail, Shield, FileText, ArrowLeft, Save, Sparkles } from "lucide-react";
 import DomainManager from "@/components/marketplace/DomainManager";
+import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ const tabs = [
   { id: "general", label: "General", icon: Settings },
   { id: "branding", label: "Branding", icon: Palette },
   { id: "domain", label: "Domain", icon: Globe },
+  { id: "dealmaker", label: "Deal Maker", icon: Sparkles },
   { id: "pages", label: "Legal Pages", icon: FileText },
   { id: "policies", label: "Approvals", icon: Shield },
 ];
@@ -48,11 +50,22 @@ export default function MarketplaceSettings({ marketplace, onBack }) {
       privacyPage: marketplace?.settings?.privacyPage || "",
       refundPolicy: marketplace?.settings?.refundPolicy || "",
     },
+    pageSections: {
+      ...(marketplace?.pageSections || {}),
+      dealMakerEnabled: marketplace?.pageSections?.dealMakerEnabled ?? true,
+      dealMakerName: marketplace?.pageSections?.dealMakerName || "",
+      dealMakerOwnerName: marketplace?.pageSections?.dealMakerOwnerName || "",
+      dealMakerNiche: marketplace?.pageSections?.dealMakerNiche || "",
+      dealMakerGuarantee: marketplace?.pageSections?.dealMakerGuarantee || "",
+      dealMakerGreeting: marketplace?.pageSections?.dealMakerGreeting || "",
+      dealMakerKnowledge: marketplace?.pageSections?.dealMakerKnowledge || "",
+    },
   });
 
   const update = (field, value) => setForm(d => ({ ...d, [field]: value }));
   const updateBranding = (field, value) => setForm(d => ({ ...d, branding: { ...d.branding, [field]: value } }));
   const updateSettings = (field, value) => setForm(d => ({ ...d, settings: { ...d.settings, [field]: value } }));
+  const updatePageSections = (field, value) => setForm(d => ({ ...d, pageSections: { ...d.pageSections, [field]: value } }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -147,6 +160,11 @@ export default function MarketplaceSettings({ marketplace, onBack }) {
         {/* Domain Tab */}
         {activeTab === "domain" && (
           <DomainManager marketplace={marketplace} onUpdate={() => queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] })} />
+        )}
+
+        {/* Deal Maker Tab */}
+        {activeTab === "dealmaker" && (
+          <DealMakerSettings deal={form.pageSections} onChange={updatePageSections} />
         )}
 
         {/* Legal Pages Tab */}

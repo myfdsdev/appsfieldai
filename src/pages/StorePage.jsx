@@ -367,14 +367,16 @@ export default function StorePage() {
       />
 
       {/* Deal Maker Agent — pops up, then collapses to a top pill */}
-      <DealMakerWidget
-        marketplaceId={marketplaceId}
-        marketplace={marketplace}
-        listings={software}
-        brandColor={brandColor}
-        onShowApp={(listing) => setViewDetailListing(listing)}
-        onReserve={(listing) => handleReserve(listing)}
-      />
+      {(sections.dealMakerEnabled ?? true) && (
+        <DealMakerWidget
+          marketplaceId={marketplaceId}
+          marketplace={marketplace}
+          listings={software}
+          brandColor={brandColor}
+          onShowApp={(listing) => setViewDetailListing(listing)}
+          onReserve={(listing) => handleReserve(listing)}
+        />
+      )}
     </div>
   );
 }

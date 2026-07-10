@@ -280,6 +280,35 @@
       "type": "object",
       "description": "Page section visibility settings",
       "properties": {
+        "dealMakerEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the Deal Maker AI sales agent shows on the store page"
+        },
+        "dealMakerName": {
+          "type": "string",
+          "description": "Display name for the Deal Maker agent (e.g. Max)"
+        },
+        "dealMakerOwnerName": {
+          "type": "string",
+          "description": "Owner name the agent references for follow-ups and custom builds"
+        },
+        "dealMakerNiche": {
+          "type": "string",
+          "description": "Who the store helps (e.g. gym owners, coaches) \u2014 shapes the agent's pitch"
+        },
+        "dealMakerGuarantee": {
+          "type": "string",
+          "description": "Guarantee line the agent uses when closing (e.g. 30-day money-back guarantee)"
+        },
+        "dealMakerGreeting": {
+          "type": "string",
+          "description": "Custom opening greeting the agent uses; falls back to a generated one when empty"
+        },
+        "dealMakerKnowledge": {
+          "type": "string",
+          "description": "Free-form training/knowledge base: store info, tasks, rules, FAQs the agent must know"
+        },
         "headerEnabled": {
           "type": "boolean",
           "default": true
