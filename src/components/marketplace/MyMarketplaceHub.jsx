@@ -63,6 +63,7 @@ const NAV_GROUPS = [
   {
     label: "Page", items: [
       { id: "page_settings", label: "Page Settings", icon: Layout },
+      { id: "deal_maker", label: "Deal Maker Agent", icon: Sparkles },
       { id: "testimonials", label: "Testimonials", icon: MessageSquare },
       { id: "custom_pages", label: "Custom Pages", icon: FileText },
     ]
@@ -266,10 +267,6 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   enabled={pageForm.trustBadgesEnabled} onToggle={() => setPageForm(f => ({ ...f, trustBadgesEnabled: !f.trustBadgesEnabled }))}>
                   <TrustBadgesEditor form={pageForm} setForm={setPageForm} />
                 </SectionCard>
-                <SectionCard title="Deal Maker Agent" icon={Sparkles}
-                  enabled={pageForm.dealMakerEnabled} onToggle={() => setPageForm(f => ({ ...f, dealMakerEnabled: !f.dealMakerEnabled }))}>
-                  <DealMakerSettings deal={pageForm} onChange={(field, value) => setPageForm(f => ({ ...f, [field]: value }))} />
-                </SectionCard>
                 <SectionCard title="Footer" icon={PanelBottom}
                   enabled={pageForm.footerEnabled} onToggle={() => setPageForm(f => ({ ...f, footerEnabled: !f.footerEnabled }))}>
                   <div><label className="text-xs text-muted-foreground">Footer Text</label><Textarea value={pageForm.footerText} onChange={e => setPageForm(f => ({ ...f, footerText: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20 resize-none" placeholder="© 2025 Your Store. All rights reserved." /></div>
@@ -331,6 +328,27 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   Publishing saves these sections as a reusable store theme template you can apply to other stores later.
                 </p>
               )}
+            </div>
+          )}
+
+          {/* DEAL MAKER AGENT */}
+          {activeTab === "deal_maker" && (
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <h2 className="text-lg font-display font-bold">Deal Maker Agent</h2>
+                  <p className="text-sm text-muted-foreground">Train the AI sales closer that greets visitors, matches them to products and captures leads.</p>
+                </div>
+                <SectionCard title="Enabled on store" icon={Sparkles}
+                  enabled={pageForm.dealMakerEnabled}
+                  onToggle={() => setPageForm(f => ({ ...f, dealMakerEnabled: !f.dealMakerEnabled }))} />
+              </div>
+              <div className="bg-card/60 border border-border/40 rounded-2xl p-6">
+                <DealMakerSettings deal={pageForm} onChange={(field, value) => setPageForm(f => ({ ...f, [field]: value }))} />
+              </div>
+              <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
+                <Save className="w-4 h-4" /> Save Deal Maker
+              </Button>
             </div>
           )}
 
