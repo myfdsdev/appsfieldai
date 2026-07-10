@@ -23,12 +23,12 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const dealmakerName = marketplace?.pageSections?.dealMakerName || "Max";
   const dealmakerImage = marketplace?.pageSections?.dealMakerImageUrl;
 
-  // Auto-open the centered welcome hero once per session, shortly after mount.
+  // Auto-open the centered chat once per session, shortly after mount.
   useEffect(() => {
     if (!marketplaceId) return;
     const key = `dm_dismissed_${marketplaceId}`;
     if (sessionStorage.getItem(key) === "1") return;
-    const t = setTimeout(() => setHero(true), 2500);
+    const t = setTimeout(() => setOpen(true), 2500);
     return () => clearTimeout(t);
   }, [marketplaceId]);
 
@@ -145,7 +145,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] w-[min(440px,calc(100vw-2rem))]"
           >
             <button
-              onClick={() => setHero(true)}
+              onClick={() => setOpen(true)}
               className="dm-glow-pulse group relative w-full flex items-center gap-3 pl-5 pr-4 py-4 rounded-full bg-[#0b0f1a] border border-white/10 text-left transition-transform hover:scale-[1.01]"
               style={{ "--dm-glow": brandColor }}
             >
