@@ -21,19 +21,6 @@ export default function DealMakerSettings({ deal, onChange }) {
         </div>
       </div>
 
-      <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
-        <input
-          type="checkbox"
-          checked={deal.dealMakerEnabled}
-          onChange={(e) => onChange("dealMakerEnabled", e.target.checked)}
-          className="accent-violet-500"
-        />
-        <div>
-          <p className="text-sm font-medium">Enable on my store</p>
-          <p className="text-[11px] text-muted-foreground">Show the Deal Maker popup and top pill to store visitors</p>
-        </div>
-      </label>
-
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-xs text-muted-foreground">Agent Name</label>

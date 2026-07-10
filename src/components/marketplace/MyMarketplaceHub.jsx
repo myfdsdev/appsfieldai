@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, CreditCard, Mail, ShoppingBag, ShieldCheck, Code2, Share2
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, CreditCard, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager"
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
 import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
 import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
+import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const LANGUAGES = [
@@ -126,6 +127,13 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     footerEnabled: marketplace?.pageSections?.footerEnabled ?? true,
     footerText: marketplace?.pageSections?.footerText || "",
     footerLogoUrl: marketplace?.pageSections?.footerLogoUrl || "",
+    dealMakerEnabled: marketplace?.pageSections?.dealMakerEnabled ?? true,
+    dealMakerName: marketplace?.pageSections?.dealMakerName || "",
+    dealMakerOwnerName: marketplace?.pageSections?.dealMakerOwnerName || "",
+    dealMakerNiche: marketplace?.pageSections?.dealMakerNiche || "",
+    dealMakerGuarantee: marketplace?.pageSections?.dealMakerGuarantee || "",
+    dealMakerGreeting: marketplace?.pageSections?.dealMakerGreeting || "",
+    dealMakerKnowledge: marketplace?.pageSections?.dealMakerKnowledge || "",
     socialLinks: marketplace?.pageSections?.socialLinks || {},
     customCodeHead: marketplace?.pageSections?.customCodeHead || "",
     customCodeBody: marketplace?.pageSections?.customCodeBody || "",
@@ -257,6 +265,10 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <SectionCard title="Trust & Policy Badges" icon={ShieldCheck}
                   enabled={pageForm.trustBadgesEnabled} onToggle={() => setPageForm(f => ({ ...f, trustBadgesEnabled: !f.trustBadgesEnabled }))}>
                   <TrustBadgesEditor form={pageForm} setForm={setPageForm} />
+                </SectionCard>
+                <SectionCard title="Deal Maker Agent" icon={Sparkles}
+                  enabled={pageForm.dealMakerEnabled} onToggle={() => setPageForm(f => ({ ...f, dealMakerEnabled: !f.dealMakerEnabled }))}>
+                  <DealMakerSettings deal={pageForm} onChange={(field, value) => setPageForm(f => ({ ...f, [field]: value }))} />
                 </SectionCard>
                 <SectionCard title="Footer" icon={PanelBottom}
                   enabled={pageForm.footerEnabled} onToggle={() => setPageForm(f => ({ ...f, footerEnabled: !f.footerEnabled }))}>
