@@ -133,17 +133,17 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         )}
       </AnimatePresence>
 
-      {/* Collapsed pill — top center, pulses to draw attention */}
+      {/* Collapsed pill — bottom center (slightly raised), pulses to draw attention */}
       <AnimatePresence>
         {!open && !hero && (
           <motion.button
             key="dm-pill"
-            initial={{ y: -60, opacity: 0 }}
+            initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -60, opacity: 0 }}
+            exit={{ y: 60, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
             onClick={() => setOpen(true)}
-            className="fixed top-3 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 pl-2.5 pr-4 py-2 rounded-full text-white shadow-2xl shadow-black/30"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 pl-2.5 pr-4 py-2 rounded-full text-white shadow-2xl shadow-black/30"
             style={{ background: brandColor }}
           >
             <span className="relative flex w-7 h-7 items-center justify-center rounded-full bg-white/20 overflow-hidden">
