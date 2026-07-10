@@ -289,6 +289,14 @@
           "type": "string",
           "description": "Display name for the Deal Maker agent (e.g. Max)"
         },
+        "dealMakerImageUrl": {
+          "type": "string",
+          "description": "Profile image URL for the Deal Maker agent (shown in the centered welcome hero and chat)"
+        },
+        "dealMakerTagline": {
+          "type": "string",
+          "description": "Short professional title/tagline shown under the agent name (e.g. AI Deal Strategist)"
+        },
         "dealMakerOwnerName": {
           "type": "string",
           "description": "Owner name the agent references for follow-ups and custom builds"

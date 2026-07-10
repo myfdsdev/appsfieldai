@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Sparkles, X, Send, Loader2, MessageCircle } from "lucide-react";
 import DealMakerMessage from "./DealMakerMessage";
 import DealMakerLeadForm from "./DealMakerLeadForm";
+import DealMakerHero from "./DealMakerHero";
 
 // The Deal Maker Agent widget for a store page.
 // - Auto-pops open a few seconds after the store loads.
@@ -11,6 +12,7 @@ import DealMakerLeadForm from "./DealMakerLeadForm";
 // - Talks to the dealMakerChat backend function and reacts to its [ACTION:...] tokens.
 export default function DealMakerWidget({ marketplaceId, marketplace, listings = [], brandColor = "#f97316", onShowApp, onReserve }) {
   const [open, setOpen] = useState(false);
+  const [hero, setHero] = useState(false);
   const [greeted, setGreeted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -19,15 +21,28 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const [submittingLead, setSubmittingLead] = useState(false);
   const scrollRef = useRef(null);
   const dealmakerName = marketplace?.pageSections?.dealMakerName || "Max";
+  const dealmakerImage = marketplace?.pageSections?.dealMakerImageUrl;
 
-  // Auto-open once per session, shortly after mount.
+  // Auto-open the centered welcome hero once per session, shortly after mount.
   useEffect(() => {
     if (!marketplaceId) return;
     const key = `dm_dismissed_${marketplaceId}`;
     if (sessionStorage.getItem(key) === "1") return;
-    const t = setTimeout(() => setOpen(true), 3500);
+    const t = setTimeout(() => setHero(true), 2500);
     return () => clearTimeout(t);
   }, [marketplaceId]);
+
+  // Visitor starts chatting from the centered hero → open the chat panel.
+  const startChat = () => {
+    setHero(false);
+    setOpen(true);
+  };
+
+  // Dismiss the hero → collapse to the reopen pill (don't nag again this session).
+  const dismissHero = () => {
+    setHero(false);
+    if (marketplaceId) sessionStorage.setItem(`dm_dismissed_${marketplaceId}`, "1");
+  };
 
   // Send the opening greeting the first time the panel opens.
   useEffect(() => {
@@ -106,9 +121,21 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   return (
     <>
+      {/* Centered futuristic welcome hero */}
+      <AnimatePresence>
+        {hero && (
+          <DealMakerHero
+            marketplace={marketplace}
+            brandColor={brandColor}
+            onStart={startChat}
+            onDismiss={dismissHero}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Collapsed pill — top center, pulses to draw attention */}
       <AnimatePresence>
-        {!open && (
+        {!open && !hero && (
           <motion.button
             key="dm-pill"
             initial={{ y: -60, opacity: 0 }}
@@ -119,8 +146,12 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             className="fixed top-3 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 pl-2.5 pr-4 py-2 rounded-full text-white shadow-2xl shadow-black/30"
             style={{ background: brandColor }}
           >
-            <span className="relative flex w-7 h-7 items-center justify-center rounded-full bg-white/20">
-              <Sparkles className="w-4 h-4" />
+            <span className="relative flex w-7 h-7 items-center justify-center rounded-full bg-white/20 overflow-hidden">
+              {dealmakerImage ? (
+                <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
               <span className="absolute inline-flex h-full w-full rounded-full bg-white/40 animate-ping" />
             </span>
             <span className="text-sm font-semibold">Chat with {dealmakerName} — get the right app</span>
@@ -142,12 +173,16 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 text-white" style={{ background: brandColor }}>
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                  {dealmakerImage ? (
+                    <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
+                  ) : (
+                    <Sparkles className="w-5 h-5" />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-bold leading-tight">{dealmakerName}</p>
-                  <p className="text-[11px] text-white/80 leading-tight">Dealmaker · {marketplace?.name || "Store"}</p>
+                  <p className="text-[11px] text-white/80 leading-tight">{marketplace?.pageSections?.dealMakerTagline || "Dealmaker"} · {marketplace?.name || "Store"}</p>
                 </div>
               </div>
               <button onClick={close} className="p-1.5 rounded-lg hover:bg-white/15 transition-colors">

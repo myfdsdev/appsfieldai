@@ -130,6 +130,8 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     footerLogoUrl: marketplace?.pageSections?.footerLogoUrl || "",
     dealMakerEnabled: marketplace?.pageSections?.dealMakerEnabled ?? true,
     dealMakerName: marketplace?.pageSections?.dealMakerName || "",
+    dealMakerImageUrl: marketplace?.pageSections?.dealMakerImageUrl || "",
+    dealMakerTagline: marketplace?.pageSections?.dealMakerTagline || "",
     dealMakerOwnerName: marketplace?.pageSections?.dealMakerOwnerName || "",
     dealMakerNiche: marketplace?.pageSections?.dealMakerNiche || "",
     dealMakerGuarantee: marketplace?.pageSections?.dealMakerGuarantee || "",

@@ -2,6 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles } from "lucide-react";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 // Store-owner settings for the Deal Maker AI sales agent.
 // Feeds the agent its name, persona context, greeting and a free-form
@@ -21,10 +22,34 @@ export default function DealMakerSettings({ deal, onChange }) {
         </div>
       </div>
 
+      {/* Profile image — shown in the centered welcome hero and chat header */}
+      <div className="flex items-start gap-4">
+        <div className="shrink-0">
+          {deal.dealMakerImageUrl ? (
+            <img src={deal.dealMakerImageUrl} alt="Agent" className="w-20 h-20 rounded-2xl object-cover border border-border/40" />
+          ) : (
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <label className="text-xs text-muted-foreground">Agent Profile Image</label>
+          <div className="mt-1">
+            <R2ImageUpload value={deal.dealMakerImageUrl} onChange={(url) => onChange("dealMakerImageUrl", url)} campaignId="deal-maker-avatar" placeholder="https://..." />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">A professional headshot or avatar shown in the centered welcome and chat.</p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-xs text-muted-foreground">Agent Name</label>
           <Input value={deal.dealMakerName} onChange={set("dealMakerName")} placeholder="Max" className="bg-secondary/50 border-border/30 rounded-xl mt-1" />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground">Title / Tagline</label>
+          <Input value={deal.dealMakerTagline} onChange={set("dealMakerTagline")} placeholder="AI Deal Strategist" className="bg-secondary/50 border-border/30 rounded-xl mt-1" />
         </div>
         <div>
           <label className="text-xs text-muted-foreground">Owner Name (for follow-ups)</label>
