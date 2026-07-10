@@ -142,10 +142,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-[min(440px,calc(100vw-2rem))]"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] w-[min(440px,calc(100vw-2rem))]"
           >
             <button
-              onClick={() => setOpen(true)}
+              onClick={() => setHero(true)}
               className="dm-glow-pulse group relative w-full flex items-center gap-3 pl-5 pr-4 py-4 rounded-full bg-[#0b0f1a] border border-white/10 text-left transition-transform hover:scale-[1.01]"
               style={{ "--dm-glow": brandColor }}
             >
