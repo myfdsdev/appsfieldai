@@ -156,6 +156,23 @@
 :root:not(.dark) .border-white\/10,
 :root:not(.dark) .border-white\/20 { border-color: hsl(var(--border)) !important; }
 
+/* Deal Maker "Ask me anything" bar — slow glow pulse */
+.dm-glow-pulse {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--dm-glow) 30%, transparent),
+              0 0 24px 2px color-mix(in srgb, var(--dm-glow) 25%, transparent);
+  animation: dm-glow 3.2s ease-in-out infinite;
+}
+@keyframes dm-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dm-glow) 25%, transparent),
+                0 0 18px 1px color-mix(in srgb, var(--dm-glow) 18%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dm-glow) 55%, transparent),
+                0 0 42px 6px color-mix(in srgb, var(--dm-glow) 45%, transparent);
+  }
+}
+
 /* Hide scrollbar for horizontal sliders */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

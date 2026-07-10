@@ -133,29 +133,31 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         )}
       </AnimatePresence>
 
-      {/* Collapsed pill — bottom center (slightly raised), pulses to draw attention */}
+      {/* Collapsed "Ask me anything" bar — centered, with a slow glow pulse */}
       <AnimatePresence>
         {!open && !hero && (
-          <motion.button
+          <motion.div
             key="dm-pill"
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 60, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            onClick={() => setOpen(true)}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 pl-2.5 pr-4 py-2 rounded-full text-white shadow-2xl shadow-black/30"
-            style={{ background: brandColor }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-[min(440px,calc(100vw-2rem))]"
           >
-            <span className="relative flex w-7 h-7 items-center justify-center rounded-full bg-white/20 overflow-hidden">
-              {dealmakerImage ? (
-                <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
-              ) : (
-                <Sparkles className="w-4 h-4" />
-              )}
-              <span className="absolute inline-flex h-full w-full rounded-full bg-white/40 animate-ping" />
-            </span>
-            <span className="text-sm font-semibold">Chat with {dealmakerName} — get the right app</span>
-          </motion.button>
+            <button
+              onClick={() => setOpen(true)}
+              className="dm-glow-pulse group relative w-full flex items-center gap-3 pl-5 pr-4 py-4 rounded-full bg-[#0b0f1a] border border-white/10 text-left transition-transform hover:scale-[1.01]"
+              style={{ "--dm-glow": brandColor }}
+            >
+              <span className="flex-1 text-base text-white/60">Ask me anything…</span>
+              <span
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0"
+                style={{ background: brandColor }}
+              >
+                <Send className="w-4 h-4" />
+              </span>
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
