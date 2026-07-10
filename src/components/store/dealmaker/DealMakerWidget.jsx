@@ -161,16 +161,25 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         )}
       </AnimatePresence>
 
-      {/* Expanded chat panel — bottom right */}
+      {/* Expanded chat panel — centered modal (same spot as the welcome hero) */}
       <AnimatePresence>
         {open && (
+          <>
+            <motion.div
+              key="dm-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={close}
+              className="fixed inset-0 z-[65] bg-black/70 backdrop-blur-md"
+            />
           <motion.div
             key="dm-panel"
-            initial={{ scale: 0.85, opacity: 0, y: 40 }}
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 40 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            className="fixed bottom-4 right-4 z-[60] w-[min(400px,calc(100vw-2rem))] h-[min(560px,calc(100vh-2rem))] flex flex-col rounded-3xl overflow-hidden border border-border/50 bg-card shadow-2xl shadow-black/40"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-[min(440px,calc(100vw-2rem))] h-[min(600px,calc(100vh-2rem))] flex flex-col rounded-3xl overflow-hidden border border-border/50 bg-card shadow-2xl shadow-black/40"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 text-white" style={{ background: brandColor }}>
@@ -236,6 +245,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               </button>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
