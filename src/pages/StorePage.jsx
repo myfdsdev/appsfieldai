@@ -25,6 +25,7 @@ import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { useStoreCart } from "@/hooks/useStoreCart";
 import { getRefFromUrl, saveAffiliateRef } from "@/lib/affiliateRef";
+import DealMakerWidget from "@/components/store/dealmaker/DealMakerWidget";
 import { toast } from "sonner";
 
 export default function StorePage() {
@@ -363,6 +364,16 @@ export default function StorePage() {
         brandColor={brandColor}
         onClose={() => setCheckoutOpen(false)}
         onPlaced={() => { cart.clear(); }}
+      />
+
+      {/* Deal Maker Agent — pops up, then collapses to a top pill */}
+      <DealMakerWidget
+        marketplaceId={marketplaceId}
+        marketplace={marketplace}
+        listings={software}
+        brandColor={brandColor}
+        onShowApp={(listing) => setViewDetailListing(listing)}
+        onReserve={(listing) => handleReserve(listing)}
       />
     </div>
   );

@@ -1,0 +1,60 @@
+{
+  "name": "DealMakerLead",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace/store this lead was captured on"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "custom_request"
+      ],
+      "default": "lead",
+      "description": "lead = standard captured lead, custom_request = HOT custom-build request"
+    },
+    "name": {
+      "type": "string",
+      "description": "Visitor name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Visitor email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Visitor phone number"
+    },
+    "businessType": {
+      "type": "string",
+      "description": "The kind of business the visitor runs"
+    },
+    "painPoint": {
+      "type": "string",
+      "description": "Biggest headache / time-drain the visitor described"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Structured summary of the conversation or custom-build request"
+    },
+    "matchedListingId": {
+      "type": "string",
+      "description": "Listing the Dealmaker matched to the visitor, if any"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "contacted",
+        "closed"
+      ],
+      "default": "new",
+      "description": "Follow-up status for the store owner"
+    }
+  },
+  "required": [
+    "marketplaceId"
+  ]
+}
