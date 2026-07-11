@@ -59,6 +59,18 @@
         "geminiApiKey": {
           "type": "string",
           "description": "Google Gemini API key (used when provider is gemini to call the real Gemini API)"
+        },
+        "voiceModel": {
+          "type": "string",
+          "description": "TTS model id for the selected provider (e.g. gpt-4o-mini-tts for OpenAI)"
+        },
+        "voiceName": {
+          "type": "string",
+          "description": "Voice name for text-to-speech (e.g. alloy for OpenAI, river for Base44)"
+        },
+        "transcribeModel": {
+          "type": "string",
+          "description": "Speech-to-text model id for the selected provider (e.g. whisper-1 for OpenAI)"
         }
       }
     },
