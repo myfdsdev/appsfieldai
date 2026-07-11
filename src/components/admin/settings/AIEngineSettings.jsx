@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Cpu, Save, Check, KeyRound, Mic, Volume2, FileAudio, PlugZap } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Cpu, Save, Check, KeyRound, Mic, Volume2, FileAudio, PlugZap, Play, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,43 @@ export default function AIEngineSettings() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [previewing, setPreviewing] = useState(null);
+  const audioRef = useRef(null);
+
+  // Play a short spoken sample of a voice using the currently-selected
+  // (possibly unsaved) provider / model / key.
+  const playSample = async (v) => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+    setPreviewing(v.id);
+    const sampleText = `Hi, I'm ${v.name.replace(/\s*\(.*\)$/, "")}. This is how I sound.`;
+    try {
+      // Base44 built-in voices can preview instantly in the browser (no network).
+      if (provider === "base44" && typeof window !== "undefined" && window.speechSynthesis) {
+        const u = new SpeechSynthesisUtterance(sampleText);
+        u.onend = () => setPreviewing(null);
+        u.onerror = () => setPreviewing(null);
+        window.speechSynthesis.speak(u);
+        return;
+      }
+      const res = await base44.functions.invoke("aiVoice", {
+        text: sampleText,
+        voice: v.id,
+        provider,
+        voiceModel,
+        openaiApiKey: openaiApiKey.trim(),
+      });
+      const url = res?.data?.url;
+      if (!url) { toast.error("Couldn't generate a sample."); setPreviewing(null); return; }
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => setPreviewing(null);
+      audio.play().catch(() => setPreviewing(null));
+    } catch {
+      toast.error("Couldn't play the sample.");
+      setPreviewing(null);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -280,20 +317,46 @@ export default function AIEngineSettings() {
         </p>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          {/* TTS voice */}
-          <div className="space-y-2">
+          {/* TTS voice — pick + play a sample of each */}
+          <div className="space-y-2 sm:col-span-2">
             <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
               <Volume2 className="w-3.5 h-3.5" /> Voice (Text-to-Speech)
             </Label>
-            <select
-              value={voiceName}
-              onChange={(e) => setVoiceName(e.target.value)}
-              className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
-            >
-              {activeProvider.voices.map((v) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
-              ))}
-            </select>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {activeProvider.voices.map((v) => {
+                const selected = voiceName === v.id;
+                const isPreviewing = previewing === v.id;
+                return (
+                  <div
+                    key={v.id}
+                    className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2 transition-all ${
+                      selected ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setVoiceName(v.id)}
+                      className="flex-1 flex items-center gap-2 text-left"
+                    >
+                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${selected ? "border-violet-500 bg-violet-500" : "border-border"}`}>
+                        {selected && <Check className="w-2.5 h-2.5 text-white" />}
+                      </span>
+                      <span className="text-sm">{v.name}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => playSample(v)}
+                      disabled={isPreviewing}
+                      className="w-8 h-8 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center shrink-0 transition-colors disabled:opacity-60"
+                      aria-label={`Play ${v.name} sample`}
+                      title="Play sample"
+                    >
+                      {isPreviewing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* TTS model */}

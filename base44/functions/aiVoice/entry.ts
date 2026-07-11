@@ -9,7 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { text, voice } = await req.json();
+    const { text, voice, provider: overrideProvider, voiceModel: overrideModel, openaiApiKey: overrideKey } = await req.json();
     if (!text) return Response.json({ error: 'text is required' }, { status: 400 });
 
     let eng = null;
@@ -18,16 +18,19 @@ Deno.serve(async (req) => {
       eng = cfgs?.[0]?.aiEngine || null;
     } catch { /* fall back */ }
 
-    const provider = eng?.provider || 'base44';
+    // Overrides let the admin preview a voice before saving the config.
+    const provider = overrideProvider || eng?.provider || 'base44';
+    const openaiApiKey = overrideKey || eng?.openaiApiKey;
+    const voiceModel = overrideModel || eng?.voiceModel;
 
     // OpenAI TTS — synthesize, then upload the MP3 to storage for a shareable url.
-    if (provider === 'openai' && eng?.openaiApiKey) {
+    if (provider === 'openai' && openaiApiKey) {
       const res = await fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${eng.openaiApiKey}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiApiKey}` },
         body: JSON.stringify({
-          model: eng.voiceModel || 'gpt-4o-mini-tts',
-          voice: voice || eng.voiceName || 'alloy',
+          model: voiceModel || 'gpt-4o-mini-tts',
+          voice: voice || eng?.voiceName || 'alloy',
           input: text,
         }),
       });
