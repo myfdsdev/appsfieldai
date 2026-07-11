@@ -1,8 +1,43 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Check } from "lucide-react";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+
+const LAYOUTS = [
+  { key: "centered", label: "Centered", hint: "Orb on top, chat below" },
+  { key: "avatar_left", label: "Character Left", hint: "Image left, chat right" },
+  { key: "avatar_right", label: "Character Right", hint: "Chat left, image right" },
+  { key: "spotlight", label: "Spotlight", hint: "Large image, chat over it" },
+];
+
+// Tiny visual thumbnails of each layout
+function LayoutThumb({ variant }) {
+  const orb = <span className="block w-3 h-3 rounded-full bg-white/70 mx-auto" />;
+  const lines = (
+    <span className="block space-y-1">
+      <span className="block h-1 w-3/4 mx-auto rounded bg-white/40" />
+      <span className="block h-1 w-1/2 mx-auto rounded bg-white/25" />
+    </span>
+  );
+  const person = <span className="block w-4 h-6 rounded bg-white/60 mx-auto" />;
+  if (variant === "centered") {
+    return <span className="block space-y-1.5">{orb}{lines}</span>;
+  }
+  if (variant === "avatar_left") {
+    return <span className="flex items-center gap-1.5">{person}<span className="flex-1">{lines}</span></span>;
+  }
+  if (variant === "avatar_right") {
+    return <span className="flex items-center gap-1.5"><span className="flex-1">{lines}</span>{person}</span>;
+  }
+  // spotlight
+  return (
+    <span className="relative block">
+      <span className="block w-5 h-7 rounded bg-white/40 mx-auto" />
+      <span className="absolute inset-x-1 bottom-0">{lines}</span>
+    </span>
+  );
+}
 
 // Store-owner settings for the Deal Maker AI sales agent.
 // Feeds the agent its name, persona context, greeting and a free-form
@@ -55,6 +90,38 @@ export default function DealMakerSettings({ deal, onChange }) {
           <label className="text-xs text-muted-foreground">Owner Name (for follow-ups)</label>
           <Input value={deal.dealMakerOwnerName} onChange={set("dealMakerOwnerName")} placeholder="Your name" className="bg-secondary/50 border-border/30 rounded-xl mt-1" />
         </div>
+      </div>
+
+      {/* Layout picker */}
+      <div>
+        <label className="text-xs text-muted-foreground">Chat Layout</label>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-1.5">
+          {LAYOUTS.map((l) => {
+            const active = (deal.dealMakerLayout || "centered") === l.key;
+            return (
+              <button
+                key={l.key}
+                type="button"
+                onClick={() => onChange("dealMakerLayout", l.key)}
+                className={`relative text-left rounded-xl border p-3 transition-colors ${
+                  active ? "border-primary bg-primary/10" : "border-border/40 bg-secondary/30 hover:border-border"
+                }`}
+              >
+                {active && (
+                  <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-3 h-3 text-primary-foreground" />
+                  </span>
+                )}
+                <span className="block rounded-lg bg-neutral-900 p-2.5 h-14 flex items-center">
+                  <span className="block w-full"><LayoutThumb variant={l.key} /></span>
+                </span>
+                <p className="text-xs font-medium mt-2">{l.label}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{l.hint}</p>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">Character layouts show a full standing image — use a tall portrait for best results.</p>
       </div>
 
       <div>

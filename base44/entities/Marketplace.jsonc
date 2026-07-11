@@ -297,6 +297,17 @@
           "type": "string",
           "description": "Short professional title/tagline shown under the agent name (e.g. AI Deal Strategist)"
         },
+        "dealMakerLayout": {
+          "type": "string",
+          "enum": [
+            "centered",
+            "avatar_left",
+            "avatar_right",
+            "spotlight"
+          ],
+          "default": "centered",
+          "description": "Deal Maker immersive layout: centered (orb on top), avatar_left (character left / chat right), avatar_right (character right / chat left), spotlight (large character behind with chat overlay)"
+        },
         "dealMakerOwnerName": {
           "type": "string",
           "description": "Owner name the agent references for follow-ups and custom builds"

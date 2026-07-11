@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, X, Send, Loader2 } from "lucide-react";
-import DealMakerFloatingMessage from "./DealMakerFloatingMessage";
+import { Sparkles, X } from "lucide-react";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerOrb from "./DealMakerOrb";
-import DealMakerSuggestions from "./DealMakerSuggestions";
+import DealMakerCharacter from "./DealMakerCharacter";
+import DealMakerConversation from "./DealMakerConversation";
 
 // The Deal Maker Agent — a full-screen, boundary-less immersive experience.
 // - Collapsed: a bottom-center avatar launcher with a pulsing glow + "Hey" bubble.
@@ -27,6 +27,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const dealmakerName = sections.dealMakerName || "Max";
   const dealmakerImage = sections.dealMakerImageUrl;
   const dealmakerTagline = sections.dealMakerTagline || "AI Deal Strategist";
+  const layout = sections.dealMakerLayout || "centered";
   const storeName = marketplace?.name || "our store";
   const ownerName = sections.dealMakerOwnerName;
   const intro =
@@ -246,72 +247,68 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               </div>
             )}
 
-            {/* CHAT (immersive) — compact orb pinned near top, floating conversation, glow composer */}
-            {chatting && (
-              <div className="relative z-10 flex-1 flex flex-col min-h-0">
-                <div className="pt-8 pb-2 flex justify-center shrink-0">
-                  <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact />
-                </div>
+            {/* CHAT (immersive) — layout depends on dealMakerLayout setting */}
+            {chatting && (() => {
+              const conversationEl = (
+                <DealMakerConversation
+                  messages={messages}
+                  thinking={thinking}
+                  suggestions={suggestions}
+                  leadForm={leadForm}
+                  submittingLead={submittingLead}
+                  input={input}
+                  setInput={setInput}
+                  onSubmitText={submitText}
+                  onSubmitLead={submitLead}
+                  brandColor={brandColor}
+                  scrollRef={scrollRef}
+                  maxWidthClass={layout === "centered" || layout === "spotlight" ? "max-w-3xl" : "max-w-xl"}
+                />
+              );
 
-                {/* Free-floating conversation — no boundary box */}
-                <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-6">
-                  <div className="mx-auto max-w-3xl w-full py-8 space-y-6">
-                    {messages.map((mm, i) => {
-                      // Older messages fade so the latest reads as active.
-                      const distance = messages.length - 1 - i;
-                      const fade = Math.max(0.35, 1 - distance * 0.18);
-                      return <DealMakerFloatingMessage key={i} message={mm} brandColor={brandColor} fade={fade} />;
-                    })}
-
-                    {thinking && (
-                      <div className="flex justify-center">
-                        <div className="flex gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce [animation-delay:-0.3s]" />
-                          <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce [animation-delay:-0.15s]" />
-                          <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce" />
-                        </div>
+              // Character left / chat right (and its mirror)
+              if (layout === "avatar_left" || layout === "avatar_right") {
+                const charFirst = layout === "avatar_left";
+                return (
+                  <div className="relative z-10 flex-1 flex flex-col md:flex-row min-h-0">
+                    <div className={`hidden md:flex md:w-[42%] lg:w-[38%] shrink-0 px-6 pt-10 pb-4 ${charFirst ? "" : "md:order-2"}`}>
+                      <DealMakerCharacter name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} />
+                    </div>
+                    <div className={`flex-1 flex flex-col min-h-0 ${charFirst ? "" : "md:order-1"}`}>
+                      {/* compact orb for mobile where the character column is hidden */}
+                      <div className="md:hidden pt-8 pb-2 flex justify-center shrink-0">
+                        <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact />
                       </div>
-                    )}
-
-                    {!thinking && !leadForm && (
-                      <DealMakerSuggestions suggestions={suggestions} brandColor={brandColor} onPick={submitText} disabled={thinking} />
-                    )}
-
-                    {leadForm && (
-                      <div className="max-w-md mx-auto">
-                        <DealMakerLeadForm hot={leadForm.hot} brandColor={brandColor} submitting={submittingLead} onSubmit={submitLead} />
-                      </div>
-                    )}
+                      {conversationEl}
+                    </div>
                   </div>
-                </div>
+                );
+              }
 
-                {/* Minimal glowing composer */}
-                <div className="shrink-0 px-6 pb-8 pt-2">
-                  <div className="no-global-input-style mx-auto max-w-2xl relative flex items-center">
-                    <div
-                      className="absolute inset-0 rounded-full blur-lg opacity-40"
-                      style={{ background: `linear-gradient(90deg, ${brandColor}, #22d3ee)` }}
-                    />
-                    <input
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && submitText()}
-                      placeholder="Type your reply…"
-                      className="relative w-full h-14 rounded-full pl-6 pr-16 text-[15px] text-white placeholder:text-white/40 focus:outline-none"
-                      style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(12px)" }}
-                    />
-                    <button
-                      onClick={() => submitText()}
-                      disabled={thinking || !input.trim()}
-                      className="absolute right-2 w-10 h-10 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
-                      style={{ background: `linear-gradient(135deg, ${brandColor}, #22d3ee)` }}
-                    >
-                      {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    </button>
+              // Spotlight — large character behind, chat floating over it
+              if (layout === "spotlight") {
+                return (
+                  <div className="relative z-10 flex-1 flex flex-col min-h-0">
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 top-8 flex justify-center opacity-30">
+                      <DealMakerCharacter name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} spotlight />
+                    </div>
+                    <div className="relative z-10 flex-1 flex flex-col min-h-0">
+                      {conversationEl}
+                    </div>
                   </div>
+                );
+              }
+
+              // Centered (default) — compact orb pinned near top
+              return (
+                <div className="relative z-10 flex-1 flex flex-col min-h-0">
+                  <div className="pt-8 pb-2 flex justify-center shrink-0">
+                    <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact />
+                  </div>
+                  {conversationEl}
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>
