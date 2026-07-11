@@ -18,6 +18,7 @@ import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
+import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -770,17 +771,8 @@ export default function AdminPanel() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <Bot className="w-4 h-4 text-violet-400" />AI Agent
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">AI-powered agent assistance for marketplace operations. Configure AI agents from the platform dashboard.</p>
-                <div className="flex items-center gap-3 mt-3 flex-wrap">
-                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Active</Badge>
-                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[11px]">LLM Enabled</Badge>
-                </div>
+              <CardContent className="pt-6">
+                <AIEngineSettings />
               </CardContent>
             </Card>
           </motion.div>
