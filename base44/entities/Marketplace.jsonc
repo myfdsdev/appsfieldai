@@ -313,6 +313,19 @@
           "default": 5,
           "description": "Transparency (0-100) of the dark dim overlay behind the immersive Deal Maker chat. 0 = fully see-through, 100 = solid dark."
         },
+        "dealMakerBgTheme": {
+          "type": "string",
+          "enum": [
+            "midnight",
+            "aurora",
+            "sunset",
+            "violet",
+            "emerald",
+            "mono"
+          ],
+          "default": "midnight",
+          "description": "Preset background color/gradient theme behind the immersive Deal Maker chat"
+        },
         "dealMakerOwnerName": {
           "type": "string",
           "description": "Owner name the agent references for follow-ups and custom builds"

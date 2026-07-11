@@ -6,6 +6,7 @@ import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerOrb from "./DealMakerOrb";
 import DealMakerCharacter from "./DealMakerCharacter";
 import DealMakerConversation from "./DealMakerConversation";
+import { getDealMakerBgTheme } from "./dealMakerThemes";
 
 // The Deal Maker Agent — a full-screen, boundary-less immersive experience.
 // - Collapsed: a bottom-center avatar launcher with a pulsing glow + "Hey" bubble.
@@ -83,6 +84,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const dealmakerTagline = sections.dealMakerTagline || "AI Deal Strategist";
   const layout = sections.dealMakerLayout || "centered";
   const bgOpacity = (sections.dealMakerBgOpacity ?? 5) / 100;
+  const bgTheme = getDealMakerBgTheme(sections.dealMakerBgTheme);
   const storeName = marketplace?.name || "our store";
   const ownerName = sections.dealMakerOwnerName;
   const intro =
@@ -265,6 +267,8 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
+            {/* Preset gradient backdrop, layered under the owner-controlled dim */}
+            <div className="absolute inset-0" style={{ background: bgTheme.css }} />
             {/* Glassy dim — owner controls how dark the store fades behind the chat */}
             <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
             {/* Ambient center glow field */}

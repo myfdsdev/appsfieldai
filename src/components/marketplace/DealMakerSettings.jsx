@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Check } from "lucide-react";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import { DEAL_MAKER_BG_THEMES } from "@/components/store/dealmaker/dealMakerThemes";
 
 const LAYOUTS = [
   { key: "centered", label: "Centered", hint: "Orb on top, chat below" },
@@ -122,6 +123,31 @@ export default function DealMakerSettings({ deal, onChange }) {
           })}
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">Character layouts show a full standing image — use a tall portrait for best results.</p>
+      </div>
+
+      {/* Preset background gradient theme */}
+      <div>
+        <label className="text-xs text-muted-foreground">Background Theme</label>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 mt-1.5">
+          {DEAL_MAKER_BG_THEMES.map((t) => {
+            const active = (deal.dealMakerBgTheme || "midnight") === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => onChange("dealMakerBgTheme", t.key)}
+                className={`rounded-xl border p-1.5 transition-colors ${
+                  active ? "border-primary ring-1 ring-primary" : "border-border/40 hover:border-border"
+                }`}
+                title={t.label}
+              >
+                <span className="block h-10 rounded-lg" style={{ background: t.swatch }} />
+                <p className="text-[10px] mt-1 truncate text-center">{t.label}</p>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">Sets the color/gradient behind the immersive chat. Pair with the dim slider below to tune darkness.</p>
       </div>
 
       {/* Background transparency of the immersive chat overlay */}
