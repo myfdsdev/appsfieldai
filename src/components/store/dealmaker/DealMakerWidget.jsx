@@ -50,8 +50,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     } catch { /* no-op */ }
   }, [messages, chatting, convoKey]);
 
-  // Stop any currently-playing agent audio.
+  // Stop any currently-playing agent audio (both browser synthesis & aiVoice).
   const stopSpeaking = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -59,10 +60,22 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   };
 
   // Speak (TTS) the latest agent message aloud unless muted.
-  // Routes through the aiVoice function, which follows the admin's AI Engine
-  // setting (OpenAI TTS when configured, Base44 built-in voice otherwise).
+  // - Base44 provider → instant browser speech synthesis (zero network lag).
+  // - OpenAI provider → aiVoice call for the higher-quality voice (small delay
+  //   is unavoidable since the audio file must be generated & fetched first).
   const speak = async (text) => {
     if (muted || !text) return;
+    if (voiceProvider !== "openai") {
+      if (typeof window === "undefined" || !window.speechSynthesis) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 1.03;
+        u.pitch = 1;
+        window.speechSynthesis.speak(u);
+      } catch { /* no-op */ }
+      return;
+    }
     try {
       stopSpeaking();
       const res = await base44.functions.invoke("aiVoice", { text });
@@ -96,6 +109,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const layout = sections.dealMakerLayout || "centered";
   const bgOpacity = (sections.dealMakerBgOpacity ?? 5) / 100;
   const bgTheme = getDealMakerBgTheme(sections.dealMakerBgTheme);
+  const voiceProvider = marketplace?.voiceProvider || "base44";
   const storeName = marketplace?.name || "our store";
   const ownerName = sections.dealMakerOwnerName;
   const intro =

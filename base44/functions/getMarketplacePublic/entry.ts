@@ -56,6 +56,15 @@ Deno.serve(async (req) => {
         (s.vendorId && vendorNameById[s.vendorId]) || storeOwnerName || s.sellerName || 'Store Owner';
     });
 
+    // Expose only the voice PROVIDER (never the API key) so the Deal Maker widget
+    // can pick instant browser speech for Base44 vs. the aiVoice call for OpenAI.
+    let voiceProvider = 'base44';
+    try {
+      const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
+      const eng = cfgs?.[0]?.aiEngine;
+      if (eng?.provider === 'openai' && eng?.openaiApiKey) voiceProvider = 'openai';
+    } catch { /* default base44 */ }
+
     return Response.json({
       marketplace: {
         id: m.id,
@@ -71,6 +80,7 @@ Deno.serve(async (req) => {
         pageSections: m.pageSections,
         affiliateSettings: m.affiliateSettings || null,
         payment: m.payment || null,
+        voiceProvider,
       },
       software,
       categories,
