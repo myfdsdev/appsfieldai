@@ -267,10 +267,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
-            {/* Preset gradient backdrop, layered under the owner-controlled dim */}
-            <div className="absolute inset-0" style={{ background: bgTheme.css }} />
-            {/* Glassy dim — owner controls how dark the store fades behind the chat */}
+            {/* Glassy dim — blurs & darkens the store page behind the chat */}
             <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
+            {/* Preset gradient theme — sits ABOVE the dim so the chosen color is always visible */}
+            <div className="absolute inset-0" style={{ background: bgTheme.css }} />
             {/* Ambient center glow field */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div
