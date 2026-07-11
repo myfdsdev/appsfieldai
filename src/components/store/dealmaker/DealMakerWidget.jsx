@@ -212,16 +212,22 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                       </button>
                     </div>
 
-                    {/* Messages */}
-                    <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                    {/* Messages — free-flowing, older bubbles fade out (history kept, reachable by scrolling up) */}
+                    <div className="relative flex-1 min-h-0">
+                      {/* top fade mask so scrolled-up history softly disappears */}
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-10 z-10 bg-gradient-to-b from-black/25 to-transparent" />
+                      <div ref={scrollRef} className="h-full overflow-y-auto px-4 py-4 space-y-3">
                       {messages.length === 0 && thinking && (
                         <div className="flex items-center gap-2 text-xs text-white/50 px-1">
                           <MessageCircle className="w-4 h-4" /> {dealmakerName} is getting ready…
                         </div>
                       )}
-                      {messages.map((m, i) => (
-                        <DealMakerMessage key={i} message={m} brandColor={brandColor} />
-                      ))}
+                      {messages.map((m, i) => {
+                        // Only the newest ~3 messages stay fully visible; older ones fade.
+                        const distance = messages.length - 1 - i;
+                        const fade = distance <= 2 ? 1 : Math.max(0.28, 1 - (distance - 2) * 0.22);
+                        return <DealMakerMessage key={i} message={m} brandColor={brandColor} fade={fade} />;
+                      })}
                       {thinking && messages.length > 0 && (
                         <div className="flex justify-start">
                           <div className="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1">
@@ -234,6 +240,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                       {leadForm && (
                         <DealMakerLeadForm hot={leadForm.hot} brandColor={brandColor} submitting={submittingLead} onSubmit={submitLead} />
                       )}
+                      </div>
                     </div>
 
                     {/* Composer */}

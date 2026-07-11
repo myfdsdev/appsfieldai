@@ -1,11 +1,19 @@
 import React from "react";
+import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 
-// A single chat bubble in the Deal Maker widget.
-export default function DealMakerMessage({ message, brandColor }) {
+// A single free-floating chat bubble in the Deal Maker widget.
+// `fade` (0..1) dims older messages so only the most recent few read as active.
+export default function DealMakerMessage({ message, brandColor, fade = 1 }) {
   const isUser = message.role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: fade, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+    >
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed border backdrop-blur-md ${
           isUser
@@ -22,6 +30,6 @@ export default function DealMakerMessage({ message, brandColor }) {
           </ReactMarkdown>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
