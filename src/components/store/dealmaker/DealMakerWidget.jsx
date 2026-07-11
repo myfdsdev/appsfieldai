@@ -261,14 +261,14 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                     transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
                     className="px-6 pb-6 pt-2 shrink-0"
                   >
-                    <div className="relative flex items-center">
+                    <div className="no-global-input-style relative flex items-center">
                       <input
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && send()}
                         placeholder="Type your reply…"
-                        className="w-full h-14 rounded-full !bg-white !border-white/40 backdrop-blur-md pl-6 pr-16 text-[15px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
-                        style={{ "--tw-ring-color": brandColor, color: "#1f2937" }}
+                        className="w-full h-14 rounded-full backdrop-blur-md pl-6 pr-16 text-[15px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
+                        style={{ "--tw-ring-color": brandColor, color: "#1f2937", backgroundColor: "#ffffff", borderColor: "rgba(255,255,255,0.4)" }}
                       />
                       <button
                         onClick={send}
