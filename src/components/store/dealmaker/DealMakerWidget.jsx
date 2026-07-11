@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles, X, Volume2, VolumeX } from "lucide-react";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerOrb from "./DealMakerOrb";
 import DealMakerCharacter from "./DealMakerCharacter";
@@ -22,7 +22,39 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const [suggestions, setSuggestions] = useState([]);
   const [leadForm, setLeadForm] = useState(null);
   const [submittingLead, setSubmittingLead] = useState(false);
+  const [muted, setMuted] = useState(false);
   const scrollRef = useRef(null);
+  const spokenRef = useRef(0);
+
+  // Speak (TTS) the latest agent message aloud unless muted.
+  // Uses the browser's built-in speech synthesis for now — later swappable
+  // for Gemini / OpenAI / OpenRouter voices.
+  const speak = (text) => {
+    if (muted || !text || typeof window === "undefined" || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.03;
+      u.pitch = 1;
+      window.speechSynthesis.speak(u);
+    } catch { /* no-op */ }
+  };
+
+  // Auto-play each new assistant message.
+  useEffect(() => {
+    if (muted) return;
+    const last = messages[messages.length - 1];
+    if (last?.role === "assistant" && messages.length > spokenRef.current) {
+      spokenRef.current = messages.length;
+      speak(last.content);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, muted]);
+
+  // Stop any speech when muting.
+  useEffect(() => {
+    if (muted && window.speechSynthesis) window.speechSynthesis.cancel();
+  }, [muted]);
   const sections = marketplace?.pageSections || {};
   const dealmakerName = sections.dealMakerName || "Max";
   const dealmakerImage = sections.dealMakerImageUrl;
@@ -119,11 +151,20 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   const close = () => {
     setOpen(false);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (marketplaceId) sessionStorage.setItem(`dm_dismissed_${marketplaceId}`, "1");
   };
 
   const reopen = () => {
     if (marketplaceId) sessionStorage.removeItem(`dm_dismissed_${marketplaceId}`);
+    // Reset the conversation so reopening always starts clean.
+    setChatting(false);
+    setGreeted(false);
+    setMessages([]);
+    setSuggestions([]);
+    setLeadForm(null);
+    setInput("");
+    spokenRef.current = 0;
     setOpen(true);
   };
 
@@ -210,6 +251,16 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                 style={{ background: `radial-gradient(circle, #22d3ee, transparent 70%)` }}
               />
             </div>
+
+            {/* Mute / unmute voice */}
+            <button
+              onClick={() => setMuted((m) => !m)}
+              className="absolute top-6 right-20 z-20 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label={muted ? "Unmute voice" : "Mute voice"}
+              title={muted ? "Unmute voice" : "Mute voice"}
+            >
+              {muted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+            </button>
 
             {/* Close */}
             <button

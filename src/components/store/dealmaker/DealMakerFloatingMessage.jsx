@@ -13,13 +13,14 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
       <motion.div
         layout
         initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: fade * 0.9, x: 0 }}
+        animate={{ opacity: fade * 0.95, x: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="flex justify-end"
+        style={{ fontFamily: "'Outfit', sans-serif" }}
       >
         <p
-          className="text-right text-lg sm:text-xl font-medium max-w-[85%]"
-          style={{ color: brandColor }}
+          className="text-right text-lg sm:text-xl font-semibold max-w-[85%] text-white"
+          style={{ textShadow: `0 0 16px ${brandColor}, 0 1px 3px rgba(0,0,0,0.6)` }}
         >
           {message.content}
         </p>
@@ -34,6 +35,7 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
       animate={{ opacity: fade, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="flex justify-center"
+      style={{ fontFamily: "'Outfit', sans-serif" }}
     >
       <ReactMarkdown className="prose prose-invert max-w-2xl text-center text-xl sm:text-2xl leading-relaxed font-light text-white/90 [&_p]:my-1 [&_strong]:text-white [&_strong]:font-semibold">
         {message.content}

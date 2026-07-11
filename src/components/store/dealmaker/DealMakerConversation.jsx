@@ -3,10 +3,11 @@ import { Send, Loader2 } from "lucide-react";
 import DealMakerFloatingMessage from "./DealMakerFloatingMessage";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerSuggestions from "./DealMakerSuggestions";
+import DealMakerMicButton from "./DealMakerMicButton";
 
 // Shared conversation surface used by every Deal Maker layout.
-// The agent's messages always render centered within this column (see
-// DealMakerFloatingMessage); only the visitor's echoes align right.
+// The latest agent message stays vertically centered — older lines scroll up
+// out of the center thanks to the flexible top/bottom spacers.
 export default function DealMakerConversation({
   messages,
   thinking,
@@ -21,40 +22,50 @@ export default function DealMakerConversation({
   scrollRef,
   maxWidthClass = "max-w-3xl",
 }) {
+  const font = { fontFamily: "'Outfit', sans-serif" };
   return (
-    <div className="flex-1 flex flex-col min-h-0 w-full">
-      {/* Free-floating conversation — no boundary box */}
+    <div className="flex-1 flex flex-col min-h-0 w-full" style={font}>
+      {/* Free-floating conversation — no boundary box. min-h-full + flex column
+          with grow spacers keeps the newest message anchored to the center. */}
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-6">
-        <div className={`mx-auto ${maxWidthClass} w-full py-8 space-y-6`}>
-          {messages.map((mm, i) => {
-            const distance = messages.length - 1 - i;
-            const fade = Math.max(0.35, 1 - distance * 0.18);
-            return <DealMakerFloatingMessage key={i} message={mm} brandColor={brandColor} fade={fade} />;
-          })}
+        <div className={`mx-auto ${maxWidthClass} w-full min-h-full flex flex-col justify-center py-8`}>
+          {/* top spacer pushes short conversations toward center */}
+          <div className="flex-1 min-h-[8vh]" />
 
-          {thinking && (
-            <div className="flex justify-center">
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce" />
+          <div className="space-y-6">
+            {messages.map((mm, i) => {
+              const distance = messages.length - 1 - i;
+              const fade = Math.max(0.35, 1 - distance * 0.18);
+              return <DealMakerFloatingMessage key={i} message={mm} brandColor={brandColor} fade={fade} />;
+            })}
+
+            {thinking && (
+              <div className="flex justify-center">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {!thinking && !leadForm && (
-            <DealMakerSuggestions suggestions={suggestions} brandColor={brandColor} onPick={onSubmitText} disabled={thinking} />
-          )}
+            {!thinking && !leadForm && (
+              <DealMakerSuggestions suggestions={suggestions} brandColor={brandColor} onPick={onSubmitText} disabled={thinking} />
+            )}
 
-          {leadForm && (
-            <div className="max-w-md mx-auto">
-              <DealMakerLeadForm hot={leadForm.hot} brandColor={brandColor} submitting={submittingLead} onSubmit={onSubmitLead} />
-            </div>
-          )}
+            {leadForm && (
+              <div className="max-w-md mx-auto">
+                <DealMakerLeadForm hot={leadForm.hot} brandColor={brandColor} submitting={submittingLead} onSubmit={onSubmitLead} />
+              </div>
+            )}
+          </div>
+
+          {/* bottom spacer balances the top so the newest line sits centered */}
+          <div className="flex-1 min-h-[8vh]" />
         </div>
       </div>
 
-      {/* Minimal glowing composer */}
+      {/* Minimal glowing composer with mic */}
       <div className="shrink-0 px-6 pb-8 pt-2">
         <div className={`no-global-input-style mx-auto ${maxWidthClass} relative flex items-center`}>
           <div
@@ -66,8 +77,13 @@ export default function DealMakerConversation({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSubmitText()}
             placeholder="Type your reply…"
-            className="relative w-full h-14 rounded-full pl-6 pr-16 text-[15px] text-white placeholder:text-white/40 focus:outline-none"
-            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(12px)" }}
+            className="relative w-full h-14 rounded-full pl-6 pr-28 text-[15px] text-white placeholder:text-white/40 focus:outline-none"
+            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", ...font }}
+          />
+          <DealMakerMicButton
+            brandColor={brandColor}
+            disabled={thinking}
+            onTranscript={(text) => onSubmitText(text)}
           />
           <button
             onClick={() => onSubmitText()}
