@@ -3,8 +3,9 @@ import { Mic, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // Voice-to-text mic. Records audio via MediaRecorder, uploads it, then
-// transcribes with Base44's built-in TranscribeAudio integration and hands
-// the text back to the composer.
+// transcribes via the aiTranscribe function — which follows the admin's
+// AI Engine setting (OpenAI Whisper when configured, Base44 otherwise) — and
+// hands the text back to the composer.
 // While recording it shows a live waveform driven by real mic volume and
 // AUTO-STOPS after a short silence once the user stops talking.
 const SILENCE_MS = 1800;   // stop after this much continuous quiet
@@ -100,8 +101,10 @@ export default function DealMakerMicButton({ brandColor = "#6366f1", disabled, o
           const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
           const file = new File([blob], "voice.webm", { type: blob.type });
           const { file_url } = await base44.integrations.Core.UploadFile({ file });
-          const text = await base44.integrations.Core.TranscribeAudio({ audio_url: file_url });
-          const clean = (typeof text === "string" ? text : text?.transcript || "").trim();
+          // Route through aiTranscribe so it uses the admin-configured AI Engine
+          // (OpenAI Whisper when set, Base44 built-in otherwise).
+          const res = await base44.functions.invoke("aiTranscribe", { audioUrl: file_url });
+          const clean = (res?.data?.text || "").trim();
           if (clean) onTranscript?.(clean);
         } catch (e) {
           console.error("transcription failed", e);
