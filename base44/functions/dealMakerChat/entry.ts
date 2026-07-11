@@ -116,7 +116,7 @@ ${JSON.stringify(catalog)}`;
         `${msg.role === 'user' ? 'Visitor' : dealmakerName}: ${msg.content}`)
       .join('\n');
 
-    const prompt = `${systemPrompt}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nRespond as ${dealmakerName} with your next single message. Include any action tokens on their own line.`;
+    const prompt = `${systemPrompt}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nWrite your next single message directly, as if speaking. Do NOT prefix it with your name or any speaker label (no "${dealmakerName}:" or "Deal Maker:"). Include any action tokens on their own line.`;
 
     // Generate the reply through the shared AI engine (routes to OpenAI / Gemini
     // real APIs or Base44 built-in based on admin settings).
@@ -138,14 +138,16 @@ ${JSON.stringify(catalog)}`;
       suggestions = sMatch[1].split('|').map((s) => s.trim()).filter(Boolean).slice(0, 3);
     }
 
-    const cleanReply = reply
-      .replace(tokenRegex, '')
-      .replace(suggestRegex, '')
-      // Strip a leading speaker label the model sometimes adds, e.g.
-      // "Deal Maker:", "Max:", "Dealmaker -" etc.
-      .replace(new RegExp(`^\\s*(${dealmakerName}|deal ?maker)\\s*[:\\-–]\\s*`, 'i'), '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+    // Strip a leading speaker label the model sometimes adds, e.g.
+    // "Deal Maker:", "Max:", "Dealmaker -" etc. Repeat in case it appears
+    // more than once or after other cleanup.
+    const escapedName = dealmakerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const labelRegex = new RegExp(`^["'\\s]*(${escapedName}|deal ?maker)["'\\s]*[:\\-–—]\\s*`, 'i');
+    let cleanReply = reply.replace(tokenRegex, '').replace(suggestRegex, '').trim();
+    while (labelRegex.test(cleanReply)) {
+      cleanReply = cleanReply.replace(labelRegex, '').trim();
+    }
+    cleanReply = cleanReply.replace(/\n{3,}/g, '\n\n').trim();
 
     return Response.json({ reply: cleanReply, actions, suggestions });
   } catch (error) {
