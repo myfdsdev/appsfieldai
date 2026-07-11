@@ -191,13 +191,17 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
-            {/* Deep dim of the whole page — just a little of the store shows through */}
-            <div className="absolute inset-0 bg-[#05070c]/95 backdrop-blur-xl" />
-            {/* Ambient glow field */}
+            {/* Glassy dim — page stays ~3% visible through a soft blur */}
+            <div className="absolute inset-0 bg-[#05070c]/[0.97] backdrop-blur-2xl" />
+            {/* Ambient center glow field */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div
-                className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[140px] opacity-30"
-                style={{ background: `radial-gradient(circle, ${brandColor}, transparent 70%)` }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[820px] h-[820px] rounded-full blur-[150px] opacity-45"
+                style={{ background: `radial-gradient(circle, ${brandColor}, transparent 68%)` }}
+              />
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full blur-[110px] opacity-30"
+                style={{ background: `radial-gradient(circle, #22d3ee, transparent 70%)` }}
               />
             </div>
 
