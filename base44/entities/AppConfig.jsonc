@@ -46,7 +46,17 @@
             "gemini"
           ],
           "default": "base44",
-          "description": "AI provider: base44 (built-in automatic), openai, or gemini"
+          "description": "AI provider for LLM/agent TEXT responses: base44 (built-in automatic), openai, or gemini"
+        },
+        "voiceProvider": {
+          "type": "string",
+          "enum": [
+            "base44",
+            "openai",
+            "gemini"
+          ],
+          "default": "base44",
+          "description": "AI provider for VOICE (text-to-speech): base44, openai, or gemini. Independent from the text provider."
         },
         "model": {
           "type": "string",

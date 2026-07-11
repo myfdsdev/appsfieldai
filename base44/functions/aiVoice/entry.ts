@@ -58,7 +58,9 @@ Deno.serve(async (req) => {
     } catch { /* fall back */ }
 
     // Overrides let the admin preview a voice before saving the config.
-    const provider = overrideProvider || eng?.provider || 'base44';
+    // Voice uses its OWN provider (voiceProvider), independent from the text/LLM
+    // provider; fall back to the legacy shared provider for old configs.
+    const provider = overrideProvider || eng?.voiceProvider || eng?.provider || 'base44';
     const openaiApiKey = overrideOpenaiKey || eng?.openaiApiKey;
     const geminiApiKey = overrideGeminiKey || eng?.geminiApiKey;
     const voiceModel = overrideModel || eng?.voiceModel;

@@ -62,8 +62,11 @@ Deno.serve(async (req) => {
     try {
       const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
       const eng = cfgs?.[0]?.aiEngine;
-      if (eng?.provider === 'openai' && eng?.openaiApiKey) voiceProvider = 'openai';
-      else if (eng?.provider === 'gemini' && eng?.geminiApiKey) voiceProvider = 'gemini';
+      // Voice uses its own provider, independent from the text provider
+      // (fall back to the legacy shared provider for old configs).
+      const vp = eng?.voiceProvider || eng?.provider;
+      if (vp === 'openai' && eng?.openaiApiKey) voiceProvider = 'openai';
+      else if (vp === 'gemini' && eng?.geminiApiKey) voiceProvider = 'gemini';
     } catch { /* default base44 */ }
 
     return Response.json({

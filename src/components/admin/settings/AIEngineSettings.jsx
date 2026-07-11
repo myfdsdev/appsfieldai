@@ -92,6 +92,7 @@ export const AI_PROVIDERS = [
 export default function AIEngineSettings() {
   const [configId, setConfigId] = useState(null);
   const [provider, setProvider] = useState("base44");
+  const [voiceProvider, setVoiceProvider] = useState("base44");
   const [model, setModel] = useState("automatic");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [geminiApiKey, setGeminiApiKey] = useState("");
@@ -117,7 +118,7 @@ export default function AIEngineSettings() {
       const res = await base44.functions.invoke("voiceSample", {
         voice: v.id,
         name: v.name,
-        provider,
+        provider: voiceProvider,
         voiceModel,
         voiceInstructions: voiceInstructions.trim(),
         openaiApiKey: openaiApiKey.trim(),
@@ -145,6 +146,8 @@ export default function AIEngineSettings() {
           setConfigId(cfg.id);
           const eng = cfg.aiEngine || {};
           setProvider(eng.provider || "base44");
+          // Voice provider is independent; fall back to legacy shared provider.
+          setVoiceProvider(eng.voiceProvider || eng.provider || "base44");
           setModel(eng.model || (eng.provider ? "" : "automatic"));
           setOpenaiApiKey(eng.openaiApiKey || "");
           setGeminiApiKey(eng.geminiApiKey || "");
@@ -159,18 +162,31 @@ export default function AIEngineSettings() {
   }, []);
 
   const activeProvider = AI_PROVIDERS.find((p) => p.id === provider) || AI_PROVIDERS[0];
+  // Voice-specific provider — drives the voice list, voice model, transcription
+  // and voice instructions, independent from the text/LLM provider above.
+  const activeVoiceProvider = AI_PROVIDERS.find((p) => p.id === voiceProvider) || AI_PROVIDERS[0];
 
   const selectProvider = (p) => {
     setProvider(p.id);
-    // Default to that provider's first model/voice when switching.
+    // Default to that provider's first text model when switching.
     setModel(p.models[0].id);
+  };
+
+  const selectVoiceProvider = (p) => {
+    setVoiceProvider(p.id);
+    // Default to that provider's first voice/voice-model/transcription when switching.
     setVoiceModel(p.voiceModels[0].id);
     setVoiceName(p.voices[0].id);
     setTranscribeModel(p.transcribeModels[0].id);
   };
 
+  // Does the current text OR voice provider require this external key?
+  const needsOpenaiKey = provider === "openai" || voiceProvider === "openai";
+  const needsGeminiKey = provider === "gemini" || voiceProvider === "gemini";
+
   const buildEnginePayload = () => ({
     provider,
+    voiceProvider,
     model: model || activeProvider.models[0].id,
     openaiApiKey: openaiApiKey.trim(),
     geminiApiKey: geminiApiKey.trim(),
@@ -199,11 +215,11 @@ export default function AIEngineSettings() {
   };
 
   const handleSave = async () => {
-    if (provider === "openai" && !openaiApiKey.trim()) {
+    if (needsOpenaiKey && !openaiApiKey.trim()) {
       toast.error("Enter your OpenAI API key.");
       return;
     }
-    if (provider === "gemini" && !geminiApiKey.trim()) {
+    if (needsGeminiKey && !geminiApiKey.trim()) {
       toast.error("Enter your Gemini API key.");
       return;
     }
@@ -235,9 +251,9 @@ export default function AIEngineSettings() {
         </div>
       </div>
 
-      {/* Provider picker */}
+      {/* Text / LLM provider picker */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">AI Provider</Label>
+        <Label className="text-sm text-muted-foreground">Agent Text Provider (LLM)</Label>
         <div className="grid sm:grid-cols-3 gap-3">
           {AI_PROVIDERS.map((p) => {
             const active = provider === p.id;
@@ -280,8 +296,8 @@ export default function AIEngineSettings() {
         </p>
       </div>
 
-      {/* API key — only for external providers */}
-      {provider === "openai" && (
+      {/* API keys — shown when the text OR voice provider needs them */}
+      {needsOpenaiKey && (
         <div className="space-y-2">
           <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
             <KeyRound className="w-3.5 h-3.5" /> OpenAI API Key
@@ -299,7 +315,7 @@ export default function AIEngineSettings() {
         </div>
       )}
 
-      {provider === "gemini" && (
+      {needsGeminiKey && (
         <div className="space-y-2">
           <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
             <KeyRound className="w-3.5 h-3.5" /> Gemini API Key
@@ -317,16 +333,44 @@ export default function AIEngineSettings() {
         </div>
       )}
 
-      {/* Voice & transcription — same provider source as the LLM */}
+      {/* Voice & transcription — its OWN provider, independent from the text LLM */}
       <div className="border-t border-border/40 pt-6 space-y-5">
         <div className="flex items-center gap-2">
           <Mic className="w-4 h-4 text-violet-400" />
           <h3 className="text-sm font-semibold text-foreground">Voice & Transcription</h3>
         </div>
         <p className="text-xs text-muted-foreground -mt-3">
-          Text-to-speech and speech-to-text use the same provider &amp; API key selected above.
-          {provider === "gemini" && " Gemini uses its native TTS voices; transcription falls back to Base44."}
+          Pick the voice provider separately from the text provider — e.g. use one AI for the agent's words and another for how it sounds.
+          {voiceProvider === "gemini" && " Gemini uses its native TTS voices; transcription falls back to Base44."}
         </p>
+
+        {/* Voice provider picker */}
+        <div className="space-y-3">
+          <Label className="text-sm text-muted-foreground">Voice Provider (Text-to-Speech)</Label>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {AI_PROVIDERS.map((p) => {
+              const active = voiceProvider === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => selectVoiceProvider(p)}
+                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
+                    active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </span>
+                  )}
+                  <p className="font-semibold text-sm">{p.name}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           {/* TTS voice — pick + play a sample of each */}
@@ -335,7 +379,7 @@ export default function AIEngineSettings() {
               <Volume2 className="w-3.5 h-3.5" /> Voice (Text-to-Speech)
             </Label>
             <div className="grid sm:grid-cols-2 gap-2">
-              {activeProvider.voices.map((v) => {
+              {activeVoiceProvider.voices.map((v) => {
                 const selected = voiceName === v.id;
                 const isPreviewing = previewing === v.id;
                 return (
@@ -379,7 +423,7 @@ export default function AIEngineSettings() {
               onChange={(e) => setVoiceModel(e.target.value)}
               className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
             >
-              {activeProvider.voiceModels.map((m) => (
+              {activeVoiceProvider.voiceModels.map((m) => (
                 <option key={m.id || "default"} value={m.id}>{m.name}</option>
               ))}
             </select>
@@ -387,7 +431,7 @@ export default function AIEngineSettings() {
 
           {/* Custom voice instructions — OpenAI (gpt-4o-mini-tts) & Gemini TTS both
               accept a natural-language style prompt to steer tone/emotion/pacing. */}
-          {(provider === "openai" || provider === "gemini") && (
+          {(voiceProvider === "openai" || voiceProvider === "gemini") && (
             <div className="space-y-2 sm:col-span-2">
               <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <Volume2 className="w-3.5 h-3.5" /> Custom Voice Instructions
@@ -401,7 +445,7 @@ export default function AIEngineSettings() {
               />
               <p className="text-xs text-muted-foreground">
                 Steers the voice's tone, emotion and pacing.
-                {provider === "openai" ? " Works best with the GPT-4o Mini TTS model." : " Applied as a style prompt to Gemini TTS."}
+                {voiceProvider === "openai" ? " Works best with the GPT-4o Mini TTS model." : " Applied as a style prompt to Gemini TTS."}
               </p>
             </div>
           )}
@@ -416,7 +460,7 @@ export default function AIEngineSettings() {
               onChange={(e) => setTranscribeModel(e.target.value)}
               className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
             >
-              {activeProvider.transcribeModels.map((m) => (
+              {activeVoiceProvider.transcribeModels.map((m) => (
                 <option key={m.id || "default"} value={m.id}>{m.name}</option>
               ))}
             </select>

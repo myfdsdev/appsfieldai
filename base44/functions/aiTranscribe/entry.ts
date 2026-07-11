@@ -18,7 +18,9 @@ Deno.serve(async (req) => {
       eng = cfgs?.[0]?.aiEngine || null;
     } catch { /* fall back */ }
 
-    const provider = eng?.provider || 'base44';
+    // Transcription is a voice capability — follow the voice provider,
+    // falling back to the legacy shared provider for old configs.
+    const provider = eng?.voiceProvider || eng?.provider || 'base44';
 
     // OpenAI Whisper — fetch the audio and send it as multipart form data.
     if (provider === 'openai' && eng?.openaiApiKey) {
