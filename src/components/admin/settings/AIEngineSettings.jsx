@@ -113,14 +113,9 @@ export default function AIEngineSettings() {
     setPreviewing(v.id);
     const sampleText = `Hi, I'm ${v.name.replace(/\s*\(.*\)$/, "")}. This is how I sound.`;
     try {
-      // Base44 built-in voices can preview instantly in the browser (no network).
-      if (provider === "base44" && typeof window !== "undefined" && window.speechSynthesis) {
-        const u = new SpeechSynthesisUtterance(sampleText);
-        u.onend = () => setPreviewing(null);
-        u.onerror = () => setPreviewing(null);
-        window.speechSynthesis.speak(u);
-        return;
-      }
+      // Route ALL previews (including Base44) through aiVoice so each voice
+      // uses its real generated sound — browser synthesis makes every Base44
+      // voice sound identical.
       const res = await base44.functions.invoke("aiVoice", {
         text: sampleText,
         voice: v.id,
