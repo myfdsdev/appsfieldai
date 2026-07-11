@@ -170,13 +170,13 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     try {
       const res = await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
       const reply = res.data?.reply;
-      const audioUrl = res.data?.audioUrl;
       if (reply) {
-        // Play the voice immediately using the audio generated in the same
-        // response (no second call) so speech starts as the message appears.
-        speak(reply, audioUrl);
+        // Render the message immediately and fetch/play the voice in parallel
+        // (speak() handles the aiVoice call for openai/gemini, or instant
+        // browser synthesis for base44) so text isn't blocked on audio.
+        speak(reply);
         setMessages((mm) => {
-          const next = [...mm, { role: "assistant", content: reply, audioUrl }];
+          const next = [...mm, { role: "assistant", content: reply }];
           // Mark this message as already spoken so the auto-play effect skips it.
           spokenRef.current = next.length;
           return next;

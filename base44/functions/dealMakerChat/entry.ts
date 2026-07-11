@@ -149,20 +149,10 @@ ${JSON.stringify(catalog)}`;
     }
     cleanReply = cleanReply.replace(/\n{3,}/g, '\n\n').trim();
 
-    // Generate speech in the SAME round-trip (server-to-server) for OpenAI/Gemini
-    // so the frontend gets text + audio at once — no second aiVoice call, no lag.
-    // Base44 provider stays on instant browser synthesis (audioUrl is null).
-    let audioUrl = null;
-    try {
-      const eng = (await svc.entities.AppConfig.filter({ key: 'main' }))?.[0]?.aiEngine;
-      const provider = eng?.provider || 'base44';
-      if (cleanReply && (provider === 'openai' || provider === 'gemini')) {
-        const voiceRes = await base44.functions.invoke('aiVoice', { text: cleanReply });
-        audioUrl = voiceRes?.data?.url || null;
-      }
-    } catch (e) { console.error('dealMakerChat voice failed:', e); }
-
-    return Response.json({ reply: cleanReply, actions, suggestions, audioUrl });
+    // Return text immediately — the frontend renders the message right away and
+    // fetches the voice in parallel (see DealMakerWidget), so the visible reply
+    // isn't blocked waiting on audio generation + upload.
+    return Response.json({ reply: cleanReply, actions, suggestions });
   } catch (error) {
     console.error('dealMakerChat error:', error);
     return Response.json({ error: error.message }, { status: 500 });
