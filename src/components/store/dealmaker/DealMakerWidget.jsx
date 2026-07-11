@@ -185,6 +185,15 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     setOpen(true);
   };
 
+  // Short teaser of the last message so a returning visitor feels they can
+  // pick up right where they left off.
+  const lastMsg = messages[messages.length - 1]?.content?.trim();
+  const bubbleText = (() => {
+    if (!lastMsg) return "Hey, I can help you!";
+    const words = lastMsg.split(/\s+/);
+    return words.length > 5 ? words.slice(0, 5).join(" ") + "…" : lastMsg;
+  })();
+
   if (!marketplaceId) return null;
 
   return (
@@ -206,7 +215,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               transition={{ delay: 0.4 }}
               className="relative rounded-2xl rounded-b-md bg-white px-4 py-2.5 shadow-xl shadow-black/30 max-w-[220px]"
             >
-              <p className="text-sm font-medium text-neutral-800">Hey, I can help you!</p>
+              <p className="text-sm font-medium text-neutral-800">{bubbleText}</p>
               <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white" />
             </motion.div>
 
