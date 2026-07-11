@@ -61,11 +61,11 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   // Speak (TTS) the latest agent message aloud unless muted.
   // - Base44 provider → instant browser speech synthesis (zero network lag).
-  // - OpenAI provider → aiVoice call for the higher-quality voice (small delay
-  //   is unavoidable since the audio file must be generated & fetched first).
+  // - OpenAI / Gemini provider → aiVoice call for the higher-quality voice
+  //   (small delay is unavoidable since the audio file must be generated first).
   const speak = async (text) => {
     if (muted || !text) return;
-    if (voiceProvider !== "openai") {
+    if (voiceProvider !== "openai" && voiceProvider !== "gemini") {
       if (typeof window === "undefined" || !window.speechSynthesis) return;
       try {
         window.speechSynthesis.cancel();

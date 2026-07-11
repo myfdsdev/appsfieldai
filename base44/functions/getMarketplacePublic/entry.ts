@@ -57,12 +57,13 @@ Deno.serve(async (req) => {
     });
 
     // Expose only the voice PROVIDER (never the API key) so the Deal Maker widget
-    // can pick instant browser speech for Base44 vs. the aiVoice call for OpenAI.
+    // can pick instant browser speech for Base44 vs. the aiVoice call for OpenAI/Gemini.
     let voiceProvider = 'base44';
     try {
       const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
       const eng = cfgs?.[0]?.aiEngine;
       if (eng?.provider === 'openai' && eng?.openaiApiKey) voiceProvider = 'openai';
+      else if (eng?.provider === 'gemini' && eng?.geminiApiKey) voiceProvider = 'gemini';
     } catch { /* default base44 */ }
 
     return Response.json({
