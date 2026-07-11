@@ -18,7 +18,13 @@ import {
   handleDelete,
   handleDomainForStore,
 } from "./routes/domainApi.js";
-import { handlePublicRequest } from "./services/proxy.js";
+import { handlePublicRequest, proxyToOrigin } from "./services/proxy.js";
+
+// The platform's OWN hosts must never be treated as tenant custom domains. Even
+// if the `*/*` route catches them (e.g. the exclusion route is missing), we serve
+// the real app from Base44 instead of returning "domain not found". Base44 is a
+// different zone, so there is no proxy loop. Override via PLATFORM_HOSTS var.
+const DEFAULT_PLATFORM_HOSTS = "app.appsfieldai.com,appsfieldai.com,www.appsfieldai.com";
 
 export default {
   async fetch(request, env) {
@@ -51,6 +57,16 @@ export default {
     // Any other /api/custom-domains/* → method/route not found.
     if (path.startsWith("/api/custom-domains")) {
       return errorJson("Not found", 404);
+    }
+
+    // --- Safety net: the platform's own hosts are served from Base44, never
+    // treated as a tenant domain (prevents an app outage if the exclusion
+    // route is missing/misconfigured). ---
+    const platformHosts = (env.PLATFORM_HOSTS || DEFAULT_PLATFORM_HOSTS)
+      .split(",")
+      .map((h) => normalizeHostname(h));
+    if (platformHosts.includes(hostname)) {
+      return proxyToOrigin(request, env.BASE44_ORIGIN);
     }
 
     // --- Everything else = public storefront traffic on a custom hostname ---
