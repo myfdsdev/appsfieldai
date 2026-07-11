@@ -18,13 +18,21 @@ export default function DealMakerMessage({ message, brandColor, fade = 1 }) {
       style={{ transformOrigin: isUser ? "right center" : "left center" }}
     >
       <div
-        className={`rounded-3xl px-5 py-3.5 text-[16px] leading-relaxed backdrop-blur-md ${
+        className={`relative overflow-hidden rounded-3xl px-5 py-3.5 text-[16px] leading-relaxed ${
           isUser
-            ? "text-white rounded-br-lg max-w-[75%]"
-            : "bg-white/10 border border-white/15 text-white/95 rounded-bl-lg max-w-[80%]"
+            ? "text-white rounded-br-lg max-w-[75%] shadow-lg"
+            : "border border-white/20 text-white/95 rounded-bl-lg max-w-[80%] backdrop-blur-2xl shadow-lg shadow-black/20"
         }`}
-        style={isUser ? { background: `linear-gradient(135deg, ${brandColor}, ${brandColor}bb)` } : undefined}
+        style={
+          isUser
+            ? { background: `linear-gradient(135deg, ${brandColor}, ${brandColor}bb)` }
+            : { background: "linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06))" }
+        }
       >
+        {/* glass sheen highlight on assistant bubbles */}
+        {!isUser && (
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+        )}
         {isUser ? (
           <p className="whitespace-pre-wrap">{message.content}</p>
         ) : (
