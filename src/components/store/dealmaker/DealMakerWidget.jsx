@@ -149,7 +149,17 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     try {
       const res = await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
       const reply = res.data?.reply;
-      if (reply) setMessages((mm) => [...mm, { role: "assistant", content: reply }]);
+      if (reply) {
+        // Kick off TTS immediately (in parallel with rendering) so the voice
+        // isn't delayed waiting on the message-render effect.
+        speak(reply);
+        setMessages((mm) => {
+          const next = [...mm, { role: "assistant", content: reply }];
+          // Mark this message as already spoken so the auto-play effect skips it.
+          spokenRef.current = next.length;
+          return next;
+        });
+      }
       handleActions(res.data?.actions);
       setSuggestions(res.data?.suggestions || []);
     } catch {
