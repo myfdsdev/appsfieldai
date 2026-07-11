@@ -35,7 +35,14 @@ async function callOpenAI(apiKey: string, model: string, prompt: string, jsonSch
 }
 
 async function callGemini(apiKey: string, model: string, prompt: string, jsonSchema: unknown) {
-  const m = model || 'gemini-1.5-flash';
+  // Map retired/legacy model ids to current live equivalents so old saved
+  // configs don't 404 (Google retires older models like gemini-2.0-flash).
+  const RETIRED: Record<string, string> = {
+    'gemini-2.0-flash': 'gemini-2.5-flash',
+    'gemini-1.5-flash': 'gemini-2.5-flash',
+    'gemini-1.5-pro': 'gemini-2.5-pro',
+  };
+  const m = RETIRED[model] || model || 'gemini-2.5-flash';
   const body: Record<string, unknown> = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
   };

@@ -42,7 +42,12 @@ Deno.serve(async (req) => {
 
     if (provider === 'gemini') {
       if (!geminiApiKey) return Response.json({ ok: false, provider, error: 'No Gemini API key set.' });
-      const m = model || 'gemini-1.5-flash';
+      const RETIRED: Record<string, string> = {
+        'gemini-2.0-flash': 'gemini-2.5-flash',
+        'gemini-1.5-flash': 'gemini-2.5-flash',
+        'gemini-1.5-pro': 'gemini-2.5-pro',
+      };
+      const m = RETIRED[model] || model || 'gemini-2.5-flash';
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${geminiApiKey}`;
       const res = await fetch(url, {
         method: 'POST',
