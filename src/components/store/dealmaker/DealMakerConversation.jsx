@@ -25,6 +25,9 @@ export default function DealMakerConversation({
   marketplace,
   onMoreDetails,
   onReserve,
+  onConfirmPlan,
+  planSubmitting,
+  planSubmitted,
   maxWidthClass = "max-w-3xl",
 }) {
   const font = { fontFamily: "'Outfit', sans-serif" };
@@ -50,6 +53,9 @@ export default function DealMakerConversation({
                   marketplace={marketplace}
                   onMoreDetails={onMoreDetails}
                   onReserve={onReserve}
+                  onConfirmPlan={onConfirmPlan}
+                  planSubmitting={planSubmitting}
+                  planSubmitted={planSubmitted}
                 />
               );
             })}

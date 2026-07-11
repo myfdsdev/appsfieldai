@@ -36,6 +36,8 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const [suggestions, setSuggestions] = useState([]);
   const [leadForm, setLeadForm] = useState(null);
   const [submittingLead, setSubmittingLead] = useState(false);
+  const [planSubmitting, setPlanSubmitting] = useState(false);
+  const [planSubmitted, setPlanSubmitted] = useState(false);
   const [muted, setMuted] = useState(false);
   const scrollRef = useRef(null);
   const audioRef = useRef(null);
@@ -146,7 +148,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   // chat instead of opening an external modal.
   const handleActions = (actions = []) => {
     let card = null;
+    let plan = null;
     for (const a of actions) {
+      if (a.type === "PROPOSE_PLAN" && a.value) { plan = a.value; continue; }
       if (a.type === "SHOW_APP" && a.value) {
         const listing = listings.find((l) => l.id === a.value);
         if (listing) card = { listing, mode: "card" };
@@ -167,16 +171,40 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         setLeadForm({ hot: true });
       }
     }
-    if (card) {
-      // Attach the card to the most recent assistant message.
+    if (card || plan) {
+      if (plan) setPlanSubmitted(false); // fresh/revised plan → allow submission again
+      // Attach the card and/or plan to the most recent assistant message.
       setMessages((mm) => {
         const next = [...mm];
         for (let i = next.length - 1; i >= 0; i--) {
-          if (next[i].role === "assistant") { next[i] = { ...next[i], card }; break; }
+          if (next[i].role === "assistant") {
+            next[i] = { ...next[i], ...(card ? { card } : {}), ...(plan ? { plan } : {}) };
+            break;
+          }
         }
         return next;
       });
     }
+  };
+
+  // Visitor approved the AI-drafted plan and submitted their details.
+  // Save a HOT lead and email both the visitor and the store owner.
+  const confirmPlan = async (plan, form) => {
+    setPlanSubmitting(true);
+    const summary = messages.map((mm) => `${mm.role === "user" ? "Visitor" : dealmakerName}: ${mm.content}`).join("\n");
+    try {
+      await base44.functions.invoke("dealMakerChat", {
+        action: "submit_proposal",
+        marketplaceId,
+        plan,
+        lead: { ...form, summary },
+      });
+      setPlanSubmitted(true);
+      setMessages((mm) => [...mm, { role: "assistant", content: `Perfect — I've sent your plan to the team at ${storeName}. Check your inbox for a confirmation, and they'll reach out with a full proposal shortly.` }]);
+    } catch {
+      setMessages((mm) => [...mm, { role: "assistant", content: "Hmm, that didn't go through — mind trying once more?" }]);
+    }
+    setPlanSubmitting(false);
   };
 
   const sendTurn = async (history) => {
@@ -256,6 +284,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     setSuggestions([]);
     setLeadForm(null);
     setInput("");
+    setPlanSubmitted(false);
     setGreeted(false);
   };
 
@@ -429,6 +458,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                   marketplace={marketplace}
                   onMoreDetails={handleMoreDetails}
                   onReserve={onReserve}
+                  onConfirmPlan={confirmPlan}
+                  planSubmitting={planSubmitting}
+                  planSubmitted={planSubmitted}
                   maxWidthClass={layout === "centered" || layout === "spotlight" ? "max-w-3xl" : "max-w-xl"}
                 />
               );

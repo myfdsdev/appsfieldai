@@ -26,6 +26,14 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: '💵 [Cha-Ching] You\'ve earned {{commission_amount}} from: {{store_name}}',
     body: 'Hi {{affiliate_name}},\n\nCha-ching! Your referral for "{{product_name}}" just converted and earned you {{commission_amount}} in commission.\n\nKeep up the great work!\n\n— {{store_name}}',
   },
+  proposalVisitor: {
+    subject: 'Your custom plan from {{store_name}}: {{plan_title}}',
+    body: 'Hi {{customer_name}},\n\nThanks for sharing your needs with {{store_name}}. We put together a plan — "{{plan_title}}" — and our team will reach out shortly with a full proposal.\n\n— {{store_name}}',
+  },
+  proposalOwner: {
+    subject: '🔥 New project request: {{plan_title}}',
+    body: 'A visitor approved an AI-drafted plan on {{store_name}}.\n\nPlan: {{plan_title}}\n{{plan_overview}}\n\nContact:\nName: {{customer_name}}\nEmail: {{customer_email}}\nPhone: {{customer_phone}}\nBusiness: {{business_type}}\nPain: {{pain_point}}',
+  },
 };
 
 function applyVars(text: string, vars: Record<string, string>): string {
@@ -168,6 +176,50 @@ function commissionEarnedHtml(opts: {
   `;
 }
 
+// Builds the branded plan/proposal body. `featuresHtml` is trusted markup
+// (already escaped <li> items). `mode` = 'visitor' (recap for the visitor) or
+// 'owner' (project brief with contact details for the store owner to follow up).
+function proposalHtml(opts: {
+  brand: string; storeName: string; mode: 'visitor' | 'owner';
+  planTitle: string; planOverview: string; featuresHtml: string; contact?: Record<string, string>;
+}): string {
+  const { brand, storeName, mode, planTitle, planOverview, featuresHtml, contact } = opts;
+  const featuresBlock = featuresHtml
+    ? `<div style="margin:18px 0;padding:18px 20px;background:#f7f7fb;border-radius:12px;">
+        <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">Planned features</div>
+        <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6;">${featuresHtml}</ul>
+      </div>`
+    : '';
+
+  if (mode === 'owner') {
+    const c = contact || {};
+    const contactRows = [
+      ['Name', c.name], ['Email', c.email], ['Phone', c.phone],
+      ['Business', c.businessType], ['Pain point', c.painPoint],
+    ].map(([label, val]) =>
+      `<tr><td style="padding:6px 0;font-size:13px;color:#888;width:120px;">${label}</td>
+        <td style="padding:6px 0;font-size:13px;color:#222;">${esc(val || '—')}</td></tr>`).join('');
+    return `
+      <h1 style="margin:0 0 4px;font-size:22px;color:#111;">🔥 New project request</h1>
+      <p style="margin:0 0 18px;color:#555;">Your Deal Maker agent drafted a plan a visitor approved. Reach out with a proposal.</p>
+      <h2 style="margin:0 0 4px;font-size:17px;color:${esc(brand)};">${esc(planTitle)}</h2>
+      <p style="margin:0 0 6px;color:#444;">${esc(planOverview)}</p>
+      ${featuresBlock}
+      <div style="margin-top:8px;padding:16px 20px;border:1px solid #eee;border-radius:12px;">
+        <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Visitor details</div>
+        <table width="100%" cellpadding="0" cellspacing="0">${contactRows}</table>
+      </div>`;
+  }
+
+  return `
+    <h1 style="margin:0 0 4px;font-size:22px;color:#111;">Your plan is on its way 🚀</h1>
+    <p style="margin:0 0 18px;color:#555;">Hi ${esc(contact?.name || 'there')}, thanks for sharing your needs with <strong>${esc(storeName)}</strong>. Here's the plan we put together — our team will reach out shortly with a full proposal.</p>
+    <h2 style="margin:0 0 4px;font-size:17px;color:${esc(brand)};">${esc(planTitle)}</h2>
+    <p style="margin:0 0 6px;color:#444;">${esc(planOverview)}</p>
+    ${featuresBlock}
+    <p style="margin:16px 0 0;color:#555;">We'll be in touch soon.</p>`;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -206,6 +258,22 @@ Deno.serve(async (req) => {
       const inner = orderConfirmationHtml({
         brand, logo, storeName, supportEmail: marketplace.supportEmail,
         customerName: mergedVars.customer_name || 'there', order, currency, dashboardUrl,
+      });
+      html = shell({ brand, logo, storeName, inner, footer });
+    } else if (templateKey === 'proposalVisitor' || templateKey === 'proposalOwner') {
+      const inner = proposalHtml({
+        brand, storeName,
+        mode: templateKey === 'proposalOwner' ? 'owner' : 'visitor',
+        planTitle: mergedVars.plan_title || 'Custom software',
+        planOverview: mergedVars.plan_overview || '',
+        featuresHtml: mergedVars.features_html || '',
+        contact: {
+          name: mergedVars.customer_name || '',
+          email: mergedVars.customer_email || '',
+          phone: mergedVars.customer_phone || '',
+          businessType: mergedVars.business_type || '',
+          painPoint: mergedVars.pain_point || '',
+        },
       });
       html = shell({ brand, logo, storeName, inner, footer });
     } else if (templateKey === 'commissionEarned') {
