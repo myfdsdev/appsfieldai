@@ -173,20 +173,20 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                 {!chatting ? (
                   <motion.div
                     key="hero"
-                    initial={{ opacity: 0, x: -24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -24 }}
-                    transition={{ duration: 0.32, ease: "easeInOut" }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
                   >
                     <DealMakerHero marketplace={marketplace} brandColor={brandColor} onStart={startChat} onDismiss={close} />
                   </motion.div>
                 ) : (
                   <motion.div
                     key="chat"
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 24 }}
-                    transition={{ duration: 0.32, ease: "easeInOut" }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="flex flex-col h-[min(640px,calc(100vh-2rem))]"
                   >
                     {/* Floating header — no bar, back + avatar + name row with corner X */}
