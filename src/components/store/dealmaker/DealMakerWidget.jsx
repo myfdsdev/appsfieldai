@@ -317,7 +317,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                 const charFirst = layout === "avatar_left";
                 return (
                   <div className="relative z-10 flex-1 flex flex-col md:flex-row min-h-0">
-                    <div className={`hidden md:flex md:w-[42%] lg:w-[38%] shrink-0 px-6 pt-10 pb-4 ${charFirst ? "" : "md:order-2"}`}>
+                    <div className={`hidden md:flex md:w-[42%] lg:w-[38%] shrink-0 items-end justify-center px-6 pt-10 pb-4 ${charFirst ? "" : "md:order-2"}`}>
                       <DealMakerCharacter name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} />
                     </div>
                     <div className={`flex-1 flex flex-col min-h-0 ${charFirst ? "" : "md:order-1"}`}>
