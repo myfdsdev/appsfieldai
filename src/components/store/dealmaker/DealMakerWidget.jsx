@@ -267,8 +267,8 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && send()}
                         placeholder="Type your reply…"
-                        className="w-full h-14 rounded-full bg-white/90 border border-white/40 backdrop-blur-md pl-6 pr-16 text-[15px] text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
-                        style={{ "--tw-ring-color": brandColor }}
+                        className="w-full h-14 rounded-full !bg-white !border-white/40 backdrop-blur-md pl-6 pr-16 text-[15px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
+                        style={{ "--tw-ring-color": brandColor, color: "#1f2937" }}
                       />
                       <button
                         onClick={send}
