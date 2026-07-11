@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Cpu, Save, Check } from "lucide-react";
+import { Cpu, Save, Check, KeyRound } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
-// AI providers and the models each exposes. Model ids map directly to the
-// Base44 InvokeLLM `model` parameter. "base44" = built-in automatic routing.
+// AI providers and the models each exposes. For OpenAI/Gemini the model ids are
+// the REAL API model names (used directly against each provider's API).
+// "base44" = Base44's built-in automatic routing (no key needed).
 export const AI_PROVIDERS = [
   {
     id: "base44",
@@ -17,20 +19,20 @@ export const AI_PROVIDERS = [
   {
     id: "openai",
     name: "OpenAI",
-    desc: "OpenAI GPT models.",
+    desc: "Real OpenAI API — needs your API key.",
     models: [
-      { id: "gpt_5_mini", name: "GPT-5 Mini (fast)" },
-      { id: "gpt_5_4", name: "GPT-5.4" },
-      { id: "gpt_5_5", name: "GPT-5.5 (highest quality)" },
+      { id: "gpt-4o-mini", name: "GPT-4o Mini (fast)" },
+      { id: "gpt-4o", name: "GPT-4o" },
+      { id: "gpt-4.1", name: "GPT-4.1 (highest quality)" },
     ],
   },
   {
     id: "gemini",
     name: "Google Gemini",
-    desc: "Google Gemini models.",
+    desc: "Real Gemini API — needs your API key.",
     models: [
-      { id: "gemini_3_flash", name: "Gemini 3 Flash (fast)" },
-      { id: "gemini_3_1_pro", name: "Gemini 3.1 Pro (highest quality)" },
+      { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (fast)" },
+      { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro (highest quality)" },
     ],
   },
 ];
@@ -39,6 +41,8 @@ export default function AIEngineSettings() {
   const [configId, setConfigId] = useState(null);
   const [provider, setProvider] = useState("base44");
   const [model, setModel] = useState("automatic");
+  const [openaiApiKey, setOpenaiApiKey] = useState("");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +56,8 @@ export default function AIEngineSettings() {
           const eng = cfg.aiEngine || {};
           setProvider(eng.provider || "base44");
           setModel(eng.model || (eng.provider ? "" : "automatic"));
+          setOpenaiApiKey(eng.openaiApiKey || "");
+          setGeminiApiKey(eng.geminiApiKey || "");
         }
       } catch { /* none yet */ }
       setLoading(false);
@@ -67,9 +73,24 @@ export default function AIEngineSettings() {
   };
 
   const handleSave = async () => {
+    if (provider === "openai" && !openaiApiKey.trim()) {
+      toast.error("Enter your OpenAI API key.");
+      return;
+    }
+    if (provider === "gemini" && !geminiApiKey.trim()) {
+      toast.error("Enter your Gemini API key.");
+      return;
+    }
     setSaving(true);
     try {
-      const payload = { aiEngine: { provider, model: model || activeProvider.models[0].id } };
+      const payload = {
+        aiEngine: {
+          provider,
+          model: model || activeProvider.models[0].id,
+          openaiApiKey: openaiApiKey.trim(),
+          geminiApiKey: geminiApiKey.trim(),
+        },
+      };
       const configs = await base44.entities.AppConfig.filter({ key: "main" });
       if (configs?.[0]) await base44.entities.AppConfig.update(configs[0].id, payload);
       else await base44.entities.AppConfig.create({ key: "main", ...payload });
@@ -139,6 +160,43 @@ export default function AIEngineSettings() {
           This model powers auto-building new stores and the Deal Maker sales agent's replies. Higher-quality models produce better content but use more credits.
         </p>
       </div>
+
+      {/* API key — only for external providers */}
+      {provider === "openai" && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" /> OpenAI API Key
+          </Label>
+          <Input
+            type="password"
+            value={openaiApiKey}
+            onChange={(e) => setOpenaiApiKey(e.target.value)}
+            placeholder="sk-..."
+            className="bg-secondary/40 border-border/50 rounded-xl"
+          />
+          <p className="text-xs text-muted-foreground">
+            Get one at platform.openai.com/api-keys. Stored securely and used only on the backend.
+          </p>
+        </div>
+      )}
+
+      {provider === "gemini" && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" /> Gemini API Key
+          </Label>
+          <Input
+            type="password"
+            value={geminiApiKey}
+            onChange={(e) => setGeminiApiKey(e.target.value)}
+            placeholder="AIza..."
+            className="bg-secondary/40 border-border/50 rounded-xl"
+          />
+          <p className="text-xs text-muted-foreground">
+            Get one at aistudio.google.com/apikey. Stored securely and used only on the backend.
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-3 pt-2">
         <Button onClick={handleSave} disabled={saving} className="bg-orange-500 hover:bg-orange-600 text-white h-10 px-6">

@@ -19,14 +19,6 @@ Deno.serve(async (req) => {
     const categories = marketplace.categories || [];
     const storeName = marketplace.name || 'this marketplace';
 
-    // Resolve the admin-configured AI model (provider + model). base44/automatic → default routing.
-    let aiModel = null;
-    try {
-      const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
-      const eng = cfgs?.[0]?.aiEngine;
-      if (eng?.provider && eng.provider !== 'base44' && eng.model) aiModel = eng.model;
-    } catch { /* fall back to automatic */ }
-
     // 1. Generate hero copy, FAQs, and testimonials with the built-in LLM.
     const prompt = `You are writing marketing content for a SaaS deals marketplace called "${storeName}".
 The owner describes it as: "${description || 'A marketplace for discovering and buying lifetime SaaS deals.'}"
@@ -44,10 +36,9 @@ Generate compelling, professional, conversion-focused content for this store's l
 - Exactly 5 realistic, niche-specific testimonials (author name, author role/company, rating 4-5, content of 1-2 sentences)
 - Deal Maker sales agent training: a friendly human first name for the agent, a short professional tagline (max 4 words), the niche/audience this store helps (short phrase), a reassuring guarantee line (short), a warm 1-2 sentence opening greeting the agent says to visitors (reference the store by name), and a detailed knowledge base (4-6 short paragraphs) the agent uses to sell — covering what the store offers, who it's for, the value of the deals, how buying/delivery works, and how to handle common objections. Only use facts consistent with the description and categories.`;
 
-    const generated = await base44.integrations.Core.InvokeLLM({
+    const genRes = await base44.functions.invoke('aiGenerate', {
       prompt,
-      ...(aiModel ? { model: aiModel } : {}),
-      response_json_schema: {
+      jsonSchema: {
         type: 'object',
         properties: {
           badge: { type: 'string' },
@@ -104,7 +95,7 @@ Generate compelling, professional, conversion-focused content for this store's l
       },
     });
 
-    const g = generated || {};
+    const g = genRes?.data?.result || {};
 
     // 2. Merge generated hero copy + FAQs + Deal Maker agent training into pageSections, keep existing settings.
     const existing = marketplace.pageSections || {};

@@ -51,6 +51,14 @@
         "model": {
           "type": "string",
           "description": "Selected model id for the chosen provider (e.g. gpt_5_4, gemini_3_flash)"
+        },
+        "openaiApiKey": {
+          "type": "string",
+          "description": "OpenAI API key (used when provider is openai to call the real OpenAI API)"
+        },
+        "geminiApiKey": {
+          "type": "string",
+          "description": "Google Gemini API key (used when provider is gemini to call the real Gemini API)"
         }
       }
     },
