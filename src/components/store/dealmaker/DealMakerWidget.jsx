@@ -189,26 +189,23 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                     transition={{ duration: 0.32, ease: "easeInOut" }}
                     className="flex flex-col h-[min(640px,calc(100vh-2rem))]"
                   >
-                    {/* Header — glass tint */}
-                    <div
-                      className="flex items-center justify-between px-5 py-4 text-white shrink-0 border-b border-white/10 backdrop-blur-xl"
-                      style={{ background: `linear-gradient(135deg, ${brandColor}cc, ${brandColor}88)` }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-full bg-white/20 border border-white/25 flex items-center justify-center overflow-hidden shrink-0">
+                    {/* Floating header — no bar, avatar + name row with corner X */}
+                    <div className="flex items-center justify-between px-6 pt-5 pb-2 shrink-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center overflow-hidden shrink-0">
                           {dealmakerImage ? (
                             <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
                           ) : (
-                            <Sparkles className="w-6 h-6" />
+                            <Sparkles className="w-4 h-4 text-white" />
                           )}
                         </div>
-                        <div>
-                          <p className="text-lg font-bold leading-tight">{dealmakerName}</p>
-                          <p className="text-xs text-white/80 leading-tight">{marketplace?.pageSections?.dealMakerTagline || "Dealmaker"} · {marketplace?.name || "Store"}</p>
-                        </div>
+                        <p className="text-sm font-semibold text-white truncate">
+                          <span className="font-bold">{dealmakerName}</span>
+                          <span className="text-white/60 font-normal"> · {marketplace?.pageSections?.dealMakerTagline || "Dealmaker"} · {marketplace?.name || "Store"}</span>
+                        </p>
                       </div>
-                      <button onClick={close} className="p-1.5 rounded-lg hover:bg-white/15 transition-colors">
-                        <X className="w-6 h-6" />
+                      <button onClick={close} className="p-1.5 -mr-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0">
+                        <X className="w-5 h-5" />
                       </button>
                     </div>
 
@@ -216,7 +213,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                     <div className="relative flex-1 min-h-0">
                       {/* top fade mask so scrolled-up history softly disappears */}
                       <div className="pointer-events-none absolute inset-x-0 top-0 h-10 z-10 bg-gradient-to-b from-black/25 to-transparent" />
-                      <div ref={scrollRef} className="h-full overflow-y-auto px-4 py-4 space-y-3">
+                      <div ref={scrollRef} className="h-full overflow-y-auto px-6 py-4 space-y-5">
                       {messages.length === 0 && thinking && (
                         <div className="flex items-center gap-2 text-xs text-white/50 px-1">
                           <MessageCircle className="w-4 h-4" /> {dealmakerName} is getting ready…
@@ -243,24 +240,26 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                       </div>
                     </div>
 
-                    {/* Composer */}
-                    <div className="p-3 flex items-center gap-2.5 shrink-0 border-t border-white/10">
-                      <input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && send()}
-                        placeholder="Type your reply…"
-                        className="flex-1 h-12 rounded-xl bg-white/[0.08] border border-white/15 backdrop-blur-md px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-offset-0"
-                        style={{ "--tw-ring-color": brandColor }}
-                      />
-                      <button
-                        onClick={send}
-                        disabled={thinking || !input.trim()}
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-opacity shrink-0 border border-white/20"
-                        style={{ background: `linear-gradient(135deg, ${brandColor}, ${brandColor}bb)` }}
-                      >
-                        {thinking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                      </button>
+                    {/* Composer — large centered floating pill */}
+                    <div className="px-6 pb-6 pt-2 shrink-0">
+                      <div className="relative flex items-center">
+                        <input
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && send()}
+                          placeholder="Type your reply…"
+                          className="w-full h-14 rounded-full bg-white/90 border border-white/40 backdrop-blur-md pl-6 pr-16 text-[15px] text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
+                          style={{ "--tw-ring-color": brandColor }}
+                        />
+                        <button
+                          onClick={send}
+                          disabled={thinking || !input.trim()}
+                          className="absolute right-2 w-10 h-10 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
+                          style={{ background: `linear-gradient(135deg, ${brandColor}, ${brandColor}bb)` }}
+                        >
+                          {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 )}
