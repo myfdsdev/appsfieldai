@@ -33,12 +33,12 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     sections.dealMakerGreeting ||
     `Welcome to ${storeName}. I'm ${dealmakerName}${ownerName ? `, ${ownerName}'s deal maker` : ""} — I'll find you the perfect tool and the best price.`;
 
-  // Auto-open once per session, shortly after mount.
+  // Auto-open once per session, right as the page loads.
   useEffect(() => {
     if (!marketplaceId) return;
     const key = `dm_dismissed_${marketplaceId}`;
     if (sessionStorage.getItem(key) === "1") return;
-    const t = setTimeout(() => setOpen(true), 2500);
+    const t = setTimeout(() => setOpen(true), 600);
     return () => clearTimeout(t);
   }, [marketplaceId]);
 
@@ -121,6 +121,11 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     if (marketplaceId) sessionStorage.setItem(`dm_dismissed_${marketplaceId}`, "1");
   };
 
+  const reopen = () => {
+    if (marketplaceId) sessionStorage.removeItem(`dm_dismissed_${marketplaceId}`);
+    setOpen(true);
+  };
+
   if (!marketplaceId) return null;
 
   return (
@@ -147,7 +152,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             </motion.div>
 
             <button
-              onClick={() => setOpen(true)}
+              onClick={reopen}
               className="relative w-16 h-16 shrink-0 transition-transform hover:scale-105"
               aria-label="Chat with the Deal Maker"
             >
@@ -191,8 +196,8 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
-            {/* Glassy dim — page stays ~3% visible through a soft blur */}
-            <div className="absolute inset-0 bg-[#05070c]/[0.9] backdrop-blur-xl" />
+            {/* Glassy dim — page stays ~95% visible through a soft blur */}
+            <div className="absolute inset-0 bg-[#05070c]/[0.05] backdrop-blur-xl" />
             {/* Ambient center glow field */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div
