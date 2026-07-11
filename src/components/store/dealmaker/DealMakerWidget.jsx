@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, X, Send, Loader2, MessageCircle, ChevronLeft } from "lucide-react";
+import { Sparkles, X, Send, Loader2, MessageCircle } from "lucide-react";
 import DealMakerMessage from "./DealMakerMessage";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerHero from "./DealMakerHero";
@@ -33,7 +33,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     return () => clearTimeout(t);
   }, [marketplaceId]);
 
-  // Visitor starts chatting from the hero → swap to the chat view inside the same box.
+  // Visitor starts chatting from the hero → hero shrinks up, chat grows in the same box.
   const startChat = () => setChatting(true);
 
   // Send the opening greeting the first time the chat view is shown.
@@ -46,8 +46,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   }, [chatting]);
 
   useEffect(() => {
+    if (!chatting) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, thinking, leadForm]);
+  }, [messages, thinking, leadForm, chatting]);
 
   const handleActions = (actions = []) => {
     for (const a of actions) {
@@ -169,69 +170,40 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               {/* Glass sheen highlight */}
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-              <AnimatePresence mode="wait" initial={false}>
-                {!chatting ? (
-                  <motion.div
-                    key="hero"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
-                  >
-                    <DealMakerHero marketplace={marketplace} brandColor={brandColor} onStart={startChat} onDismiss={close} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="chat"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
-                    className="flex flex-col h-[min(640px,calc(100vh-2rem))]"
-                  >
-                    {/* Floating header — no bar, back + avatar + name row with corner X */}
-                    <div className="flex items-center justify-between px-6 pt-5 pb-2 shrink-0">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <button
-                          onClick={() => setChatting(false)}
-                          className="p-1.5 -ml-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                          aria-label="Back"
-                        >
-                          <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <div className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center overflow-hidden shrink-0">
-                          {dealmakerImage ? (
-                            <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
-                          ) : (
-                            <Sparkles className="w-4 h-4 text-white" />
-                          )}
-                        </div>
-                        <p className="text-sm font-semibold text-white truncate">
-                          <span className="font-bold">{dealmakerName}</span>
-                          <span className="text-white/60 font-normal"> · {marketplace?.pageSections?.dealMakerTagline || "Dealmaker"} · {marketplace?.name || "Store"}</span>
-                        </p>
-                      </div>
-                      <button onClick={close} className="p-1.5 -mr-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0">
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
+              {/* Close button — always top-right */}
+              <button
+                onClick={close}
+                className="absolute top-4 right-4 z-20 p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-                    {/* Messages — free-flowing, older bubbles fade out (history kept, reachable by scrolling up) */}
-                    <div className="relative flex-1 min-h-0">
-                      {/* top fade mask so scrolled-up history softly disappears */}
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-10 z-10 bg-gradient-to-b from-black/25 to-transparent" />
-                      <div ref={scrollRef} className="h-full overflow-y-auto px-6 py-4 space-y-5">
+              {/* One continuous column: hero on top (shrinks once chatting), messages scroll
+                  underneath, composer pinned at the bottom. Everything shifts up as messages grow. */}
+              <motion.div
+                layout
+                className={`flex flex-col ${chatting ? "h-[min(640px,calc(100vh-2rem))]" : ""}`}
+              >
+                {/* Scroll area holds BOTH the hero and the messages so they scroll up together */}
+                <div ref={scrollRef} className={`${chatting ? "flex-1 min-h-0 overflow-y-auto" : ""}`}>
+                  <DealMakerHero
+                    marketplace={marketplace}
+                    brandColor={brandColor}
+                    onStart={startChat}
+                    compact={chatting}
+                  />
+
+                  {chatting && (
+                    <div className="px-6 pb-4 space-y-5">
                       {messages.length === 0 && thinking && (
                         <div className="flex items-center gap-2 text-xs text-white/50 px-1">
                           <MessageCircle className="w-4 h-4" /> {dealmakerName} is getting ready…
                         </div>
                       )}
-                      {messages.map((m, i) => {
-                        // Only the newest ~3 messages stay fully visible; older ones fade.
-                        const distance = messages.length - 1 - i;
-                        const fade = distance <= 2 ? 1 : Math.max(0.28, 1 - (distance - 2) * 0.22);
-                        return <DealMakerMessage key={i} message={m} brandColor={brandColor} fade={fade} />;
-                      })}
+                      {messages.map((m, i) => (
+                        <DealMakerMessage key={i} message={m} brandColor={brandColor} fade={1} />
+                      ))}
                       {thinking && messages.length > 0 && (
                         <div className="flex justify-start">
                           <div className="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1">
@@ -244,33 +216,39 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                       {leadForm && (
                         <DealMakerLeadForm hot={leadForm.hot} brandColor={brandColor} submitting={submittingLead} onSubmit={submitLead} />
                       )}
-                      </div>
                     </div>
+                  )}
+                </div>
 
-                    {/* Composer — large centered floating pill */}
-                    <div className="px-6 pb-6 pt-2 shrink-0">
-                      <div className="relative flex items-center">
-                        <input
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && send()}
-                          placeholder="Type your reply…"
-                          className="w-full h-14 rounded-full bg-white/90 border border-white/40 backdrop-blur-md pl-6 pr-16 text-[15px] text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
-                          style={{ "--tw-ring-color": brandColor }}
-                        />
-                        <button
-                          onClick={send}
-                          disabled={thinking || !input.trim()}
-                          className="absolute right-2 w-10 h-10 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
-                          style={{ background: `linear-gradient(135deg, ${brandColor}, ${brandColor}bb)` }}
-                        >
-                          {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                        </button>
-                      </div>
+                {/* Composer — appears at the bottom once chatting */}
+                {chatting && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
+                    className="px-6 pb-6 pt-2 shrink-0"
+                  >
+                    <div className="relative flex items-center">
+                      <input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && send()}
+                        placeholder="Type your reply…"
+                        className="w-full h-14 rounded-full bg-white/90 border border-white/40 backdrop-blur-md pl-6 pr-16 text-[15px] text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 shadow-lg"
+                        style={{ "--tw-ring-color": brandColor }}
+                      />
+                      <button
+                        onClick={send}
+                        disabled={thinking || !input.trim()}
+                        className="absolute right-2 w-10 h-10 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
+                        style={{ background: `linear-gradient(135deg, ${brandColor}, ${brandColor}bb)` }}
+                      >
+                        {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      </button>
                     </div>
                   </motion.div>
                 )}
-              </AnimatePresence>
+              </motion.div>
             </motion.div>
           </div>
         )}
