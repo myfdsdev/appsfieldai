@@ -100,6 +100,8 @@ HARD RULES: NEVER promise income/revenue/ROI. NEVER invent apps, features, price
 
 ACTION TOKENS (emit on their own line, exactly): [ACTION:SHOW_APP:app_id], [ACTION:SHOW_CATEGORY:category], [ACTION:RUN_DEMO:app_id], [ACTION:OFFER_RESERVATION:app_id], [ACTION:CAPTURE_LEAD], [ACTION:LOG_CUSTOM_REQUEST].
 
+SUGGESTED REPLIES: At the very end of every message, on its own final line, offer 2-3 short tappable replies the visitor is likely to give next, in this exact format: [SUGGEST: option one | option two | option three]. Keep each option under 5 words, natural and in the visitor's voice (e.g. "I run a gym", "Show me tools", "What's the price?"). Never repeat a suggestion the visitor already picked.
+
 ${greeting ? `OPENING GREETING: When the conversation is empty, open with exactly this greeting: "${greeting}"` : ''}
 
 ${knowledge ? `STORE KNOWLEDGE BASE (owner-provided facts, tasks and rules you MUST follow and may quote — this is your training):\n${knowledge}` : ''}
@@ -125,9 +127,21 @@ ${JSON.stringify(catalog)}`;
     while ((match = tokenRegex.exec(reply)) !== null) {
       actions.push({ type: match[1], value: match[2] || null });
     }
-    const cleanReply = reply.replace(tokenRegex, '').replace(/\n{3,}/g, '\n\n').trim();
+    // Parse suggested quick-reply chips: [SUGGEST: a | b | c]
+    let suggestions = [];
+    const suggestRegex = /\[SUGGEST:([^\]]+)\]/i;
+    const sMatch = suggestRegex.exec(reply);
+    if (sMatch) {
+      suggestions = sMatch[1].split('|').map((s) => s.trim()).filter(Boolean).slice(0, 3);
+    }
 
-    return Response.json({ reply: cleanReply, actions });
+    const cleanReply = reply
+      .replace(tokenRegex, '')
+      .replace(suggestRegex, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    return Response.json({ reply: cleanReply, actions, suggestions });
   } catch (error) {
     console.error('dealMakerChat error:', error);
     return Response.json({ error: error.message }, { status: 500 });
