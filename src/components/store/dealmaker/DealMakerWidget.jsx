@@ -271,17 +271,6 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
             {/* Preset gradient theme — sits ABOVE the dim so the chosen color is always visible */}
             <div className="absolute inset-0" style={{ background: bgTheme.css }} />
-            {/* Ambient center glow field */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[820px] h-[820px] rounded-full blur-[150px] opacity-45"
-                style={{ background: `radial-gradient(circle, ${brandColor}, transparent 68%)` }}
-              />
-              <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full blur-[110px] opacity-30"
-                style={{ background: `radial-gradient(circle, #22d3ee, transparent 70%)` }}
-              />
-            </div>
 
             {/* Mute / unmute voice */}
             <button
