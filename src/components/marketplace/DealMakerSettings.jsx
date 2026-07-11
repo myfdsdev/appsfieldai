@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Check } from "lucide-react";
+import { Sparkles, Check, Play, Loader2 } from "lucide-react";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { DEAL_MAKER_BG_THEMES } from "@/components/store/dealmaker/dealMakerThemes";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 const LAYOUTS = [
   { key: "centered", label: "Centered", hint: "Orb on top, chat below" },
@@ -54,6 +56,31 @@ function LayoutThumb({ variant }) {
 // knowledge base (store info, tasks, rules, FAQs) used to train its replies.
 export default function DealMakerSettings({ deal, onChange }) {
   const set = (k) => (e) => onChange(k, e.target.value);
+  const [previewing, setPreviewing] = useState(false);
+  const audioRef = useRef(null);
+
+  // Preview the currently-selected Base44 voice with a short spoken sample.
+  const previewVoice = async () => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setPreviewing(true);
+    try {
+      const res = await base44.functions.invoke("voiceSample", {
+        voice: deal.dealMakerVoice || "river",
+        name: deal.dealMakerVoice || "river",
+        provider: "base44",
+      });
+      const url = res?.data?.url;
+      if (!url) { toast.error("Couldn't generate a sample."); setPreviewing(false); return; }
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => setPreviewing(false);
+      audio.onerror = () => { toast.error("Couldn't play the sample."); setPreviewing(false); };
+      audio.play().catch(() => { toast.error("Couldn't play the sample."); setPreviewing(false); });
+    } catch {
+      toast.error("Couldn't play the sample.");
+      setPreviewing(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -105,15 +132,27 @@ export default function DealMakerSettings({ deal, onChange }) {
       {/* Voice picker — the Base44 built-in voice the agent speaks with */}
       <div>
         <label className="text-xs text-muted-foreground">Agent Voice</label>
-        <select
-          value={deal.dealMakerVoice || "river"}
-          onChange={(e) => onChange("dealMakerVoice", e.target.value)}
-          className="w-full h-10 bg-secondary/50 border border-border/30 rounded-xl px-3 text-sm mt-1"
-        >
-          {VOICES.map((v) => (
-            <option key={v.id} value={v.id}>{v.name}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2 mt-1">
+          <select
+            value={deal.dealMakerVoice || "river"}
+            onChange={(e) => onChange("dealMakerVoice", e.target.value)}
+            className="flex-1 h-10 bg-secondary/50 border border-border/30 rounded-xl px-3 text-sm"
+          >
+            {VOICES.map((v) => (
+              <option key={v.id} value={v.id}>{v.name}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={previewVoice}
+            disabled={previewing}
+            className="h-10 px-4 rounded-xl bg-secondary hover:bg-secondary/70 border border-border/30 flex items-center gap-2 text-sm shrink-0 transition-colors disabled:opacity-60"
+            title="Preview voice"
+          >
+            {previewing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            Preview
+          </button>
+        </div>
         <p className="text-[11px] text-muted-foreground mt-1">The voice used when the agent speaks its replies aloud on your store.</p>
       </div>
 
