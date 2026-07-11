@@ -19,6 +19,14 @@ Deno.serve(async (req) => {
     const categories = marketplace.categories || [];
     const storeName = marketplace.name || 'this marketplace';
 
+    // Resolve the admin-configured AI model (provider + model). base44/automatic → default routing.
+    let aiModel = null;
+    try {
+      const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'main' });
+      const eng = cfgs?.[0]?.aiEngine;
+      if (eng?.provider && eng.provider !== 'base44' && eng.model) aiModel = eng.model;
+    } catch { /* fall back to automatic */ }
+
     // 1. Generate hero copy, FAQs, and testimonials with the built-in LLM.
     const prompt = `You are writing marketing content for a SaaS deals marketplace called "${storeName}".
 The owner describes it as: "${description || 'A marketplace for discovering and buying lifetime SaaS deals.'}"
@@ -38,6 +46,7 @@ Generate compelling, professional, conversion-focused content for this store's l
 
     const generated = await base44.integrations.Core.InvokeLLM({
       prompt,
+      ...(aiModel ? { model: aiModel } : {}),
       response_json_schema: {
         type: 'object',
         properties: {

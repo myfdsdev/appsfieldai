@@ -118,7 +118,15 @@ ${JSON.stringify(catalog)}`;
 
     const prompt = `${systemPrompt}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nRespond as ${dealmakerName} with your next single message. Include any action tokens on their own line.`;
 
-    const reply = await base44.integrations.Core.InvokeLLM({ prompt });
+    // Resolve the admin-configured AI model. base44/automatic → default routing.
+    let aiModel = null;
+    try {
+      const cfgs = await svc.entities.AppConfig.filter({ key: 'main' });
+      const eng = cfgs?.[0]?.aiEngine;
+      if (eng?.provider && eng.provider !== 'base44' && eng.model) aiModel = eng.model;
+    } catch { /* fall back to automatic */ }
+
+    const reply = await base44.integrations.Core.InvokeLLM({ prompt, ...(aiModel ? { model: aiModel } : {}) });
 
     // Parse out action tokens so the frontend can react (show app, run demo, etc.).
     const actions = [];

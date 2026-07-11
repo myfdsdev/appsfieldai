@@ -34,6 +34,26 @@
       "type": "string",
       "description": "JVZoo IPN secret key used to verify incoming webhook signatures"
     },
+    "aiEngine": {
+      "type": "object",
+      "description": "AI engine configuration used for store creation and Deal Maker chat responses",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "base44",
+            "openai",
+            "gemini"
+          ],
+          "default": "base44",
+          "description": "AI provider: base44 (built-in automatic), openai, or gemini"
+        },
+        "model": {
+          "type": "string",
+          "description": "Selected model id for the chosen provider (e.g. gpt_5_4, gemini_3_flash)"
+        }
+      }
+    },
     "themeColors": {
       "type": "object",
       "description": "Dynamic light/dark mode color scheme (hex values per token)",
