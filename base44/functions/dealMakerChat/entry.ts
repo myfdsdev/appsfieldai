@@ -141,6 +141,9 @@ ${JSON.stringify(catalog)}`;
     const cleanReply = reply
       .replace(tokenRegex, '')
       .replace(suggestRegex, '')
+      // Strip a leading speaker label the model sometimes adds, e.g.
+      // "Deal Maker:", "Max:", "Dealmaker -" etc.
+      .replace(new RegExp(`^\\s*(${dealmakerName}|deal ?maker)\\s*[:\\-–]\\s*`, 'i'), '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
