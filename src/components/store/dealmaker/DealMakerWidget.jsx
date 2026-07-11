@@ -59,31 +59,38 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     }
   };
 
-  // Speak (TTS) the latest agent message aloud unless muted.
+  // Play a pre-generated audio URL (OpenAI/Gemini voice, generated inside
+  // dealMakerChat in the same round-trip — no extra call, minimal lag).
+  const playAudioUrl = (url) => {
+    if (muted || !url) return;
+    stopSpeaking();
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+  };
+
+  // Speak (TTS) a message aloud unless muted.
   // - Base44 provider → instant browser speech synthesis (zero network lag).
-  // - OpenAI / Gemini provider → aiVoice call for the higher-quality voice
-  //   (small delay is unavoidable since the audio file must be generated first).
-  const speak = async (text) => {
+  // - OpenAI / Gemini → uses audioUrl from the chat response (see playAudioUrl);
+  //   this fallback covers cases where no URL was returned.
+  const speak = async (text, audioUrl) => {
     if (muted || !text) return;
-    if (voiceProvider !== "openai" && voiceProvider !== "gemini") {
-      if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (voiceProvider === "openai" || voiceProvider === "gemini") {
+      if (audioUrl) { playAudioUrl(audioUrl); return; }
       try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 1.03;
-        u.pitch = 1;
-        window.speechSynthesis.speak(u);
+        stopSpeaking();
+        const res = await base44.functions.invoke("aiVoice", { text });
+        playAudioUrl(res?.data?.url);
       } catch { /* no-op */ }
       return;
     }
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
     try {
-      stopSpeaking();
-      const res = await base44.functions.invoke("aiVoice", { text });
-      const url = res?.data?.url;
-      if (!url || muted) return;
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.play().catch(() => {});
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.03;
+      u.pitch = 1;
+      window.speechSynthesis.speak(u);
     } catch { /* no-op */ }
   };
 
@@ -93,7 +100,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     const last = messages[messages.length - 1];
     if (last?.role === "assistant" && messages.length > spokenRef.current) {
       spokenRef.current = messages.length;
-      speak(last.content);
+      speak(last.content, last.audioUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, muted]);
@@ -163,12 +170,13 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     try {
       const res = await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
       const reply = res.data?.reply;
+      const audioUrl = res.data?.audioUrl;
       if (reply) {
-        // Kick off TTS immediately (in parallel with rendering) so the voice
-        // isn't delayed waiting on the message-render effect.
-        speak(reply);
+        // Play the voice immediately using the audio generated in the same
+        // response (no second call) so speech starts as the message appears.
+        speak(reply, audioUrl);
         setMessages((mm) => {
-          const next = [...mm, { role: "assistant", content: reply }];
+          const next = [...mm, { role: "assistant", content: reply, audioUrl }];
           // Mark this message as already spoken so the auto-play effect skips it.
           spokenRef.current = next.length;
           return next;
