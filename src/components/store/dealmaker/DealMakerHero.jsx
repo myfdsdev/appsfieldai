@@ -19,13 +19,13 @@ export default function DealMakerHero({ marketplace, brandColor = "#6366f1", onS
 
   return (
     <div className="relative">
-      {/* Futuristic glow field */}
+      {/* Frosted glass glow field */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
-          className="absolute -top-24 left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full blur-[90px] opacity-40"
+          className="absolute -top-24 left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full blur-[100px] opacity-50"
           style={{ background: `radial-gradient(circle, ${brandColor}, transparent 70%)` }}
         />
-        <div className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:34px_34px]" />
+        <div className="absolute -bottom-20 -right-16 w-[320px] h-[320px] rounded-full blur-[100px] opacity-30 bg-cyan-400" />
       </div>
 
       <button
@@ -48,7 +48,7 @@ export default function DealMakerHero({ marketplace, brandColor = "#6366f1", onS
             className="relative w-28 h-28 rounded-full p-[2px]"
             style={{ background: `conic-gradient(from 0deg, ${brandColor}, #22d3ee, ${brandColor})` }}
           >
-            <div className="w-full h-full rounded-full overflow-hidden bg-[#11111a] flex items-center justify-center">
+            <div className="w-full h-full rounded-full overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
               {image ? (
                 <img src={image} alt={name} className="w-full h-full object-cover" />
               ) : (
@@ -57,7 +57,7 @@ export default function DealMakerHero({ marketplace, brandColor = "#6366f1", onS
             </div>
           </div>
           {/* Online dot */}
-          <span className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-[#0b0b13]" />
+          <span className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-white/20" />
         </div>
 
         {/* Identity */}
