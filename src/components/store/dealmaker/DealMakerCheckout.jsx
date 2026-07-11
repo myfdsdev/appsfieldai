@@ -26,9 +26,9 @@ export default function DealMakerCheckout({ listing, marketplaceId, marketplace,
   const payment = marketplace?.payment || {};
   const methods = [];
   if (payment.paypalEnabled) methods.push({ id: "paypal", label: "PayPal" });
-  if (Deno_stripe(marketplace)) methods.push({ id: "stripe", label: "Card (Stripe)" });
+  // Stripe runs on the platform keys, so it's always available store-wide.
+  methods.push({ id: "stripe", label: "Card (Stripe)" });
   if (payment.codEnabled) methods.push({ id: "cod", label: payment.codInstructions ? "Manual payment" : "Pay manually" });
-  if (methods.length === 0) methods.push({ id: "cod", label: "Reserve & pay manually" });
 
   const submitInfo = () => {
     setError("");
@@ -149,9 +149,4 @@ export default function DealMakerCheckout({ listing, marketplaceId, marketplace,
       </div>
     </motion.div>
   );
-}
-
-// Stripe is available store-wide (platform keys); show it as an option.
-function Deno_stripe() {
-  return true;
 }
