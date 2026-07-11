@@ -141,19 +141,37 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking, leadForm, suggestions, chatting]);
 
+  // Turn action tokens into an inline card attached to the just-sent assistant
+  // message (product preview / demo), so everything stays inside the immersive
+  // chat instead of opening an external modal.
   const handleActions = (actions = []) => {
+    let card = null;
     for (const a of actions) {
-      if ((a.type === "SHOW_APP" || a.type === "RUN_DEMO") && a.value) {
+      if (a.type === "SHOW_APP" && a.value) {
         const listing = listings.find((l) => l.id === a.value);
-        if (listing) onShowApp?.(listing);
+        if (listing) card = { listing, mode: "card" };
+      } else if (a.type === "RUN_DEMO" && a.value) {
+        const listing = listings.find((l) => l.id === a.value);
+        if (listing) card = { listing, mode: "demo" };
       } else if (a.type === "OFFER_RESERVATION" && a.value) {
         const listing = listings.find((l) => l.id === a.value);
-        if (listing) onReserve?.(listing);
+        // Attach a card with a reserve CTA (unless a demo card is already set).
+        if (listing && !card) card = { listing, mode: "card", reserve: true };
       } else if (a.type === "CAPTURE_LEAD") {
         setLeadForm({ hot: false });
       } else if (a.type === "LOG_CUSTOM_REQUEST") {
         setLeadForm({ hot: true });
       }
+    }
+    if (card) {
+      // Attach the card to the most recent assistant message.
+      setMessages((mm) => {
+        const next = [...mm];
+        for (let i = next.length - 1; i >= 0; i--) {
+          if (next[i].role === "assistant") { next[i] = { ...next[i], card }; break; }
+        }
+        return next;
+      });
     }
   };
 
@@ -369,6 +387,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                   onSubmitLead={submitLead}
                   brandColor={brandColor}
                   scrollRef={scrollRef}
+                  currency={marketplace?.currency || "USD"}
+                  onMoreDetails={onShowApp}
+                  onReserve={onReserve}
                   maxWidthClass={layout === "centered" || layout === "spotlight" ? "max-w-3xl" : "max-w-xl"}
                 />
               );

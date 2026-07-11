@@ -20,6 +20,9 @@ export default function DealMakerConversation({
   onSubmitLead,
   brandColor,
   scrollRef,
+  currency = "USD",
+  onMoreDetails,
+  onReserve,
   maxWidthClass = "max-w-3xl",
 }) {
   const font = { fontFamily: "'Outfit', sans-serif" };
@@ -34,7 +37,17 @@ export default function DealMakerConversation({
             {messages.map((mm, i) => {
               const distance = messages.length - 1 - i;
               const fade = Math.max(0.35, 1 - distance * 0.18);
-              return <DealMakerFloatingMessage key={i} message={mm} brandColor={brandColor} fade={fade} />;
+              return (
+                <DealMakerFloatingMessage
+                  key={i}
+                  message={mm}
+                  brandColor={brandColor}
+                  fade={fade}
+                  currency={currency}
+                  onMoreDetails={onMoreDetails}
+                  onReserve={onReserve}
+                />
+              );
             })}
 
             {thinking && (

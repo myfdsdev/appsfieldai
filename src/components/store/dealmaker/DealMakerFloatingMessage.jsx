@@ -1,11 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import DealMakerProductCard from "./DealMakerProductCard";
 
 // A boundary-less chat line for the immersive full-page mode.
 // No bubble box — text simply floats in space. Agent text is centered and large;
 // the visitor's own replies sit to the right, dimmer, smaller, like an echo.
-export default function DealMakerFloatingMessage({ message, brandColor = "#6366f1", fade = 1 }) {
+export default function DealMakerFloatingMessage({ message, brandColor = "#6366f1", fade = 1, currency = "USD", onMoreDetails, onReserve }) {
   const isUser = message.role === "user";
 
   if (isUser) {
@@ -34,12 +35,24 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
       initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
       animate={{ opacity: fade, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex justify-center"
+      className="flex flex-col items-center gap-4"
       style={{ fontFamily: "'Outfit', sans-serif" }}
     >
-      <ReactMarkdown className="prose prose-invert max-w-2xl text-center text-xl sm:text-2xl leading-relaxed font-light text-white/90 [&_p]:my-1 [&_strong]:text-white [&_strong]:font-semibold">
-        {message.content}
-      </ReactMarkdown>
+      {message.content && (
+        <ReactMarkdown className="prose prose-invert max-w-2xl text-center text-xl sm:text-2xl leading-relaxed font-light text-white/90 [&_p]:my-1 [&_strong]:text-white [&_strong]:font-semibold">
+          {message.content}
+        </ReactMarkdown>
+      )}
+      {message.card?.listing && (
+        <DealMakerProductCard
+          listing={message.card.listing}
+          mode={message.card.mode}
+          brandColor={brandColor}
+          currency={currency}
+          onMoreDetails={onMoreDetails}
+          onReserve={message.card.reserve ? onReserve : undefined}
+        />
+      )}
     </motion.div>
   );
 }
