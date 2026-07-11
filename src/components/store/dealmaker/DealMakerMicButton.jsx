@@ -16,6 +16,10 @@ export default function DealMakerMicButton({ brandColor = "#6366f1", disabled, o
   };
 
   const start = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      console.warn("voice recording not supported in this context");
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;

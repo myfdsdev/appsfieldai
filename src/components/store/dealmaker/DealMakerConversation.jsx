@@ -25,13 +25,11 @@ export default function DealMakerConversation({
   const font = { fontFamily: "'Outfit', sans-serif" };
   return (
     <div className="flex-1 flex flex-col min-h-0 w-full" style={font}>
-      {/* Free-floating conversation — no boundary box. min-h-full + flex column
-          with grow spacers keeps the newest message anchored to the center. */}
+      {/* Free-floating conversation — no boundary box. Generous top/bottom padding
+          keeps the newest message resting near the vertical center; older lines
+          scroll up out of view as the conversation grows. */}
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-6">
-        <div className={`mx-auto ${maxWidthClass} w-full min-h-full flex flex-col justify-center py-8`}>
-          {/* top spacer pushes short conversations toward center */}
-          <div className="flex-1 min-h-[8vh]" />
-
+        <div className={`mx-auto ${maxWidthClass} w-full py-[35vh]`}>
           <div className="space-y-6">
             {messages.map((mm, i) => {
               const distance = messages.length - 1 - i;
@@ -59,9 +57,6 @@ export default function DealMakerConversation({
               </div>
             )}
           </div>
-
-          {/* bottom spacer balances the top so the newest line sits centered */}
-          <div className="flex-1 min-h-[8vh]" />
         </div>
       </div>
 

@@ -157,14 +157,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   const reopen = () => {
     if (marketplaceId) sessionStorage.removeItem(`dm_dismissed_${marketplaceId}`);
-    // Reset the conversation so reopening always starts clean.
-    setChatting(false);
-    setGreeted(false);
-    setMessages([]);
-    setSuggestions([]);
-    setLeadForm(null);
-    setInput("");
-    spokenRef.current = 0;
+    // Reopen right where the visitor left off — the conversation is preserved.
+    // Don't re-speak old messages on reopen.
+    spokenRef.current = messages.length;
     setOpen(true);
   };
 
