@@ -56,7 +56,28 @@ Deno.serve(async (req) => {
       }
     }
 
-    const data = await res.json().catch(() => ({}));
+    // The origin (Render behind Cloudflare) can return a non-JSON HTML error
+    // page on 5xx / cold start. Parse defensively and turn a gateway failure
+    // into a clear, retryable message instead of an empty/confusing response.
+    const raw = await res.text();
+    let data;
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = null;
+    }
+
+    if (data === null || [502, 503, 504].includes(res.status)) {
+      console.error(`domainServiceProxy: origin returned ${res.status}, non-JSON body:`, raw.slice(0, 300));
+      return Response.json(
+        {
+          error:
+            "The domain service is temporarily unavailable (it may be waking up). Please wait about a minute and try again.",
+        },
+        { status: 503 }
+      );
+    }
+
     return Response.json(data, { status: res.status });
   } catch (error) {
     console.error("domainServiceProxy error:", error.message);
