@@ -12,6 +12,15 @@ const LAYOUTS = [
   { key: "spotlight", label: "Spotlight", hint: "Large image, chat over it" },
 ];
 
+// Base44 built-in voices the agent can speak with.
+const VOICES = [
+  { id: "river", name: "River (calm)" },
+  { id: "honey", name: "Honey (warm)" },
+  { id: "sunny", name: "Sunny (upbeat)" },
+  { id: "storm", name: "Storm (formal)" },
+  { id: "spark", name: "Spark (energetic)" },
+];
+
 // Tiny visual thumbnails of each layout
 function LayoutThumb({ variant }) {
   const orb = <span className="block w-3 h-3 rounded-full bg-white/70 mx-auto" />;
@@ -91,6 +100,21 @@ export default function DealMakerSettings({ deal, onChange }) {
           <label className="text-xs text-muted-foreground">Owner Name (for follow-ups)</label>
           <Input value={deal.dealMakerOwnerName} onChange={set("dealMakerOwnerName")} placeholder="Your name" className="bg-secondary/50 border-border/30 rounded-xl mt-1" />
         </div>
+      </div>
+
+      {/* Voice picker — the Base44 built-in voice the agent speaks with */}
+      <div>
+        <label className="text-xs text-muted-foreground">Agent Voice</label>
+        <select
+          value={deal.dealMakerVoice || "river"}
+          onChange={(e) => onChange("dealMakerVoice", e.target.value)}
+          className="w-full h-10 bg-secondary/50 border border-border/30 rounded-xl px-3 text-sm mt-1"
+        >
+          {VOICES.map((v) => (
+            <option key={v.id} value={v.id}>{v.name}</option>
+          ))}
+        </select>
+        <p className="text-[11px] text-muted-foreground mt-1">The voice used when the agent speaks its replies aloud on your store.</p>
       </div>
 
       {/* Layout picker */}

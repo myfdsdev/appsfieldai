@@ -69,28 +69,20 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     audio.play().catch(() => {});
   };
 
-  // Speak (TTS) a message aloud unless muted.
-  // - Base44 provider → instant browser speech synthesis (zero network lag).
-  // - OpenAI / Gemini → uses audioUrl from the chat response (see playAudioUrl);
-  //   this fallback covers cases where no URL was returned.
+  // Speak (TTS) a message aloud unless muted. Every provider (including Base44)
+  // routes through aiVoice so the store owner's chosen voice is honored — the
+  // aiVoice function caches nothing here but returns a playable url.
+  // - OpenAI / Gemini → uses audioUrl from the chat response when present.
   const speak = async (text, audioUrl) => {
     if (muted || !text) return;
-    if (voiceProvider === "openai" || voiceProvider === "gemini") {
-      if (audioUrl) { playAudioUrl(audioUrl); return; }
-      try {
-        stopSpeaking();
-        const res = await base44.functions.invoke("aiVoice", { text });
-        playAudioUrl(res?.data?.url);
-      } catch { /* no-op */ }
+    if ((voiceProvider === "openai" || voiceProvider === "gemini") && audioUrl) {
+      playAudioUrl(audioUrl);
       return;
     }
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
     try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.03;
-      u.pitch = 1;
-      window.speechSynthesis.speak(u);
+      stopSpeaking();
+      const res = await base44.functions.invoke("aiVoice", { text, voice: dealMakerVoice });
+      playAudioUrl(res?.data?.url);
     } catch { /* no-op */ }
   };
 
@@ -117,6 +109,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const bgOpacity = (sections.dealMakerBgOpacity ?? 5) / 100;
   const bgTheme = getDealMakerBgTheme(sections.dealMakerBgTheme);
   const voiceProvider = marketplace?.voiceProvider || "base44";
+  const dealMakerVoice = marketplace?.dealMakerVoice || sections.dealMakerVoice || "river";
   const storeName = marketplace?.name || "our store";
   const ownerName = sections.dealMakerOwnerName;
   const intro =

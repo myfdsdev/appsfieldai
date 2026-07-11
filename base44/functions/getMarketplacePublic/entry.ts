@@ -85,6 +85,7 @@ Deno.serve(async (req) => {
         affiliateSettings: m.affiliateSettings || null,
         payment: m.payment || null,
         voiceProvider,
+        dealMakerVoice: m.pageSections?.dealMakerVoice || 'river',
       },
       software,
       categories,
