@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import DealMakerProductCard from "./DealMakerProductCard";
+import DealMakerDetailsCard from "./DealMakerDetailsCard";
 import DealMakerCheckout from "./DealMakerCheckout";
 import DealMakerPlanCard from "./DealMakerPlanCard";
 
@@ -45,7 +46,14 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
           {message.content}
         </ReactMarkdown>
       )}
-      {message.card?.listing && message.card.mode !== "checkout" && (
+      {message.card?.listing && message.card.mode === "details" && (
+        <DealMakerDetailsCard
+          listing={message.card.listing}
+          brandColor={brandColor}
+          currency={currency}
+        />
+      )}
+      {message.card?.listing && message.card.mode !== "checkout" && message.card.mode !== "details" && (
         <DealMakerProductCard
           listing={message.card.listing}
           mode={message.card.mode}

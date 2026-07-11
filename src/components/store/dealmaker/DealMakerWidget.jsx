@@ -154,6 +154,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
       if (a.type === "SHOW_APP" && a.value) {
         const listing = listings.find((l) => l.id === a.value);
         if (listing) card = { listing, mode: "card" };
+      } else if (a.type === "SHOW_DETAILS" && a.value) {
+        const listing = listings.find((l) => l.id === a.value);
+        if (listing) card = { listing, mode: "details" };
       } else if (a.type === "RUN_DEMO" && a.value) {
         const listing = listings.find((l) => l.id === a.value);
         if (listing) card = { listing, mode: "demo" };
