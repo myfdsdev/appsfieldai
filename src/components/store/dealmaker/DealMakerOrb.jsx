@@ -16,21 +16,25 @@ export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366
           animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.6, 0.35] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* rotating conic ring */}
+        {/* rotating conic ring (border only — the photo stays upright) */}
         <motion.div
           layout
-          className={`relative rounded-full p-[2px] ${size}`}
-          style={{ background: `conic-gradient(from 0deg, ${brandColor}, #22d3ee, ${brandColor})` }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          className={`relative rounded-full ${size}`}
+          style={{ padding: "2px" }}
         >
+          <motion.span
+            className="absolute inset-0 rounded-full"
+            style={{ background: `conic-gradient(from 0deg, ${brandColor}, #22d3ee, ${brandColor})` }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          />
           <motion.div
-            className="w-full h-full rounded-full overflow-hidden bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center"
+            className="relative w-full h-full rounded-full overflow-hidden bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center"
             animate={{ scale: [1, 1.03, 1] }}
             transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
           >
             {image ? (
-              <img src={image} alt={name} className="w-full h-full object-cover" style={{ transform: "rotate(0deg)" }} />
+              <img src={image} alt={name} className="w-full h-full object-cover" />
             ) : (
               <Sparkles className={compact ? "w-6 h-6" : "w-10 h-10"} style={{ color: brandColor }} />
             )}

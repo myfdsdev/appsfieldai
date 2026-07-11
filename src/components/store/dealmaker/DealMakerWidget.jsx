@@ -192,7 +192,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             className="fixed inset-0 z-[70] flex flex-col"
           >
             {/* Glassy dim — page stays ~3% visible through a soft blur */}
-            <div className="absolute inset-0 bg-[#05070c]/[0.97] backdrop-blur-2xl" />
+            <div className="absolute inset-0 bg-[#05070c]/[0.9] backdrop-blur-xl" />
             {/* Ambient center glow field */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div
