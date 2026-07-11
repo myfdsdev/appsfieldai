@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, X, Send, Loader2, MessageCircle } from "lucide-react";
+import { Sparkles, X, Send, Loader2, MessageCircle, ChevronLeft } from "lucide-react";
 import DealMakerMessage from "./DealMakerMessage";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerHero from "./DealMakerHero";
@@ -189,9 +189,16 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                     transition={{ duration: 0.32, ease: "easeInOut" }}
                     className="flex flex-col h-[min(640px,calc(100vh-2rem))]"
                   >
-                    {/* Floating header — no bar, avatar + name row with corner X */}
+                    {/* Floating header — no bar, back + avatar + name row with corner X */}
                     <div className="flex items-center justify-between px-6 pt-5 pb-2 shrink-0">
                       <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                          onClick={() => setChatting(false)}
+                          className="p-1.5 -ml-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                          aria-label="Back"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
                         <div className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center overflow-hidden shrink-0">
                           {dealmakerImage ? (
                             <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
