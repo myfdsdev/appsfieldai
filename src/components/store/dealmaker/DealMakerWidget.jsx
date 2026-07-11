@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, X, Volume2, VolumeX } from "lucide-react";
+import { Sparkles, X, Volume2, VolumeX, RotateCcw } from "lucide-react";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerOrb from "./DealMakerOrb";
 import DealMakerCharacter from "./DealMakerCharacter";
@@ -246,6 +246,19 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     if (marketplaceId) sessionStorage.setItem(`dm_dismissed_${marketplaceId}`, "1");
   };
 
+  // Wipe the conversation and start fresh — the greeting effect re-fires
+  // because `greeted` is reset while chat view stays open.
+  const clearChat = () => {
+    stopSpeaking();
+    if (convoKey) { try { sessionStorage.removeItem(convoKey); } catch { /* no-op */ } }
+    spokenRef.current = 0;
+    setMessages([]);
+    setSuggestions([]);
+    setLeadForm(null);
+    setInput("");
+    setGreeted(false);
+  };
+
   const reopen = () => {
     if (marketplaceId) sessionStorage.removeItem(`dm_dismissed_${marketplaceId}`);
     // Reopen right where the visitor left off — the conversation is preserved.
@@ -337,6 +350,18 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
             {/* Preset gradient theme — sits ABOVE the dim so the chosen color is always visible */}
             <div className="absolute inset-0" style={{ background: bgTheme.css }} />
+
+            {/* Clear chat — start a fresh conversation */}
+            {chatting && messages.length > 0 && (
+              <button
+                onClick={clearChat}
+                className="absolute top-6 right-32 z-20 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Clear chat"
+                title="Clear chat"
+              >
+                <RotateCcw className="w-6 h-6" />
+              </button>
+            )}
 
             {/* Mute / unmute voice */}
             <button
