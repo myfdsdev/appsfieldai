@@ -21,6 +21,8 @@ export default function DealMakerConversation({
   brandColor,
   scrollRef,
   currency = "USD",
+  marketplaceId,
+  marketplace,
   onMoreDetails,
   onReserve,
   maxWidthClass = "max-w-3xl",
@@ -44,6 +46,8 @@ export default function DealMakerConversation({
                   brandColor={brandColor}
                   fade={fade}
                   currency={currency}
+                  marketplaceId={marketplaceId}
+                  marketplace={marketplace}
                   onMoreDetails={onMoreDetails}
                   onReserve={onReserve}
                 />

@@ -157,6 +157,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         const listing = listings.find((l) => l.id === a.value);
         // Attach a card with a reserve CTA (unless a demo card is already set).
         if (listing && !card) card = { listing, mode: "card", reserve: true };
+      } else if (a.type === "START_CHECKOUT" && a.value) {
+        const listing = listings.find((l) => l.id === a.value);
+        // Kick off the in-chat guided checkout (name → email → payment → done).
+        if (listing) card = { listing, mode: "checkout" };
       } else if (a.type === "CAPTURE_LEAD") {
         setLeadForm({ hot: false });
       } else if (a.type === "LOG_CUSTOM_REQUEST") {
@@ -209,6 +213,14 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     setInput("");
     setSuggestions([]);
     sendTurn(next);
+  };
+
+  // "Tell me more" on a product card — keep the visitor INSIDE the chat instead
+  // of opening the store's detail modal behind the full-screen overlay (which
+  // looked like a frozen screen). Ask the agent to go deeper on this product.
+  const handleMoreDetails = (listing) => {
+    if (thinking || !listing) return;
+    submitText(`Tell me more about ${listing.softwareName}`);
   };
 
   const submitLead = async (form) => {
@@ -388,7 +400,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                   brandColor={brandColor}
                   scrollRef={scrollRef}
                   currency={marketplace?.currency || "USD"}
-                  onMoreDetails={onShowApp}
+                  marketplaceId={marketplaceId}
+                  marketplace={marketplace}
+                  onMoreDetails={handleMoreDetails}
                   onReserve={onReserve}
                   maxWidthClass={layout === "centered" || layout === "spotlight" ? "max-w-3xl" : "max-w-xl"}
                 />

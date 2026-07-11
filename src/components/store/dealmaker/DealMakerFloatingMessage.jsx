@@ -2,11 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import DealMakerProductCard from "./DealMakerProductCard";
+import DealMakerCheckout from "./DealMakerCheckout";
 
 // A boundary-less chat line for the immersive full-page mode.
 // No bubble box — text simply floats in space. Agent text is centered and large;
 // the visitor's own replies sit to the right, dimmer, smaller, like an echo.
-export default function DealMakerFloatingMessage({ message, brandColor = "#6366f1", fade = 1, currency = "USD", onMoreDetails, onReserve }) {
+export default function DealMakerFloatingMessage({ message, brandColor = "#6366f1", fade = 1, currency = "USD", marketplaceId, marketplace, onMoreDetails, onReserve }) {
   const isUser = message.role === "user";
 
   if (isUser) {
@@ -43,7 +44,7 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
           {message.content}
         </ReactMarkdown>
       )}
-      {message.card?.listing && (
+      {message.card?.listing && message.card.mode !== "checkout" && (
         <DealMakerProductCard
           listing={message.card.listing}
           mode={message.card.mode}
@@ -51,6 +52,15 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
           currency={currency}
           onMoreDetails={onMoreDetails}
           onReserve={message.card.reserve ? onReserve : undefined}
+        />
+      )}
+      {message.card?.listing && message.card.mode === "checkout" && (
+        <DealMakerCheckout
+          listing={message.card.listing}
+          marketplaceId={marketplaceId}
+          marketplace={marketplace}
+          brandColor={brandColor}
+          currency={currency}
         />
       )}
     </motion.div>
