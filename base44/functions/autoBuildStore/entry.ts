@@ -33,7 +33,8 @@ Generate compelling, professional, conversion-focused content for this store's l
 - A short footer tagline describing the store (max 12 words)
 - Exactly 4 realistic dummy SaaS products for this store. Each must have: a software name (title), a short one-line description, a fuller 2-3 sentence description, a category (use one of the store's categories when possible), a full price (number between 79 and 499), and a discounted deal price (lower than the full price)
 - Exactly 5 highly relevant FAQs (question + helpful answer of 1-2 sentences)
-- Exactly 5 realistic, niche-specific testimonials (author name, author role/company, rating 4-5, content of 1-2 sentences)`;
+- Exactly 5 realistic, niche-specific testimonials (author name, author role/company, rating 4-5, content of 1-2 sentences)
+- Deal Maker sales agent training: a friendly human first name for the agent, a short professional tagline (max 4 words), the niche/audience this store helps (short phrase), a reassuring guarantee line (short), a warm 1-2 sentence opening greeting the agent says to visitors (reference the store by name), and a detailed knowledge base (4-6 short paragraphs) the agent uses to sell — covering what the store offers, who it's for, the value of the deals, how buying/delivery works, and how to handle common objections. Only use facts consistent with the description and categories.`;
 
     const generated = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -79,17 +80,37 @@ Generate compelling, professional, conversion-focused content for this store's l
               },
             },
           },
+          agent: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              tagline: { type: 'string' },
+              niche: { type: 'string' },
+              guarantee: { type: 'string' },
+              greeting: { type: 'string' },
+              knowledge: { type: 'string' },
+            },
+          },
         },
       },
     });
 
     const g = generated || {};
 
-    // 2. Merge generated hero copy + FAQs into pageSections, keep existing settings.
+    // 2. Merge generated hero copy + FAQs + Deal Maker agent training into pageSections, keep existing settings.
     const existing = marketplace.pageSections || {};
     const fullHeadline = [g.preHeadline, g.headline].filter(Boolean).join(' — ') || g.headline || storeName;
+    const agent = g.agent || {};
     const updatedPageSections = {
       ...existing,
+      // Deal Maker sales agent — trained from the store description & catalog.
+      dealMakerEnabled: true,
+      dealMakerName: agent.name || existing.dealMakerName || 'Max',
+      dealMakerTagline: agent.tagline || existing.dealMakerTagline || 'AI Deal Strategist',
+      dealMakerNiche: agent.niche || existing.dealMakerNiche || '',
+      dealMakerGuarantee: agent.guarantee || existing.dealMakerGuarantee || '',
+      dealMakerGreeting: agent.greeting || existing.dealMakerGreeting || '',
+      dealMakerKnowledge: agent.knowledge || existing.dealMakerKnowledge || '',
       headerEnabled: true,
       heroBadgeText: g.badge || existing.heroBadgeText || '',
       headerTitle: g.headline || existing.headerTitle || storeName,
@@ -220,6 +241,7 @@ Generate compelling, professional, conversion-focused content for this store's l
       testimonialCount,
       dummyCount,
       importedCount,
+      agentTrained: !!(agent.greeting || agent.knowledge),
     });
   } catch (error) {
     console.error('autoBuildStore error:', error);

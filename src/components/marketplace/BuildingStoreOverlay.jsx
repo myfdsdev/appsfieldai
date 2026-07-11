@@ -10,6 +10,7 @@ const BUILD_STEPS = [
   "Writing your hero & headline",
   "Generating FAQs & testimonials",
   "Importing matching products",
+  "Training your store agent",
   "Publishing your store",
 ];
 
