@@ -59,19 +59,32 @@ export const AI_PROVIDERS = [
   {
     id: "gemini",
     name: "Google Gemini",
-    desc: "Real Gemini API — needs your API key. Voice & transcription fall back to Base44.",
+    desc: "Real Gemini API — needs your API key. Native Gemini TTS voices supported.",
     models: [
       { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (fast)" },
       { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
       { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (highest quality)" },
       { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
     ],
+    // Native Gemini TTS prebuilt voices (each ships with its own character).
     voices: [
-      { id: "river", name: "River (calm)" },
-      { id: "honey", name: "Honey (warm)" },
-      { id: "sunny", name: "Sunny (upbeat)" },
+      { id: "Zephyr", name: "Zephyr (bright)" },
+      { id: "Puck", name: "Puck (upbeat)" },
+      { id: "Charon", name: "Charon (informative)" },
+      { id: "Kore", name: "Kore (firm)" },
+      { id: "Fenrir", name: "Fenrir (excitable)" },
+      { id: "Leda", name: "Leda (youthful)" },
+      { id: "Orus", name: "Orus (firm)" },
+      { id: "Aoede", name: "Aoede (breezy)" },
+      { id: "Callirrhoe", name: "Callirrhoe (easy-going)" },
+      { id: "Autonoe", name: "Autonoe (bright)" },
+      { id: "Enceladus", name: "Enceladus (breathy)" },
+      { id: "Iapetus", name: "Iapetus (clear)" },
     ],
-    voiceModels: [{ id: "", name: "Default (via Base44)" }],
+    voiceModels: [
+      { id: "gemini-2.5-flash-preview-tts", name: "Gemini 2.5 Flash TTS (fast)" },
+      { id: "gemini-2.5-pro-preview-tts", name: "Gemini 2.5 Pro TTS (quality)" },
+    ],
     transcribeModels: [{ id: "", name: "Default (via Base44)" }],
   },
 ];
@@ -84,6 +97,7 @@ export default function AIEngineSettings() {
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [voiceModel, setVoiceModel] = useState("");
   const [voiceName, setVoiceName] = useState("");
+  const [voiceInstructions, setVoiceInstructions] = useState("");
   const [transcribeModel, setTranscribeModel] = useState("");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -112,7 +126,9 @@ export default function AIEngineSettings() {
         voice: v.id,
         provider,
         voiceModel,
+        voiceInstructions: voiceInstructions.trim(),
         openaiApiKey: openaiApiKey.trim(),
+        geminiApiKey: geminiApiKey.trim(),
       });
       const url = res?.data?.url;
       if (!url) { toast.error("Couldn't generate a sample."); setPreviewing(null); return; }
@@ -140,6 +156,7 @@ export default function AIEngineSettings() {
           setGeminiApiKey(eng.geminiApiKey || "");
           setVoiceModel(eng.voiceModel || "");
           setVoiceName(eng.voiceName || "");
+          setVoiceInstructions(eng.voiceInstructions || "");
           setTranscribeModel(eng.transcribeModel || "");
         }
       } catch { /* none yet */ }
@@ -165,6 +182,7 @@ export default function AIEngineSettings() {
     geminiApiKey: geminiApiKey.trim(),
     voiceModel,
     voiceName,
+    voiceInstructions: voiceInstructions.trim(),
     transcribeModel,
   });
 
@@ -313,7 +331,7 @@ export default function AIEngineSettings() {
         </div>
         <p className="text-xs text-muted-foreground -mt-3">
           Text-to-speech and speech-to-text use the same provider &amp; API key selected above.
-          {provider === "gemini" && " Gemini has no built-in voice here, so these fall back to Base44."}
+          {provider === "gemini" && " Gemini uses its native TTS voices; transcription falls back to Base44."}
         </p>
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -372,6 +390,27 @@ export default function AIEngineSettings() {
               ))}
             </select>
           </div>
+
+          {/* Custom voice instructions — OpenAI (gpt-4o-mini-tts) & Gemini TTS both
+              accept a natural-language style prompt to steer tone/emotion/pacing. */}
+          {(provider === "openai" || provider === "gemini") && (
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Volume2 className="w-3.5 h-3.5" /> Custom Voice Instructions
+              </Label>
+              <textarea
+                value={voiceInstructions}
+                onChange={(e) => setVoiceInstructions(e.target.value)}
+                rows={3}
+                placeholder="e.g. Speak warmly and confidently, like a friendly sales expert. Keep an upbeat, energetic pace."
+                className="w-full bg-secondary/40 border border-border/50 rounded-xl px-3 py-2 text-sm resize-y"
+              />
+              <p className="text-xs text-muted-foreground">
+                Steers the voice's tone, emotion and pacing.
+                {provider === "openai" ? " Works best with the GPT-4o Mini TTS model." : " Applied as a style prompt to Gemini TTS."}
+              </p>
+            </div>
+          )}
 
           {/* Transcribe model */}
           <div className="space-y-2 sm:col-span-2">

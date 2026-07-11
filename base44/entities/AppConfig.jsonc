@@ -66,7 +66,11 @@
         },
         "voiceName": {
           "type": "string",
-          "description": "Voice name for text-to-speech (e.g. alloy for OpenAI, river for Base44)"
+          "description": "Voice name for text-to-speech (e.g. alloy for OpenAI, Zephyr for Gemini, river for Base44)"
+        },
+        "voiceInstructions": {
+          "type": "string",
+          "description": "Custom natural-language style prompt to steer TTS tone/emotion/pacing (OpenAI gpt-4o-mini-tts & Gemini TTS)"
         },
         "transcribeModel": {
           "type": "string",
