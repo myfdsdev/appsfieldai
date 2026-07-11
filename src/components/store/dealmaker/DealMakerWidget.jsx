@@ -167,31 +167,31 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               {!chatting ? (
                 <DealMakerHero marketplace={marketplace} brandColor={brandColor} onStart={startChat} onDismiss={close} />
               ) : (
-                <div className="flex flex-col h-[min(600px,calc(100vh-2rem))]">
+                <div className="flex flex-col h-[min(640px,calc(100vh-2rem))] bg-[#0b0b13]">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 text-white" style={{ background: brandColor }}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-4 text-white shrink-0" style={{ background: brandColor }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center overflow-hidden shrink-0">
                         {dealmakerImage ? (
                           <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
                         ) : (
-                          <Sparkles className="w-5 h-5" />
+                          <Sparkles className="w-6 h-6" />
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-bold leading-tight">{dealmakerName}</p>
-                        <p className="text-[11px] text-white/80 leading-tight">{marketplace?.pageSections?.dealMakerTagline || "Dealmaker"} · {marketplace?.name || "Store"}</p>
+                        <p className="text-lg font-bold leading-tight">{dealmakerName}</p>
+                        <p className="text-xs text-white/80 leading-tight">{marketplace?.pageSections?.dealMakerTagline || "Dealmaker"} · {marketplace?.name || "Store"}</p>
                       </div>
                     </div>
                     <button onClick={close} className="p-1.5 rounded-lg hover:bg-white/15 transition-colors">
-                      <X className="w-5 h-5" />
+                      <X className="w-6 h-6" />
                     </button>
                   </div>
 
                   {/* Messages */}
-                  <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 bg-card">
+                  <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                     {messages.length === 0 && thinking && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+                      <div className="flex items-center gap-2 text-xs text-white/50 px-1">
                         <MessageCircle className="w-4 h-4" /> {dealmakerName} is getting ready…
                       </div>
                     )}
@@ -200,10 +200,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                     ))}
                     {thinking && messages.length > 0 && (
                       <div className="flex justify-start">
-                        <div className="bg-secondary/70 rounded-2xl rounded-bl-sm px-3.5 py-2.5 flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.3s]" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.15s]" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce" />
+                        <div className="bg-white/[0.06] rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce [animation-delay:-0.3s]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce [animation-delay:-0.15s]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" />
                         </div>
                       </div>
                     )}
@@ -213,22 +213,22 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                   </div>
 
                   {/* Composer */}
-                  <div className="border-t border-border/50 p-2.5 flex items-center gap-2 bg-card">
+                  <div className="p-3 flex items-center gap-2.5 shrink-0">
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && send()}
                       placeholder="Type your reply…"
-                      className="flex-1 h-10 rounded-xl bg-secondary/60 border border-border/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-offset-0"
+                      className="flex-1 h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-offset-0"
                       style={{ "--tw-ring-color": brandColor }}
                     />
                     <button
                       onClick={send}
                       disabled={thinking || !input.trim()}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-opacity shrink-0"
                       style={{ background: brandColor }}
                     >
-                      {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {thinking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
