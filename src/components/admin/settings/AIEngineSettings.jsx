@@ -111,14 +111,12 @@ export default function AIEngineSettings() {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
     setPreviewing(v.id);
-    const sampleText = `Hi, I'm ${v.name.replace(/\s*\(.*\)$/, "")}. This is how I sound.`;
     try {
-      // Route ALL previews (including Base44) through aiVoice so each voice
-      // uses its real generated sound — browser synthesis makes every Base44
-      // voice sound identical.
-      const res = await base44.functions.invoke("aiVoice", {
-        text: sampleText,
+      // Generate each voice's sample ONCE (server caches it), then replay the
+      // stored file instantly on every later preview.
+      const res = await base44.functions.invoke("voiceSample", {
         voice: v.id,
+        name: v.name,
         provider,
         voiceModel,
         voiceInstructions: voiceInstructions.trim(),
@@ -130,7 +128,8 @@ export default function AIEngineSettings() {
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onended = () => setPreviewing(null);
-      audio.play().catch(() => setPreviewing(null));
+      audio.onerror = () => { toast.error("Couldn't play the sample."); setPreviewing(null); };
+      audio.play().catch(() => { toast.error("Couldn't play the sample."); setPreviewing(null); });
     } catch {
       toast.error("Couldn't play the sample.");
       setPreviewing(null);

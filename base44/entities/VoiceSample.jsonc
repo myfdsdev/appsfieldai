@@ -1,0 +1,30 @@
+{
+  "name": "VoiceSample",
+  "type": "object",
+  "properties": {
+    "cacheKey": {
+      "type": "string",
+      "description": "Unique key: provider|voiceModel|voice"
+    },
+    "provider": {
+      "type": "string",
+      "description": "AI provider (base44, openai, gemini)"
+    },
+    "voice": {
+      "type": "string",
+      "description": "Voice id"
+    },
+    "voiceModel": {
+      "type": "string",
+      "description": "Voice model id"
+    },
+    "url": {
+      "type": "string",
+      "description": "Stored audio sample URL"
+    }
+  },
+  "required": [
+    "cacheKey",
+    "url"
+  ]
+}
