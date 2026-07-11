@@ -308,6 +308,11 @@
           "default": "centered",
           "description": "Deal Maker immersive layout: centered (orb on top), avatar_left (character left / chat right), avatar_right (character right / chat left), spotlight (large character behind with chat overlay)"
         },
+        "dealMakerBgOpacity": {
+          "type": "number",
+          "default": 5,
+          "description": "Transparency (0-100) of the dark dim overlay behind the immersive Deal Maker chat. 0 = fully see-through, 100 = solid dark."
+        },
         "dealMakerOwnerName": {
           "type": "string",
           "description": "Owner name the agent references for follow-ups and custom builds"

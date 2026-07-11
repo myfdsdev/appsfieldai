@@ -124,6 +124,23 @@ export default function DealMakerSettings({ deal, onChange }) {
         <p className="text-[11px] text-muted-foreground mt-1.5">Character layouts show a full standing image — use a tall portrait for best results.</p>
       </div>
 
+      {/* Background transparency of the immersive chat overlay */}
+      <div>
+        <div className="flex items-center justify-between">
+          <label className="text-xs text-muted-foreground">Chat Background Dim</label>
+          <span className="text-xs font-medium text-foreground">{deal.dealMakerBgOpacity ?? 5}%</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={deal.dealMakerBgOpacity ?? 5}
+          onChange={(e) => onChange("dealMakerBgOpacity", Number(e.target.value))}
+          className="w-full mt-2 accent-primary"
+        />
+        <p className="text-[11px] text-muted-foreground mt-1">How dark the store fades behind the chat. 0% = fully see-through, 100% = solid dark.</p>
+      </div>
+
       <div>
         <label className="text-xs text-muted-foreground">Who You Help (niche)</label>
         <Input value={deal.dealMakerNiche} onChange={set("dealMakerNiche")} placeholder="e.g. gym owners, coaches, local restaurants" className="bg-secondary/50 border-border/30 rounded-xl mt-1" />

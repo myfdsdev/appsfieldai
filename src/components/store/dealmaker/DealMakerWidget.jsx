@@ -82,6 +82,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const dealmakerImage = sections.dealMakerImageUrl;
   const dealmakerTagline = sections.dealMakerTagline || "AI Deal Strategist";
   const layout = sections.dealMakerLayout || "centered";
+  const bgOpacity = (sections.dealMakerBgOpacity ?? 5) / 100;
   const storeName = marketplace?.name || "our store";
   const ownerName = sections.dealMakerOwnerName;
   const intro =
@@ -264,8 +265,8 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
-            {/* Glassy dim — page stays ~95% visible through a soft blur */}
-            <div className="absolute inset-0 bg-[#05070c]/[0.05] backdrop-blur-xl" />
+            {/* Glassy dim — owner controls how dark the store fades behind the chat */}
+            <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
             {/* Ambient center glow field */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div
