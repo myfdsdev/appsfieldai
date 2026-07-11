@@ -243,11 +243,23 @@ ${JSON.stringify(catalog)}`;
     }
 
     // Parse the remaining simple action tokens (show app, run demo, etc.).
-    const tokenRegex = /\[ACTION:([A-Z_]+)(?::([^\]{}]+))?\]/g;
+    // Brackets are optional (the model sometimes drops them) and the value may
+    // contain spaces (e.g. "SHOW_DETAILS:TaskFlow CRM") — capture up to a
+    // closing bracket or line end, then trim the value.
+    const tokenRegex = /\[?ACTION:([A-Z_]+)(?::([^\]\n]+?))?\]?(?=\s*(?:\[|\n|$))/g;
     let match;
     while ((match = tokenRegex.exec(reply)) !== null) {
       if (match[1] === 'PROPOSE_PLAN') continue; // already handled above
-      actions.push({ type: match[1], value: match[2] || null });
+      let val = match[2] ? match[2].trim() : null;
+      // The model sometimes passes the app NAME instead of its id — resolve
+      // it back to the real listing id so the frontend can match the card.
+      if (val && !listings.some((l) => l.id === val)) {
+        const byName = listings.find(
+          (l) => (l.softwareName || '').toLowerCase() === val.toLowerCase()
+        );
+        if (byName) val = byName.id;
+      }
+      actions.push({ type: match[1], value: val || null });
     }
     // Parse suggested quick-reply chips: [SUGGEST: a | b | c]
     let suggestions = [];
@@ -263,6 +275,10 @@ ${JSON.stringify(catalog)}`;
     const escapedName = dealmakerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const labelRegex = new RegExp(`^["'\\s]*(${escapedName}|deal ?maker)["'\\s]*[:\\-–—]\\s*`, 'i');
     let cleanReply = reply.replace(planRegex, '').replace(tokenRegex, '').replace(suggestRegex, '').trim();
+    // Safety net: strip any leftover bare action tokens the regexes missed
+    // (including malformed ones with a stray leading/trailing bracket).
+    cleanReply = cleanReply.replace(/\[?ACTION:[A-Z_]+(?::[^\]\n]+?)?\]?(?=\s*(?:\n|$))/g, '').trim();
+    cleanReply = cleanReply.replace(/^\s*[\]]\s*/g, '').replace(/\n\s*\]\s*/g, '\n').trim();
     while (labelRegex.test(cleanReply)) {
       cleanReply = cleanReply.replace(labelRegex, '').trim();
     }
