@@ -114,7 +114,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   return (
     <>
-      {/* Collapsed "Ask me anything" bar — centered, with a slow glow pulse */}
+      {/* Collapsed launcher — bottom-center avatar with pulsing glow + a "Hey" chat bubble */}
       <AnimatePresence>
         {!open && (
           <motion.div
@@ -123,20 +123,53 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] w-[min(440px,calc(100vw-2rem))]"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-3"
           >
+            {/* Chat bubble popup */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="relative rounded-2xl rounded-b-md bg-white px-4 py-2.5 shadow-xl shadow-black/30 max-w-[220px]"
+            >
+              <p className="text-sm font-medium text-neutral-800">Hey, I can help you!</p>
+              {/* little tail */}
+              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white" />
+            </motion.div>
+
+            {/* Avatar launcher with pulsing glow */}
             <button
               onClick={() => setOpen(true)}
-              className="dm-glow-pulse group relative w-full flex items-center gap-3 pl-5 pr-4 py-4 rounded-full bg-[#0b0f1a] border border-white/10 text-left transition-transform hover:scale-[1.01]"
-              style={{ "--dm-glow": brandColor }}
+              className="relative w-16 h-16 shrink-0 transition-transform hover:scale-105"
+              aria-label="Chat with the Deal Maker"
             >
-              <span className="flex-1 text-base text-white/60">Ask me anything…</span>
-              <span
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0"
+              {/* pulsing glow rings */}
+              <motion.span
+                className="absolute inset-0 rounded-full"
                 style={{ background: brandColor }}
+                animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+              />
+              <motion.span
+                className="absolute inset-0 rounded-full"
+                style={{ background: brandColor }}
+                animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
+              />
+              <span
+                className="relative w-full h-full rounded-full p-[2px] flex items-center justify-center shadow-lg"
+                style={{ background: `conic-gradient(from 0deg, ${brandColor}, #22d3ee, ${brandColor})` }}
               >
-                <Send className="w-4 h-4" />
+                <span className="w-full h-full rounded-full overflow-hidden bg-[#0b0f1a] flex items-center justify-center">
+                  {dealmakerImage ? (
+                    <img src={dealmakerImage} alt={dealmakerName} className="w-full h-full object-cover" />
+                  ) : (
+                    <Sparkles className="w-7 h-7 text-white" />
+                  )}
+                </span>
               </span>
+              {/* online dot */}
+              <span className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0b0f1a]" />
             </button>
           </motion.div>
         )}
