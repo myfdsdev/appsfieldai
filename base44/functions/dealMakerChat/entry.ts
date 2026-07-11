@@ -62,8 +62,16 @@ Deno.serve(async (req) => {
       } catch (e) { console.error('proposal visitor email failed:', e); }
 
       // 2) Store owner brief — everything they need to send a proposal.
+      // Fall back to the owner's account email when the store has no
+      // support/from email configured (most stores don't).
+      let ownerTo = m.supportEmail || m.emailSettings?.fromEmail;
+      if (!ownerTo && m.ownerId) {
+        try {
+          const owner = await svcP.entities.User.filter({ id: m.ownerId });
+          ownerTo = owner?.[0]?.email || null;
+        } catch (e) { console.error('proposal owner lookup failed:', e); }
+      }
       try {
-        const ownerTo = m.supportEmail || m.emailSettings?.fromEmail;
         if (ownerTo) {
           await base44.functions.invoke('sendStoreEmail', {
             marketplaceId,
