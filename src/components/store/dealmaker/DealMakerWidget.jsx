@@ -13,10 +13,23 @@ import DealMakerConversation from "./DealMakerConversation";
 //   conversation floats as free text (no bubble boxes). Tappable suggestion chips
 //   drive the flow; a minimal glowing composer sits at the bottom.
 export default function DealMakerWidget({ marketplaceId, marketplace, listings = [], brandColor = "#f97316", onShowApp, onReserve }) {
+  const convoKey = marketplaceId ? `dm_convo_${marketplaceId}` : null;
+  // Restore any in-progress conversation for this visitor (survives page
+  // navigation / remounts within the session).
+  const restored = (() => {
+    if (!convoKey) return null;
+    try {
+      const raw = sessionStorage.getItem(convoKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const [open, setOpen] = useState(false);
-  const [chatting, setChatting] = useState(false);
-  const [greeted, setGreeted] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [chatting, setChatting] = useState(!!restored?.messages?.length);
+  const [greeted, setGreeted] = useState(!!restored?.messages?.length);
+  const [messages, setMessages] = useState(restored?.messages || []);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -24,7 +37,16 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const [submittingLead, setSubmittingLead] = useState(false);
   const [muted, setMuted] = useState(false);
   const scrollRef = useRef(null);
-  const spokenRef = useRef(0);
+  // Don't auto-speak messages that were restored from a previous mount.
+  const spokenRef = useRef(restored?.messages?.length || 0);
+
+  // Persist the conversation so it survives page navigation within the session.
+  useEffect(() => {
+    if (!convoKey) return;
+    try {
+      sessionStorage.setItem(convoKey, JSON.stringify({ messages, chatting }));
+    } catch { /* no-op */ }
+  }, [messages, chatting, convoKey]);
 
   // Speak (TTS) the latest agent message aloud unless muted.
   // Uses the browser's built-in speech synthesis for now — later swappable
