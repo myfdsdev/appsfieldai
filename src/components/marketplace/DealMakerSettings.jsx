@@ -58,24 +58,37 @@ export default function DealMakerSettings({ deal, onChange }) {
   const set = (k) => (e) => onChange(k, e.target.value);
   const [previewing, setPreviewing] = useState(false);
   const audioRef = useRef(null);
+  // Cache each voice's sample URL once so repeat previews replay instantly (no re-fetch).
+  const urlCacheRef = useRef({});
+
+  const playUrl = (url) => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => setPreviewing(false);
+    audio.onerror = () => { toast.error("Couldn't play the sample."); setPreviewing(false); };
+    audio.play().catch(() => { toast.error("Couldn't play the sample."); setPreviewing(false); });
+  };
 
   // Preview the currently-selected Base44 voice with a short spoken sample.
   const previewVoice = async () => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    const voice = deal.dealMakerVoice || "river";
     setPreviewing(true);
+    // Already fetched this voice — replay instantly without hitting the server.
+    if (urlCacheRef.current[voice]) {
+      playUrl(urlCacheRef.current[voice]);
+      return;
+    }
     try {
       const res = await base44.functions.invoke("voiceSample", {
-        voice: deal.dealMakerVoice || "river",
-        name: deal.dealMakerVoice || "river",
+        voice,
+        name: voice,
         provider: "base44",
       });
       const url = res?.data?.url;
       if (!url) { toast.error("Couldn't generate a sample."); setPreviewing(false); return; }
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => setPreviewing(false);
-      audio.onerror = () => { toast.error("Couldn't play the sample."); setPreviewing(false); };
-      audio.play().catch(() => { toast.error("Couldn't play the sample."); setPreviewing(false); });
+      urlCacheRef.current[voice] = url;
+      playUrl(url);
     } catch {
       toast.error("Couldn't play the sample.");
       setPreviewing(false);
