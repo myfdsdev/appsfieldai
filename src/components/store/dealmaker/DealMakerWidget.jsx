@@ -38,6 +38,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const [submittingLead, setSubmittingLead] = useState(false);
   const [muted, setMuted] = useState(false);
   const scrollRef = useRef(null);
+  const audioRef = useRef(null);
   // Don't auto-speak messages that were restored from a previous mount.
   const spokenRef = useRef(restored?.messages?.length || 0);
 
@@ -49,17 +50,27 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     } catch { /* no-op */ }
   }, [messages, chatting, convoKey]);
 
+  // Stop any currently-playing agent audio.
+  const stopSpeaking = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+
   // Speak (TTS) the latest agent message aloud unless muted.
-  // Uses the browser's built-in speech synthesis for now — later swappable
-  // for Gemini / OpenAI / OpenRouter voices.
-  const speak = (text) => {
-    if (muted || !text || typeof window === "undefined" || !window.speechSynthesis) return;
+  // Routes through the aiVoice function, which follows the admin's AI Engine
+  // setting (OpenAI TTS when configured, Base44 built-in voice otherwise).
+  const speak = async (text) => {
+    if (muted || !text) return;
     try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.03;
-      u.pitch = 1;
-      window.speechSynthesis.speak(u);
+      stopSpeaking();
+      const res = await base44.functions.invoke("aiVoice", { text });
+      const url = res?.data?.url;
+      if (!url || muted) return;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.play().catch(() => {});
     } catch { /* no-op */ }
   };
 
@@ -76,7 +87,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   // Stop any speech when muting.
   useEffect(() => {
-    if (muted && window.speechSynthesis) window.speechSynthesis.cancel();
+    if (muted) stopSpeaking();
   }, [muted]);
   const sections = marketplace?.pageSections || {};
   const dealmakerName = sections.dealMakerName || "Max";
@@ -176,7 +187,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
 
   const close = () => {
     setOpen(false);
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    stopSpeaking();
     if (marketplaceId) sessionStorage.setItem(`dm_dismissed_${marketplaceId}`, "1");
   };
 
