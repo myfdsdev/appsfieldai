@@ -30,6 +30,7 @@ import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramS
 import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
 import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
 import DealMakerReport from "@/components/marketplace/DealMakerReport";
+import DealMakerLeads from "@/components/marketplace/DealMakerLeads";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const LANGUAGES = [
@@ -353,6 +354,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 {[
                   { id: "settings", label: "Settings", icon: Settings },
                   { id: "report", label: "Deal Maker Report", icon: MessageSquare },
+                  { id: "leads", label: "Leads", icon: Users },
                 ].map(({ id, label, icon: TabIcon }) => (
                   <button
                     key={id}
@@ -381,6 +383,13 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <div>
                   <p className="text-sm text-muted-foreground mb-4">Every visitor conversation with your Deal Maker, with captured details and an AI conclusion.</p>
                   <DealMakerReport marketplaceId={marketplace?.id} />
+                </div>
+              )}
+
+              {dealMakerSubTab === "leads" && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-4">Every lead captured across chats, custom-build requests and checkout — buyers are marked as customers, hot prospects as potential buyers.</p>
+                  <DealMakerLeads marketplaceId={marketplace?.id} />
                 </div>
               )}
             </div>

@@ -32,6 +32,103 @@ Deno.serve(async (req) => {
       return Response.json({ conversations });
     }
 
+    // ── Owner leads: aggregate every captured lead across all sources ──
+    //  Sources: Deal Maker conversations, custom-build requests (DealMakerLead)
+    //  and store orders (checkout customers). Deduped by email, each tagged with
+    //  a status (Customer / Potential Buyer / Lead) and a short purpose.
+    if (action === 'leads') {
+      const user = await base44.auth.me();
+      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      const mkts = await svc.entities.Marketplace.filter({ id: marketplaceId });
+      const m = mkts?.[0];
+      if (!m) return Response.json({ error: 'Store not found' }, { status: 404 });
+      if (m.ownerId !== user.id && user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
+      const [conversations, dmLeads, orders] = await Promise.all([
+        svc.entities.DealMakerConversation.filter({ marketplaceId }, '-updated_date', 500),
+        svc.entities.DealMakerLead.filter({ marketplaceId }, '-created_date', 500),
+        svc.entities.StoreOrder.filter({ marketplaceId }, '-created_date', 500),
+      ]);
+
+      // Merge into a keyed map so the strongest status wins per person.
+      // Status rank: customer (3) > potential_buyer (2) > lead (1).
+      const RANK = { customer: 3, potential_buyer: 2, lead: 1 };
+      const map = new Map();
+      const keyFor = (email, name) =>
+        (email && email.trim().toLowerCase()) || `name:${(name || '').trim().toLowerCase()}` || null;
+
+      const upsert = (entry) => {
+        const key = keyFor(entry.email, entry.name);
+        if (!key) return;
+        const prev = map.get(key);
+        if (!prev) { map.set(key, entry); return; }
+        // Keep the higher-ranked status; fill any missing contact fields.
+        const better = (RANK[entry.status] || 0) >= (RANK[prev.status] || 0);
+        map.set(key, {
+          name: prev.name || entry.name,
+          email: prev.email || entry.email,
+          phone: prev.phone || entry.phone,
+          website: prev.website || entry.website,
+          status: better ? entry.status : prev.status,
+          source: better ? entry.source : prev.source,
+          purpose: better ? entry.purpose : prev.purpose,
+          date: prev.date > entry.date ? prev.date : entry.date,
+        });
+      };
+
+      // 1) Store orders → Customer (successful transaction)
+      for (const o of orders) {
+        const paid = o.paymentStatus === 'paid' || o.status === 'completed';
+        const items = Array.isArray(o.items) ? o.items.map((i) => i.listingTitle).filter(Boolean) : [];
+        upsert({
+          name: o.customerName || '',
+          email: o.customerEmail || '',
+          phone: o.phone || '',
+          website: '',
+          status: paid ? 'customer' : 'potential_buyer',
+          source: 'Checkout',
+          purpose: items.length ? `Purchased ${items.join(', ')}` : 'Started checkout',
+          date: o.created_date || '',
+        });
+      }
+
+      // 2) Custom-build requests / captured leads → Potential Buyer (hot) or Lead
+      for (const l of dmLeads) {
+        upsert({
+          name: l.name || '',
+          email: l.email || '',
+          phone: l.phone || '',
+          website: '',
+          status: l.type === 'custom_request' ? 'potential_buyer' : 'lead',
+          source: l.type === 'custom_request' ? 'Custom Request' : 'Deal Maker',
+          purpose: (l.summary || l.painPoint || l.businessType || '').slice(0, 160),
+          date: l.created_date || '',
+        });
+      }
+
+      // 3) Deal Maker conversations → status by outcome
+      for (const c of conversations) {
+        let status = 'lead';
+        if (c.outcome === 'purchase') status = 'customer';
+        else if (c.outcome === 'custom_request') status = 'potential_buyer';
+        upsert({
+          name: c.visitorName || c.title || '',
+          email: c.visitorEmail || '',
+          phone: c.visitorPhone || '',
+          website: c.visitorWebsite || '',
+          status,
+          source: 'Deal Maker',
+          purpose: (c.conclusion || c.businessType || '').slice(0, 160),
+          date: c.updated_date || c.created_date || '',
+        });
+      }
+
+      const leads = [...map.values()].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      return Response.json({ leads });
+    }
+
     // ── Public save/upsert from the store widget ──
     if (action === 'save') {
       const { sessionId, messages = [] } = body || {};
