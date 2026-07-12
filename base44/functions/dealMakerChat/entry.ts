@@ -223,7 +223,28 @@ ${JSON.stringify(catalog)}`;
         `${msg.role === 'user' ? 'Visitor' : dealmakerName}: ${msg.content}`)
       .join('\n');
 
-    const prompt = `${systemPrompt}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nWrite your next single message directly, as if speaking. Do NOT prefix it with your name or any speaker label (no "${dealmakerName}:" or "Deal Maker:"). Include any action tokens on their own line.`;
+    // Extract the LAST plan the agent proposed earlier in this conversation, so
+    // a revision can build on top of it deterministically (the model tends to
+    // rewrite the whole list and silently drop features otherwise).
+    const findLastPlan = () => {
+      const re = /\[ACTION:PROPOSE_PLAN:(\{[\s\S]*?\})\]/g;
+      let lastPlan = null;
+      for (const msg of messages) {
+        if (msg.role === 'user') continue;
+        let mm;
+        const r = new RegExp(re.source, 'g');
+        while ((mm = r.exec(msg.content || '')) !== null) {
+          try { lastPlan = JSON.parse(mm[1]); } catch { /* ignore */ }
+        }
+      }
+      return lastPlan;
+    };
+    const prevPlan = findLastPlan();
+    const prevPlanBlock = prevPlan
+      ? `\n\nLAST PROPOSED PLAN (your current source of truth — when revising, keep EVERY feature below and only add/remove exactly what the visitor asked):\n${JSON.stringify(prevPlan)}`
+      : '';
+
+    const prompt = `${systemPrompt}${prevPlanBlock}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nWrite your next single message directly, as if speaking. Do NOT prefix it with your name or any speaker label (no "${dealmakerName}:" or "Deal Maker:"). Include any action tokens on their own line.`;
 
     // Generate the reply through the shared AI engine (routes to OpenAI / Gemini
     // real APIs or Base44 built-in based on admin settings).
@@ -239,7 +260,31 @@ ${JSON.stringify(catalog)}`;
     if (planMatch) {
       let plan = null;
       try { plan = JSON.parse(planMatch[1]); } catch { /* ignore malformed */ }
-      if (plan) actions.push({ type: 'PROPOSE_PLAN', value: plan });
+      if (plan) {
+        // Deterministic safety net: never lose previously-agreed features on a
+        // revision. Re-add any feature from the last plan that isn't in the new
+        // list — UNLESS the visitor's latest message explicitly asked to remove
+        // it. The model's job is just to add the requested feature; the merge
+        // guarantees the rest survive.
+        if (prevPlan && Array.isArray(prevPlan.features) && Array.isArray(plan.features)) {
+          const lastUserMsg = [...messages].reverse().find((mm) => mm.role === 'user');
+          const askedRemoval = /\b(remove|delete|drop|take out|get rid of|without|don'?t (?:need|want)|no longer)\b/i
+            .test(lastUserMsg?.content || '');
+          const norm = (s: string) => String(s).trim().toLowerCase();
+          const newSet = new Set(plan.features.map(norm));
+          const merged = [...plan.features];
+          for (const f of prevPlan.features) {
+            if (newSet.has(norm(f))) continue;
+            // If the user asked to remove something and this old feature is what
+            // they referenced, let it drop; otherwise carry it over.
+            if (askedRemoval && norm(lastUserMsg.content).includes(norm(f))) continue;
+            merged.push(f);
+            newSet.add(norm(f));
+          }
+          plan.features = merged;
+        }
+        actions.push({ type: 'PROPOSE_PLAN', value: plan });
+      }
     }
 
     // Parse the remaining simple action tokens (show app, run demo, etc.).
