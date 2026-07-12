@@ -78,11 +78,41 @@ export default function DealMakerCheckout({ listing, marketplaceId, marketplace,
       <div className="p-5">
         <div className="flex items-center gap-2 mb-4">
           <CreditCard className="w-4 h-4" style={{ color: brandColor }} />
-          <p className="text-sm font-semibold text-white">Checkout · {listing.softwareName}</p>
+          <p className="text-sm font-semibold text-white">Checkout</p>
         </div>
 
         {step === "info" && (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Product summary — name, description & price */}
+            <div className="rounded-xl p-4 border border-white/10" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-3">
+                {listing.logo ? (
+                  <img src={listing.logo} alt={listing.softwareName} className="w-12 h-12 rounded-lg object-cover shrink-0 border border-white/10" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg shrink-0 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${brandColor}, #22d3ee)` }}>
+                    <span className="text-white font-bold text-lg">{listing.softwareName?.[0] || "?"}</span>
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-white truncate">{listing.softwareName}</p>
+                  {listing.shortDescription && (
+                    <p className="text-xs text-white/55 mt-0.5 line-clamp-2 leading-snug">{listing.shortDescription}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-baseline justify-between mt-3 pt-3 border-t border-white/10">
+                <span className="text-xs text-white/50">{hasBoth ? "From" : "Price"}</span>
+                <div className="flex items-baseline gap-2">
+                  {listing.price != null && listing.discountPrice != null && listing.discountPrice < listing.price && (
+                    <span className="text-xs text-white/40 line-through">{fmt(listing.price)}</span>
+                  )}
+                  <span className="text-lg font-extrabold" style={{ color: brandColor }}>
+                    {fmt(hasBoth ? Math.min(fullPrice, sharePrice) : (listing.discountPrice ?? fullPrice))}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <input className={inputCls} style={inputStyle} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
             <input className={inputCls} style={inputStyle} placeholder="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <input className={inputCls} style={inputStyle} placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
