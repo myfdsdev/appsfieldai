@@ -132,16 +132,19 @@ export default function DealMakerProductCard({ listing, mode = "card", brandColo
 
 // Renders a YouTube / Vimeo embed or a raw video file inline.
 function VideoEmbed({ url }) {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+  // Match every common YouTube URL shape: watch?v=, youtu.be/, /embed/, /shorts/,
+  // youtube-nocookie, and any extra query params after the id.
+  const yt = url.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
   const vimeo = url.match(/vimeo\.com\/(\d+)/);
   if (yt) {
     return (
       <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
         <iframe
           className="absolute inset-0 w-full h-full"
-          src={`https://www.youtube.com/embed/${yt[1]}`}
+          src={`https://www.youtube-nocookie.com/embed/${yt[1]}`}
           title="Product demo"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />
       </div>
