@@ -143,10 +143,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking, leadForm, suggestions, chatting]);
 
-  // Turn action tokens into an inline card attached to the just-sent assistant
-  // message (product preview / demo), so everything stays inside the immersive
-  // chat instead of opening an external modal.
-  const handleActions = (actions = []) => {
+  // Resolve action tokens into an inline card / plan to attach to the just-sent
+  // assistant message. Reads the current messages list (passed in) so the
+  // details "show once" guard sees the up-to-date conversation.
+  const resolveActions = (actions = [], currentMessages = []) => {
     let card = null;
     let plan = null;
     for (const a of actions) {
@@ -158,7 +158,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         const listing = listings.find((l) => l.id === a.value);
         // Only show the full details card ONCE per product — if it was already
         // shown earlier in the conversation, don't render it again.
-        const alreadyShown = messages.some(
+        const alreadyShown = currentMessages.some(
           (m) => m.card?.mode === "details" && m.card?.listing?.id === a.value
         );
         if (listing && !alreadyShown) card = { listing, mode: "details" };
@@ -179,20 +179,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         setLeadForm({ hot: true });
       }
     }
-    if (card || plan) {
-      if (plan) setPlanSubmitted(false); // fresh/revised plan → allow submission again
-      // Attach the card and/or plan to the most recent assistant message.
-      setMessages((mm) => {
-        const next = [...mm];
-        for (let i = next.length - 1; i >= 0; i--) {
-          if (next[i].role === "assistant") {
-            next[i] = { ...next[i], ...(card ? { card } : {}), ...(plan ? { plan } : {}) };
-            break;
-          }
-        }
-        return next;
-      });
-    }
+    return { card, plan };
   };
 
   // Visitor approved the AI-drafted plan and submitted their details.
@@ -221,19 +208,26 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     try {
       const res = await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
       const reply = res.data?.reply;
-      if (reply) {
-        // Render the message immediately and fetch/play the voice in parallel
-        // (speak() handles the aiVoice call for openai/gemini, or instant
-        // browser synthesis for base44) so text isn't blocked on audio.
-        speak(reply);
-        setMessages((mm) => {
-          const next = [...mm, { role: "assistant", content: reply }];
-          // Mark this message as already spoken so the auto-play effect skips it.
-          spokenRef.current = next.length;
-          return next;
-        });
-      }
-      handleActions(res.data?.actions);
+      const actions = res.data?.actions || [];
+      // Build the assistant message WITH its card/plan already attached, so the
+      // card (product preview) and the plan card render together in a single
+      // state update — no ordering gap that could drop a revised plan.
+      setMessages((mm) => {
+        const { card, plan } = resolveActions(actions, mm);
+        if (plan) setPlanSubmitted(false); // fresh/revised plan → allow submission again
+        const msg = {
+          role: "assistant",
+          content: reply || "",
+          ...(card ? { card } : {}),
+          ...(plan ? { plan } : {}),
+        };
+        const next = [...mm, msg];
+        // Mark this message as already spoken so the auto-play effect skips it.
+        spokenRef.current = next.length;
+        return next;
+      });
+      // Fetch/play the voice in parallel so text isn't blocked on audio.
+      if (reply) speak(reply);
       setSuggestions(res.data?.suggestions || []);
     } catch {
       setMessages((mm) => [...mm, { role: "assistant", content: "Give me one sec — mind sending that again?" }]);
