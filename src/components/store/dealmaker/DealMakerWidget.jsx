@@ -15,6 +15,22 @@ import { getDealMakerBgTheme } from "./dealMakerThemes";
 //   drive the flow; a minimal glowing composer sits at the bottom.
 export default function DealMakerWidget({ marketplaceId, marketplace, listings = [], brandColor = "#f97316", onShowApp, onReserve }) {
   const convoKey = marketplaceId ? `dm_convo_${marketplaceId}` : null;
+  // Stable per-visitor session id so every save updates the SAME conversation
+  // record in the owner's Deal Maker Report (survives page navigation).
+  const sessionIdRef = useRef(null);
+  if (!sessionIdRef.current && marketplaceId) {
+    const skey = `dm_session_${marketplaceId}`;
+    try {
+      let s = sessionStorage.getItem(skey);
+      if (!s) {
+        s = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+        sessionStorage.setItem(skey, s);
+      }
+      sessionIdRef.current = s;
+    } catch {
+      sessionIdRef.current = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+  }
   // Restore any in-progress conversation for this visitor (survives page
   // navigation / remounts within the session).
   const restored = (() => {
@@ -51,6 +67,27 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
       sessionStorage.setItem(convoKey, JSON.stringify({ messages, chatting }));
     } catch { /* no-op */ }
   }, [messages, chatting, convoKey]);
+
+  // Save the conversation to the store owner's Deal Maker Report (debounced).
+  // Only fires once the visitor has actually replied, and while not mid-thinking
+  // so the transcript we log is complete for that turn.
+  useEffect(() => {
+    if (!marketplaceId || thinking) return;
+    if (!messages.some((mm) => mm.role === "user")) return;
+    const t = setTimeout(() => {
+      const plain = messages.map((mm) => ({ role: mm.role, content: mm.content || "" }));
+      base44.functions
+        .invoke("dealMakerReport", {
+          action: "save",
+          marketplaceId,
+          sessionId: sessionIdRef.current,
+          messages: plain,
+        })
+        .catch(() => {});
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, thinking, marketplaceId]);
 
   // Stop any currently-playing agent audio (both browser synthesis & aiVoice).
   const stopSpeaking = () => {
@@ -281,6 +318,12 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const clearChat = () => {
     stopSpeaking();
     if (convoKey) { try { sessionStorage.removeItem(convoKey); } catch { /* no-op */ } }
+    // Fresh conversation → new session id so it logs as a separate report entry.
+    if (marketplaceId) {
+      const s = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      sessionIdRef.current = s;
+      try { sessionStorage.setItem(`dm_session_${marketplaceId}`, s); } catch { /* no-op */ }
+    }
     spokenRef.current = 0;
     setMessages([]);
     setSuggestions([]);

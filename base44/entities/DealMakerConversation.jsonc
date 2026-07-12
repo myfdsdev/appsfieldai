@@ -1,0 +1,86 @@
+{
+  "name": "DealMakerConversation",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace/store this conversation happened on"
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Unique per-visitor session id used to keep updating the same conversation record"
+    },
+    "title": {
+      "type": "string",
+      "description": "Conversation title \u2014 the visitor's first name once known, else a short label"
+    },
+    "visitorName": {
+      "type": "string",
+      "description": "Visitor's name if captured during the chat"
+    },
+    "visitorEmail": {
+      "type": "string",
+      "description": "Visitor's email if captured"
+    },
+    "visitorPhone": {
+      "type": "string",
+      "description": "Visitor's phone if captured"
+    },
+    "visitorWebsite": {
+      "type": "string",
+      "description": "Visitor's website URL if mentioned"
+    },
+    "visitorStore": {
+      "type": "string",
+      "description": "Visitor's store / business name if mentioned"
+    },
+    "businessType": {
+      "type": "string",
+      "description": "The kind of business the visitor runs, if mentioned"
+    },
+    "messages": {
+      "type": "array",
+      "description": "Full message transcript",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ]
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "conclusion": {
+      "type": "string",
+      "description": "AI-generated summary/conclusion of the conversation and outcome"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "ongoing",
+        "lead",
+        "custom_request",
+        "purchase",
+        "abandoned"
+      ],
+      "default": "ongoing",
+      "description": "What the conversation resulted in"
+    },
+    "messageCount": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of messages exchanged"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "sessionId"
+  ]
+}

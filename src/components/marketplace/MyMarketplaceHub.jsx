@@ -29,6 +29,7 @@ import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
 import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
 import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
 import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
+import DealMakerReport from "@/components/marketplace/DealMakerReport";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const LANGUAGES = [
@@ -94,6 +95,7 @@ const NAV_GROUPS = [
 export default function MyMarketplaceHub({ marketplace, onBack }) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("page_settings");
+  const [dealMakerSubTab, setDealMakerSubTab] = useState("settings");
   const [saving, setSaving] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
 
@@ -345,12 +347,42 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   enabled={pageForm.dealMakerEnabled}
                   onToggle={() => setPageForm(f => ({ ...f, dealMakerEnabled: !f.dealMakerEnabled }))} />
               </div>
-              <div className="bg-card/60 border border-border/40 rounded-2xl p-6">
-                <DealMakerSettings deal={pageForm} onChange={(field, value) => setPageForm(f => ({ ...f, [field]: value }))} />
+
+              {/* Sub-tabs: Settings / Report */}
+              <div className="flex items-center gap-2 border-b border-border/40">
+                {[
+                  { id: "settings", label: "Settings", icon: Settings },
+                  { id: "report", label: "Deal Maker Report", icon: MessageSquare },
+                ].map(({ id, label, icon: TabIcon }) => (
+                  <button
+                    key={id}
+                    onClick={() => setDealMakerSubTab(id)}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                      dealMakerSubTab === id ? "border-orange-500 text-orange-400" : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <TabIcon className="w-4 h-4" /> {label}
+                  </button>
+                ))}
               </div>
-              <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
-                <Save className="w-4 h-4" /> Save Deal Maker
-              </Button>
+
+              {dealMakerSubTab === "settings" && (
+                <>
+                  <div className="bg-card/60 border border-border/40 rounded-2xl p-6">
+                    <DealMakerSettings deal={pageForm} onChange={(field, value) => setPageForm(f => ({ ...f, [field]: value }))} />
+                  </div>
+                  <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
+                    <Save className="w-4 h-4" /> Save Deal Maker
+                  </Button>
+                </>
+              )}
+
+              {dealMakerSubTab === "report" && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-4">Every visitor conversation with your Deal Maker, with captured details and an AI conclusion.</p>
+                  <DealMakerReport marketplaceId={marketplace?.id} />
+                </div>
+              )}
             </div>
           )}
 
