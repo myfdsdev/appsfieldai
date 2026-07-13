@@ -107,11 +107,6 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const handleConnectDomain = async () => {
     if (!customDomain.trim()) return;
     const clean = customDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
-    // Already connected to this exact domain — don't re-register, just tell the user.
-    if (marketplace?.customDomain && marketplace.customDomain === clean) {
-      toast.info("This domain is already connected. Disconnect it first to reconnect or change it.");
-      return;
-    }
     setSaving(true);
     try {
       const res = await domainServiceFetch("/api/admin/domains", {
