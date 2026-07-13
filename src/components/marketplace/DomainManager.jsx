@@ -196,8 +196,19 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const subLabel = subdomain || marketplace?.slug;
   // Path-based store URL on the main app domain — always live, no DNS needed.
   const storeUrl = `https://${PLATFORM_DOMAIN}/store/${subLabel}`;
-  // DNS instructions now come entirely from the custom-domain-service response.
-  const dns = domainState?.dns;
+  // DNS record the customer must add. Always a CNAME to custom.appsfieldai.com.
+  // Host is the subdomain label (e.g. "store" for store.brand.com) or "@" for an
+  // apex domain (brand.com). Computed from the connected domain, not the service.
+  const dnsFor = (d) => {
+    if (!d) return { type: "CNAME", name: "@", target: "custom.appsfieldai.com" };
+    const isApex = d.split(".").length <= 2;
+    return {
+      type: "CNAME",
+      name: isApex ? "@" : d.split(".")[0],
+      target: "custom.appsfieldai.com",
+    };
+  };
+  const dns = dnsFor(domain);
 
   return (
     <div className="space-y-6">
@@ -287,16 +298,10 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
                   <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add this DNS record at your domain provider</p>
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
-                    <CopyField label="Type" value={dns?.type || "CNAME"} />
-                    <CopyField label="Host / Name" value={dns?.name || "@"} />
-                    <CopyField label="Value" value={dns?.target || "—"} />
+                    <CopyField label="Type" value={dns.type} />
+                    <CopyField label="Host / Name" value={dns.name} />
+                    <CopyField label="Value" value={dns.target} />
                   </div>
-                  {!dns?.target && (
-                    <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
-                      <Info className="w-3 h-3 mt-0.5 shrink-0" />
-                      The DNS target isn't set yet on the domain service. Set PUBLIC_SERVICE_HOST (and PUBLIC_SERVICE_IP for apex domains) on your domain service, then reconnect.
-                    </p>
-                  )}
 
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                     <Clock className="w-3 h-3 mt-0.5 shrink-0" />
