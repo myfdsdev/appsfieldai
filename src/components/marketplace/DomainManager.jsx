@@ -147,10 +147,16 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
     if (!domain) return;
     setDisconnecting(true);
     try {
-      await domainServiceFetch(`/api/admin/domains/${encodeURIComponent(domain)}`, {
-        method: "DELETE",
-        body: JSON.stringify({ userId: marketplace?.ownerId }),
-      });
+      try {
+        await domainServiceFetch(`/api/admin/domains/${encodeURIComponent(domain)}`, {
+          method: "DELETE",
+          body: JSON.stringify({ userId: marketplace?.ownerId }),
+        });
+      } catch (err) {
+        // If the service has no record of this domain (already gone / never
+        // persisted), still clear it locally so the user isn't stuck.
+        if (!/not found/i.test(err.message || "")) throw err;
+      }
       await base44.entities.Marketplace.update(marketplace.id, { customDomain: "" });
       setCustomDomain("");
       setDomainState(null);
@@ -282,9 +288,15 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
                     <CopyField label="Type" value={dns?.type || "CNAME"} />
-                    <CopyField label="Host / Name" value={dns?.name || ""} />
+                    <CopyField label="Host / Name" value={dns?.name || "@"} />
                     <CopyField label="Value" value={dns?.target || "—"} />
                   </div>
+                  {!dns?.target && (
+                    <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                      <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                      The DNS target isn't set yet on the domain service. Set PUBLIC_SERVICE_HOST (and PUBLIC_SERVICE_IP for apex domains) on your domain service, then reconnect.
+                    </p>
+                  )}
 
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                     <Clock className="w-3 h-3 mt-0.5 shrink-0" />
