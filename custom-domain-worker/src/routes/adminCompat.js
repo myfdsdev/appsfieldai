@@ -29,7 +29,7 @@ function requireAuth(request, env) {
 // Single DNS record in the shape DomainManager renders (type/name/target).
 function dnsRecord(hostname, env) {
   const isRoot = hostname.split(".").length === 2;
-  return { type: isRoot ? "A" : "CNAME", name: isRoot ? "@" : hostname.split(".")[0], target: env.CF_CNAME_TARGET };
+  return { type: isRoot ? "A" : "CNAME", name: isRoot ? "@" : hostname.split(".")[0], target: env.CNAME_TARGET };
 }
 
 // Map Cloudflare status → the app's { verificationStatus, sslStatus }.
