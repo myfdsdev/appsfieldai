@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const serviceUrl = Deno.env.get("DOMAIN_SERVICE_URL") || "https://appsfieldai.onrender.com";
+    const serviceUrl = Deno.env.get("DOMAIN_SERVICE_URL") || "https://api.appsfieldai.com";
     const serviceSecret = Deno.env.get("DOMAIN_SERVICE_SECRET") || "c81eb879bca1bd6c10522df3a0429de333ac2d28cd2986e90de982bc46dc71ab";
 
     const { path, method = "GET", body } = await req.json();
