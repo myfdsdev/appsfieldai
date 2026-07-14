@@ -59,7 +59,7 @@ export default function MarketplaceDashboard() {
     return map;
   }, [allUsers]);
 
-  // Admin search filter: match by marketplace name, owner name, or owner email.
+  // Search filter: match by marketplace name, owner name, or owner email.
   const filteredMarketplaces = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return marketplaces;
@@ -139,17 +139,6 @@ export default function MarketplaceDashboard() {
         title={isAdmin ? "Admin Marketplace" : "My Marketplaces"}
         subtitle={isAdmin ? "Manage every user's marketplace across the platform." : "Build and manage your SaaS marketplace sites."}
       >
-        {isAdmin && (
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by store, owner, or email..."
-              className="pl-9 h-10 rounded-xl bg-black/30 border-white/20 text-sm text-white placeholder:text-white/50"
-            />
-          </div>
-        )}
         <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
       </MarketplaceDashboardBanner>
 
@@ -165,8 +154,20 @@ export default function MarketplaceDashboard() {
         <SalesAnalytics marketplaces={marketplaces} />
       )}
 
-      {!isAdmin && !isLoading && marketplaces.length > 0 && (
-        <h2 className="text-lg font-display font-semibold pt-2">My Marketplaces</h2>
+      {/* Marketplace section header — title + search sit directly above the grid */}
+      {!isLoading && marketplaces.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+          <h2 className="text-lg font-display font-semibold">{isAdmin ? "All Stores" : "My Stores"}</h2>
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by store, owner, or email..."
+              className="pl-9 h-10 rounded-xl text-sm"
+            />
+          </div>
+        </div>
       )}
 
       {isLoading ? (
