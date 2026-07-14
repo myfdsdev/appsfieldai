@@ -15,11 +15,13 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { marketplaceId, fullName, email, password, phone } = await req.json();
 
+    // Return errors with HTTP 200 so the readable message reaches the frontend
+    // (a non-2xx status makes the SDK throw before it can read res.data.error).
     if (!marketplaceId || !email || !password) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return Response.json({ error: 'Please fill in your email and password.' });
     }
     if (String(password).length < 6) {
-      return Response.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+      return Response.json({ error: 'Password must be at least 6 characters.' });
     }
 
     const cleanEmail = String(email).toLowerCase().trim();
@@ -27,13 +29,13 @@ Deno.serve(async (req) => {
     // Ensure the marketplace exists
     const markets = await base44.asServiceRole.entities.Marketplace.filter({ id: marketplaceId });
     if (!markets.length) {
-      return Response.json({ error: 'Store not found' }, { status: 404 });
+      return Response.json({ error: 'Store not found.' });
     }
 
     // Unique within this marketplace only — same email can exist on other stores.
     const existing = await base44.asServiceRole.entities.StoreCustomer.filter({ marketplaceId, email: cleanEmail });
     if (existing.length) {
-      return Response.json({ error: 'An account with this email already exists on this store.' }, { status: 409 });
+      return Response.json({ error: 'An account with this email already exists. Try logging in instead.' });
     }
 
     const salt = makeToken().slice(0, 24);
