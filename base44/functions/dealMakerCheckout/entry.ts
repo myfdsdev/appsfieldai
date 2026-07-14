@@ -43,9 +43,15 @@ Deno.serve(async (req) => {
     const currency = marketplace.currency || 'USD';
     // Full price vs. share/spot price — the two ways to buy.
     const mode = priceMode === 'share' ? 'share' : 'full';
+    // Full mode charges the ACTUAL selling price the buyer sees: the discounted
+    // price when a valid discount is set (lower than list price), else the list
+    // price. This keeps checkout in sync with the price shown on the card & chat.
+    const hasValidDiscount = listing.discountPrice != null && Number(listing.discountPrice) > 0
+      && (listing.price == null || Number(listing.discountPrice) < Number(listing.price));
+    const fullSellingPrice = hasValidDiscount ? Number(listing.discountPrice) : Number(listing.price || 0);
     const unitPrice = mode === 'share'
       ? (listing.sharePrice || listing.discountPrice || listing.price || 0)
-      : (listing.price || listing.discountPrice || (listing.sharePrice || 0) * (listing.totalShares || 0));
+      : fullSellingPrice;
     const total = Number(unitPrice) || 0;
     if (total <= 0) {
       return Response.json({ error: 'This product has no purchasable price set.' }, { status: 400 });
