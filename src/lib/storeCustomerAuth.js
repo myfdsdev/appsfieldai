@@ -30,6 +30,21 @@ export async function loginStoreCustomer({ marketplaceId, email, password }) {
   return res.data.customer;
 }
 
+// Request a password-reset code emailed to the customer (always resolves,
+// even for unknown emails, so we don't reveal which accounts exist).
+export async function requestStoreCustomerPasswordReset({ marketplaceId, email }) {
+  const res = await base44.functions.invoke("storeCustomerResetPassword", { step: "request", marketplaceId, email });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
+// Confirm the emailed code and set a new password.
+export async function confirmStoreCustomerPasswordReset({ marketplaceId, email, code, newPassword }) {
+  const res = await base44.functions.invoke("storeCustomerResetPassword", { step: "confirm", marketplaceId, email, code, newPassword });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
 export async function fetchStoreCustomer(marketplaceId) {
   const token = getStoredToken(marketplaceId);
   if (!token) return null;

@@ -22,6 +22,10 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: 'Your spot is reserved',
     body: 'Hi {{customer_name}},\n\nYour spot for "{{product_name}}" at {{store_name}} is reserved. We\'ll be in touch with next steps.\n\n— {{store_name}}',
   },
+  passwordReset: {
+    subject: 'Reset your {{store_name}} password',
+    body: 'Hi {{customer_name}},\n\nUse this code to reset your password at {{store_name}}:\n\n{{reset_code}}\n\nThis code expires in 15 minutes. If you didn\'t request this, you can ignore this email.\n\n— {{store_name}}',
+  },
   commissionEarned: {
     subject: '💵 [Cha-Ching] You\'ve earned {{commission_amount}} from: {{store_name}}',
     body: 'Hi {{affiliate_name}},\n\nCha-ching! Your referral for "{{product_name}}" just converted and earned you {{commission_amount}} in commission.\n\nKeep up the great work!\n\n— {{store_name}}',
