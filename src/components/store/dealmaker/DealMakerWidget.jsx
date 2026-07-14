@@ -307,7 +307,9 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     setSubmittingLead(false);
   };
 
+  const [closing, setClosing] = useState(false);
   const close = () => {
+    setClosing(true);
     setOpen(false);
     stopSpeaking();
     if (marketplaceId) sessionStorage.setItem(`dm_dismissed_${marketplaceId}`, "1");
@@ -338,6 +340,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     // Reopen right where the visitor left off — the conversation is preserved.
     // Don't re-speak old messages on reopen.
     spokenRef.current = messages.length;
+    setClosing(false);
     setOpen(true);
   };
 
@@ -417,7 +420,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             key="dm-immersive"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, pointerEvents: "none" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={closing ? { pointerEvents: "none" } : undefined}
+            onAnimationComplete={() => { if (!open) setClosing(false); }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
             {/* Glassy dim — blurs & darkens the store page behind the chat */}
