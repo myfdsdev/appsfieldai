@@ -417,7 +417,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             key="dm-immersive"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, pointerEvents: "none" }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
             {/* Glassy dim — blurs & darkens the store page behind the chat */}
