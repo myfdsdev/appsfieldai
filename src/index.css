@@ -200,9 +200,9 @@
   transition: opacity 400ms ease;
 }
 .dm-siri-glow.dm-siri-speaking { animation-duration: 1800ms; }
-.dm-siri-sm { border-width: 9px; filter: blur(2px); margin: -4px; }
-.dm-siri-md { border-width: 17px; filter: blur(5px); margin: -10px; }
-.dm-siri-lg { border-width: 30px; filter: blur(10px); margin: -20px; mix-blend-mode: hard-light; }
+.dm-siri-sm { border-width: 5px; filter: blur(2px); margin: 2px; }
+.dm-siri-md { border-width: 10px; filter: blur(6px); margin: 0; }
+.dm-siri-lg { border-width: 18px; filter: blur(12px); margin: -6px; mix-blend-mode: hard-light; }
 
 /* Hide scrollbar for horizontal sliders */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
