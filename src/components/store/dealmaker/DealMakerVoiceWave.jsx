@@ -25,8 +25,8 @@ export default function DealMakerVoiceWave({ speaking = false, brandColor = "#63
             boxShadow: `0 0 ${speaking ? 20 : 8}px ${r.color}`,
           }}
           animate={{
-            scale: speaking ? [1, 2.2] : [1, 1.5],
-            opacity: speaking ? [0.6, 0] : [0.3, 0],
+            scale: speaking ? [1, 1.6] : [1, 1.25],
+            opacity: speaking ? [0.6, 0] : [0.25, 0],
           }}
           transition={{
             duration: speaking ? 1.6 : 3.2,
