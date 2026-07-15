@@ -1,10 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-// A Siri-style circular voice wave that wraps around the agent's orb/avatar.
+// A Siri-style circular voice wave that ripples out from behind the agent's orb.
 // Comes alive (expanding, brighter, faster ripples) while the agent is speaking,
-// and rests as a calm gentle pulse otherwise.
-export default function DealMakerVoiceWave({ speaking = false, brandColor = "#6366f1" }) {
+// and rests as a calm gentle pulse otherwise. `size` matches the orb diameter.
+export default function DealMakerVoiceWave({ speaking = false, brandColor = "#6366f1", size = 128 }) {
   // Concentric rings that pulse outward from behind the avatar.
   const rings = [
     { color: brandColor, delay: 0 },
@@ -13,20 +13,20 @@ export default function DealMakerVoiceWave({ speaking = false, brandColor = "#63
   ];
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-0">
       {rings.map((r, i) => (
         <motion.span
           key={i}
-          className="absolute rounded-full border"
+          className="absolute rounded-full border-2"
           style={{
-            width: "100%",
-            height: "100%",
+            width: size,
+            height: size,
             borderColor: r.color,
-            boxShadow: `0 0 ${speaking ? 20 : 8}px ${r.color}`,
+            boxShadow: `0 0 ${speaking ? 22 : 10}px ${r.color}`,
           }}
           animate={{
-            scale: speaking ? [1, 1.6] : [1, 1.25],
-            opacity: speaking ? [0.6, 0] : [0.25, 0],
+            scale: speaking ? [1, 1.7] : [1, 1.3],
+            opacity: speaking ? [0.7, 0] : [0.3, 0],
           }}
           transition={{
             duration: speaking ? 1.6 : 3.2,

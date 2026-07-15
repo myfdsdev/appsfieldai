@@ -17,14 +17,14 @@ export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366
           animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.6, 0.35] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
         />
+        {/* Siri-style circular voice wave — ripples out from behind the orb */}
+        <DealMakerVoiceWave speaking={speaking} brandColor={brandColor} size={compact ? 64 : 128} />
         {/* rotating conic ring (border only — the photo stays upright) */}
         <motion.div
           layout
-          className={`relative rounded-full ${size}`}
+          className={`relative z-10 rounded-full ${size}`}
           style={{ padding: "2px" }}
         >
-          {/* Siri-style circular voice wave — ripples out while the agent speaks */}
-          <DealMakerVoiceWave speaking={speaking} brandColor={brandColor} />
           <motion.span
             className="absolute inset-0 rounded-full"
             style={{ background: `conic-gradient(from 0deg, ${brandColor}, #22d3ee, ${brandColor})` }}
