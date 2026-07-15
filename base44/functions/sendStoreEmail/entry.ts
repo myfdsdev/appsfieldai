@@ -27,8 +27,8 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     body: 'Hi {{customer_name}},\n\nUse this code to reset your password at {{store_name}}:\n\n{{reset_code}}\n\nThis code expires in 15 minutes. If you didn\'t request this, you can ignore this email.\n\n— {{store_name}}',
   },
   commissionEarned: {
-    subject: '💵 [Cha-Ching] You\'ve earned {{commission_amount}} from: {{store_name}}',
-    body: 'Hi {{affiliate_name}},\n\nCha-ching! Your referral for "{{product_name}}" just converted and earned you {{commission_amount}} in commission.\n\nKeep up the great work!\n\n— {{store_name}}',
+    subject: 'You earned a commission at {{store_name}}',
+    body: 'Hi {{affiliate_name}},\n\nGood news — your referral for "{{product_name}}" converted and earned you {{commission_amount}} in commission.\n\nThanks for helping spread the word.\n\n— {{store_name}}',
   },
   proposalVisitor: {
     subject: 'Your custom plan from {{store_name}}: {{plan_title}}',
@@ -81,6 +81,13 @@ function orderConfirmationHtml(opts: {
   customerName: string; order: any; currency: string; dashboardUrl?: string;
 }): string {
   const { brand, storeName, order, currency } = opts;
+  // Distinguish a freshly-placed (pending) order from a confirmed/paid one so the
+  // customer gets an accurate "pending" email first, then a "confirmed" email on approval.
+  const confirmed = order?.paymentStatus === 'paid' || order?.status === 'completed' || order?.status === 'processing';
+  const heading = confirmed ? 'Your order is confirmed 🎉' : 'Your order has been placed ✅';
+  const introLine = confirmed
+    ? `Hi ${esc(opts.customerName)}, thanks for your purchase at <strong>${esc(storeName)}</strong>. Your payment is confirmed.`
+    : `Hi ${esc(opts.customerName)}, thanks for your order at <strong>${esc(storeName)}</strong>. It's <strong>pending confirmation</strong> — we'll email you again as soon as it's approved.`;
   const items = Array.isArray(order?.items) ? order.items : [];
   const rows = items.map((it: any) => {
     const lineTotal = (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1);
@@ -113,8 +120,8 @@ function orderConfirmationHtml(opts: {
     : '';
 
   return `
-    <h1 style="margin:0 0 4px;font-size:22px;color:#111;">Your order is confirmed 🎉</h1>
-    <p style="margin:0 0 20px;color:#555;">Hi ${esc(opts.customerName)}, thanks for your purchase at <strong>${esc(storeName)}</strong>.</p>
+    <h1 style="margin:0 0 4px;font-size:22px;color:#111;">${heading}</h1>
+    <p style="margin:0 0 20px;color:#555;">${introLine}</p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
       <tr>
@@ -164,18 +171,17 @@ function commissionEarnedHtml(opts: {
       </div>`
     : '';
   return `
-    <div style="text-align:center;margin-bottom:8px;font-size:40px;">💵</div>
-    <h1 style="margin:0 0 6px;font-size:22px;color:#111;text-align:center;">Cha-Ching! You just got paid a commission</h1>
-    <p style="margin:0 0 20px;color:#555;text-align:center;">Hi ${esc(affiliateName)}, you actually heard the sound of money landing, amiright?</p>
+    <h1 style="margin:0 0 6px;font-size:22px;color:#111;">You earned a commission</h1>
+    <p style="margin:0 0 20px;color:#555;">Hi ${esc(affiliateName)}, here's an update on your latest referral.</p>
 
-    <div style="margin:0 0 20px;padding:24px;background:#e7f7ee;border-radius:14px;text-align:center;">
+    <div style="margin:0 0 20px;padding:24px;background:#f2f7f4;border-radius:14px;text-align:center;">
       <div style="font-size:12px;font-weight:700;color:#1a8a4f;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Commission earned</div>
-      <div style="font-size:36px;font-weight:800;color:#1a8a4f;">${esc(commissionAmount)}</div>
+      <div style="font-size:34px;font-weight:800;color:#1a8a4f;">${esc(commissionAmount)}</div>
     </div>
 
-    <p style="margin:0 0 12px;color:#555;">Congrats! Your referral for <strong>"${esc(productName)}"</strong> at <strong>${esc(storeName)}</strong> just purchased and earned you a sweet ${esc(commissionAmount)} in commissions.</p>
+    <p style="margin:0 0 12px;color:#555;">Your referral for <strong>"${esc(productName)}"</strong> at <strong>${esc(storeName)}</strong> converted and earned you ${esc(commissionAmount)} in commission.</p>
     ${rateLine}
-    <p style="margin:0 0 16px;color:#555;">Keep up the good work and remember — money trees are the perfect place for shade. 🌳</p>
+    <p style="margin:0 0 16px;color:#555;">Thanks for helping spread the word.</p>
     ${dashboardBtn}
   `;
 }
@@ -247,7 +253,16 @@ Deno.serve(async (req) => {
 
     const def = DEFAULTS[templateKey] || { subject: '', body: '' };
     const mergedVars = { store_name: marketplace.name || 'Store', ...(vars || {}) };
-    const subject = applyVars((tpl?.subject || def.subject), mergedVars);
+    // For order emails, pick a status-accurate subject (placed vs confirmed) unless
+    // the owner set a custom subject template.
+    let subjectTpl = tpl?.subject || def.subject;
+    if (templateKey === 'orderConfirmation' && order && !tpl?.subject) {
+      const isConfirmed = order.paymentStatus === 'paid' || order.status === 'completed' || order.status === 'processing';
+      subjectTpl = isConfirmed
+        ? 'Your order at {{store_name}} is confirmed'
+        : 'Your order at {{store_name}} has been placed';
+    }
+    const subject = applyVars(subjectTpl, mergedVars);
 
     const brand = marketplace.branding?.primaryColor || '#f97316';
     const logo = marketplace.pageSections?.headerLogoUrl || marketplace.branding?.logo || '';

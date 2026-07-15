@@ -77,8 +77,25 @@ export default function StoreOrderManager({ marketplaceId }) {
     const payload = { [field]: value };
     // Stamp paidAt when a payment is confirmed — starts the refund/hold window.
     if (field === "paymentStatus" && value === "paid") payload.paidAt = new Date().toISOString();
-    await base44.entities.StoreOrder.update(id, payload);
+    const updated = await base44.entities.StoreOrder.update(id, payload);
     queryClient.invalidateQueries({ queryKey: ["storeOrders", marketplaceId] });
+
+    // When the owner approves payment, email the customer that their order is now
+    // confirmed (the first email they got said "pending").
+    if (field === "paymentStatus" && value === "paid" && updated?.customerEmail) {
+      base44.functions.invoke("sendStoreEmail", {
+        marketplaceId,
+        templateKey: "orderConfirmation",
+        to: updated.customerEmail,
+        order: updated,
+        vars: {
+          customer_name: updated.customerName || "there",
+          order_id: updated.id,
+          order_total: `${updated.currency || "USD"} ${(updated.total || 0).toLocaleString()}`,
+        },
+      }).then(() => toast.success("Order confirmed — customer notified by email."))
+        .catch(() => {});
+    }
   };
 
   const handleRefund = async (order) => {
