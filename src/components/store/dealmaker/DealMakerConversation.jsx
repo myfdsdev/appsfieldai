@@ -4,6 +4,7 @@ import DealMakerFloatingMessage from "./DealMakerFloatingMessage";
 import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerSuggestions from "./DealMakerSuggestions";
 import DealMakerMicButton from "./DealMakerMicButton";
+import DealMakerVoiceWave from "./DealMakerVoiceWave";
 
 // Shared conversation surface used by every Deal Maker layout.
 // The latest agent message stays vertically centered — older lines scroll up
@@ -28,11 +29,14 @@ export default function DealMakerConversation({
   onConfirmPlan,
   planSubmitting,
   planSubmitted,
+  speaking = false,
   maxWidthClass = "max-w-3xl",
 }) {
   const font = { fontFamily: "'Outfit', sans-serif" };
   return (
-    <div className="flex-1 flex flex-col min-h-0 w-full" style={font}>
+    <div className="flex-1 flex flex-col min-h-0 w-full relative" style={font}>
+      {/* Siri-style voice wave — animates while the agent speaks */}
+      <DealMakerVoiceWave speaking={speaking} brandColor={brandColor} />
       {/* Free-floating conversation — no boundary box. A flex column with an
           auto-growing top spacer keeps the newest message near the vertical
           center while short, then lets older lines scroll up naturally. */}
@@ -85,7 +89,7 @@ export default function DealMakerConversation({
       </div>
 
       {/* Minimal glowing composer with mic */}
-      <div className="shrink-0 px-6 pb-8 pt-2">
+      <div className="relative z-10 shrink-0 px-6 pb-8 pt-2">
         <div className={`no-global-input-style mx-auto ${maxWidthClass} relative flex items-center`}>
           <div
             className="absolute inset-0 rounded-full blur-lg opacity-40"

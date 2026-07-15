@@ -55,6 +55,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const [planSubmitting, setPlanSubmitting] = useState(false);
   const [planSubmitted, setPlanSubmitted] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const scrollRef = useRef(null);
   const audioRef = useRef(null);
   // Don't auto-speak messages that were restored from a previous mount.
@@ -96,6 +97,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
       audioRef.current.pause();
       audioRef.current = null;
     }
+    setSpeaking(false);
   };
 
   // Play a pre-generated audio URL (OpenAI/Gemini voice, generated inside
@@ -105,7 +107,10 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     stopSpeaking();
     const audio = new Audio(url);
     audioRef.current = audio;
-    audio.play().catch(() => {});
+    audio.onplaying = () => setSpeaking(true);
+    audio.onended = () => setSpeaking(false);
+    audio.onpause = () => setSpeaking(false);
+    audio.play().then(() => setSpeaking(true)).catch(() => {});
   };
 
   // Speak (TTS) a message aloud unless muted. Every provider (including Base44)
@@ -512,6 +517,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                   onConfirmPlan={confirmPlan}
                   planSubmitting={planSubmitting}
                   planSubmitted={planSubmitted}
+                  speaking={speaking}
                   maxWidthClass={layout === "centered" || layout === "spotlight" ? "max-w-3xl" : "max-w-xl"}
                 />
               );
