@@ -6,7 +6,6 @@ import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerOrb from "./DealMakerOrb";
 import DealMakerCharacter from "./DealMakerCharacter";
 import DealMakerConversation from "./DealMakerConversation";
-import DealMakerVoiceWave from "./DealMakerVoiceWave";
 import { getDealMakerBgTheme } from "./dealMakerThemes";
 
 // The Deal Maker Agent — a full-screen, boundary-less immersive experience.
@@ -436,8 +435,6 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
             {/* Preset gradient theme — sits ABOVE the dim so the chosen color is always visible */}
             <div className="absolute inset-0" style={{ background: bgTheme.css }} />
-            {/* Full-width Siri-style voice waveform across the whole page */}
-            <DealMakerVoiceWave speaking={speaking} brandColor={brandColor} />
 
             {/* Clear chat — start a fresh conversation */}
             {chatting && messages.length > 0 && (
@@ -473,7 +470,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             {/* WELCOME (before chatting) — centered orb + greeting + CTA */}
             {!chatting && (
               <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
-                <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} speaking={speaking} />
+                <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} />
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -520,6 +517,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                   onConfirmPlan={confirmPlan}
                   planSubmitting={planSubmitting}
                   planSubmitted={planSubmitted}
+                  speaking={speaking}
                   maxWidthClass={layout === "centered" || layout === "spotlight" ? "max-w-3xl" : "max-w-xl"}
                 />
               );
@@ -535,7 +533,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
                     <div className={`flex-1 flex flex-col min-h-0 ${charFirst ? "" : "md:order-1"}`}>
                       {/* compact orb for mobile where the character column is hidden */}
                       <div className="md:hidden pt-8 pb-2 flex justify-center shrink-0">
-                        <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact speaking={speaking} />
+                        <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact />
                       </div>
                       {conversationEl}
                     </div>
@@ -561,7 +559,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               return (
                 <div className="relative z-10 flex-1 flex flex-col min-h-0">
                   <div className="pt-8 pb-2 flex justify-center shrink-0">
-                    <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact speaking={speaking} />
+                    <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact />
                   </div>
                   {conversationEl}
                 </div>

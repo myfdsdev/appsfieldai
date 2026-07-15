@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 
 // The central breathing agent presence for the immersive full-page mode.
 // A glowing orb that gently pulses; shrinks to a compact size once chatting.
-export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366f1", compact = false, speaking = false }) {
+export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366f1", compact = false }) {
   const size = compact ? "w-16 h-16" : "w-28 h-28 sm:w-32 sm:h-32";
   return (
     <div className="flex flex-col items-center text-center">
@@ -16,21 +16,10 @@ export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366
           animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.6, 0.35] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* Speaking ripples — concentric rings pulse out from the avatar (Jarvis-style) */}
-        {speaking && [0, 0.6, 1.2].map((delay) => (
-          <motion.span
-            key={delay}
-            className="absolute inset-0 z-0 rounded-full border-2"
-            style={{ borderColor: brandColor }}
-            initial={{ scale: 1, opacity: 0.6 }}
-            animate={{ scale: 2.4, opacity: 0 }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay }}
-          />
-        ))}
         {/* rotating conic ring (border only — the photo stays upright) */}
         <motion.div
           layout
-          className={`relative z-10 rounded-full ${size}`}
+          className={`relative rounded-full ${size}`}
           style={{ padding: "2px" }}
         >
           <motion.span
