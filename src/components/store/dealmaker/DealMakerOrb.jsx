@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import DealMakerVoiceWave from "./DealMakerVoiceWave";
 
 // The central breathing agent presence for the immersive full-page mode.
 // A glowing orb that gently pulses; shrinks to a compact size once chatting.
-export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366f1", compact = false }) {
+export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366f1", compact = false, speaking = false }) {
   const size = compact ? "w-16 h-16" : "w-28 h-28 sm:w-32 sm:h-32";
   return (
     <div className="flex flex-col items-center text-center">
@@ -22,6 +23,8 @@ export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366
           className={`relative rounded-full ${size}`}
           style={{ padding: "2px" }}
         >
+          {/* Siri-style circular voice wave — ripples out while the agent speaks */}
+          <DealMakerVoiceWave speaking={speaking} brandColor={brandColor} />
           <motion.span
             className="absolute inset-0 rounded-full"
             style={{ background: `conic-gradient(from 0deg, ${brandColor}, #22d3ee, ${brandColor})` }}
