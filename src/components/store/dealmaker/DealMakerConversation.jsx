@@ -56,6 +56,7 @@ export default function DealMakerConversation({
                   onConfirmPlan={onConfirmPlan}
                   planSubmitting={planSubmitting}
                   planSubmitted={planSubmitted}
+                  onAction={onSubmitText}
                 />
               );
             })}

@@ -9,7 +9,7 @@ import DealMakerPlanCard from "./DealMakerPlanCard";
 // A boundary-less chat line for the immersive full-page mode.
 // No bubble box — text simply floats in space. Agent text is centered and large;
 // the visitor's own replies sit to the right, dimmer, smaller, like an echo.
-export default function DealMakerFloatingMessage({ message, brandColor = "#6366f1", fade = 1, currency = "USD", marketplaceId, marketplace, onMoreDetails, onReserve, onConfirmPlan, planSubmitting, planSubmitted }) {
+export default function DealMakerFloatingMessage({ message, brandColor = "#6366f1", fade = 1, currency = "USD", marketplaceId, marketplace, onMoreDetails, onReserve, onConfirmPlan, planSubmitting, planSubmitted, onAction }) {
   const isUser = message.role === "user";
 
   if (isUser) {
@@ -51,6 +51,7 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
           listing={message.card.listing}
           brandColor={brandColor}
           currency={currency}
+          onAction={onAction}
         />
       )}
       {message.card?.listing && message.card.mode !== "checkout" && message.card.mode !== "details" && (

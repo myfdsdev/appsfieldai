@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Star, Check, Sparkles, ShieldCheck, LifeBuoy } from "lucide-react";
+import { Star, Check, Sparkles, ShieldCheck, LifeBuoy, ShoppingCart, LayoutGrid, MessageCircleQuestion } from "lucide-react";
 
 // A rich, full "deep dive" card the Deal Maker shows when the visitor asks to
 // know more about a product. Unlike the compact product card, this leads with
 // the product's real screenshots/gallery, then lays out structured features,
 // use cases and pricing — everything the agent needs to make up the buyer's mind.
-export default function DealMakerDetailsCard({ listing, brandColor = "#f97316", currency = "USD" }) {
+export default function DealMakerDetailsCard({ listing, brandColor = "#f97316", currency = "USD", onAction }) {
   if (!listing) return null;
 
   const fmt = (n) =>
@@ -152,6 +152,31 @@ export default function DealMakerDetailsCard({ listing, brandColor = "#f97316", 
             </div>
           )}
         </div>
+
+        {/* Quick-action tabs — drive the visitor to buy, browse more, or ask */}
+        {onAction && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              onClick={() => onAction(`I want to buy ${listing.softwareName}`)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.03]"
+              style={{ background: `linear-gradient(135deg, ${brandColor}, #22d3ee)` }}
+            >
+              <ShoppingCart className="w-4 h-4" /> Buy this now
+            </button>
+            <button
+              onClick={() => onAction("Show me more products")}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white/90 border border-white/20 bg-white/5 transition-colors hover:bg-white/10"
+            >
+              <LayoutGrid className="w-4 h-4" /> Show me more products
+            </button>
+            <button
+              onClick={() => onAction("I have a question about this")}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white/90 border border-white/20 bg-white/5 transition-colors hover:bg-white/10"
+            >
+              <MessageCircleQuestion className="w-4 h-4" /> Something else
+            </button>
+          </div>
+        )}
       </div>
     </motion.div>
   );
