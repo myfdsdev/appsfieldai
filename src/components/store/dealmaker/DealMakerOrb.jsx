@@ -16,6 +16,17 @@ export default function DealMakerOrb({ name, tagline, image, brandColor = "#6366
           animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.6, 0.35] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
         />
+        {/* Speaking ripples — concentric rings pulse out from the avatar (Jarvis-style) */}
+        {speaking && [0, 0.6, 1.2].map((delay) => (
+          <motion.span
+            key={delay}
+            className="absolute inset-0 z-0 rounded-full border-2"
+            style={{ borderColor: brandColor }}
+            initial={{ scale: 1, opacity: 0.6 }}
+            animate={{ scale: 2.4, opacity: 0 }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay }}
+          />
+        ))}
         {/* rotating conic ring (border only — the photo stays upright) */}
         <motion.div
           layout
