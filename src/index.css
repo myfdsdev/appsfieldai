@@ -173,6 +173,37 @@
   }
 }
 
+/* ── Siri-style glowing conic border (Apple Intelligence look) ───── */
+@property --dm-angle {
+  inherits: false;
+  initial-value: 0deg;
+  syntax: "<angle>";
+}
+@keyframes dm-siri-spin {
+  to { --dm-angle: 360deg; }
+}
+.dm-siri-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-style: solid;
+  border-image-slice: 1;
+  border-image-source: conic-gradient(from var(--dm-angle),
+    oklch(70.98% 0.1681 306.27),
+    oklch(85.51% 0.0935 332.88),
+    oklch(71.72% 0.1483 276.9),
+    oklch(65.75% 0.1885 303.24),
+    oklch(70.92% 0.1850555821 16.4603355045),
+    oklch(83.83% 0.120319156 66.466799775),
+    oklch(73.24% 0.1787722184 306.9359420675));
+  animation: dm-siri-spin 5000ms infinite linear;
+  transition: opacity 400ms ease;
+}
+.dm-siri-glow.dm-siri-speaking { animation-duration: 1800ms; }
+.dm-siri-sm { border-width: 9px; filter: blur(2px); margin: -4px; }
+.dm-siri-md { border-width: 17px; filter: blur(5px); margin: -10px; }
+.dm-siri-lg { border-width: 30px; filter: blur(10px); margin: -20px; mix-blend-mode: hard-light; }
+
 /* Hide scrollbar for horizontal sliders */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
