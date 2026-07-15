@@ -13,7 +13,7 @@ export default function DealMakerVoiceWave({ speaking = false, brandColor = "#63
   ];
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 overflow-hidden">
+    <div className="pointer-events-none absolute inset-x-0 bottom-16 h-40 overflow-hidden">
       <motion.div
         className="absolute inset-0"
         animate={{ scaleY: speaking ? [1, 1.35, 0.9, 1.2, 1] : [1, 1.08, 1] }}
