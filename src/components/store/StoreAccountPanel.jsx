@@ -4,6 +4,7 @@ import { X, User, Package, Mail, Phone, LogOut, Loader2, CheckCircle2, Clock, Ci
 import { fetchStoreCustomerProducts, fetchStoreCustomerOrders } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
 import StoreAccountSettings from "@/components/store/StoreAccountSettings";
+import BecomeAffiliateModal from "@/components/store/BecomeAffiliateModal";
 
 const STATUS_STYLES = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -75,13 +76,28 @@ function ProductRow({ p, brandColor }) {
   );
 }
 
-export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, setCustomer, brandColor = "#f97316", onLogout, initialTab = "account", affiliateEnabled = false, affiliatePath }) {
+export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, setCustomer, brandColor = "#f97316", onLogout, initialTab = "account", affiliateEnabled = false, affiliatePath, affiliateSettings = null, storeBaseUrl = "" }) {
   const navigate = useNavigate();
   const goToAffiliate = () => { onClose(); if (affiliatePath) navigate(affiliatePath); };
   const [tab, setTab] = useState(initialTab);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  // Product a customer is applying to promote — opens BecomeAffiliateModal in-place
+  // (no navigation, so it works on custom domains / proxied stores).
+  const [promoteListing, setPromoteListing] = useState(null);
+
+  // Build a minimal listing object from an order to feed the affiliate modal.
+  const becomeAffiliate = (order) => {
+    const item = (order.items || [])[0];
+    if (!item) return;
+    setPromoteListing({
+      id: item.listingId,
+      softwareName: item.listingTitle,
+      imageGradient: item.imageGradient,
+      affiliateCommissionRate: item.affiliateCommissionRate,
+    });
+  };
 
   useEffect(() => { if (open) setTab(initialTab); }, [open, initialTab]);
 
@@ -200,7 +216,7 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                         <ShoppingBag className="w-3.5 h-3.5" /> Purchases
                       </p>
-                      {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={goToAffiliate} />)}
+                      {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={becomeAffiliate} />)}
                     </div>
                   )}
                   {products.length > 0 && (
@@ -217,6 +233,17 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
           )}
         </div>
       </div>
+
+      {/* Apply to promote a purchased product — in-place, no navigation */}
+      <BecomeAffiliateModal
+        open={!!promoteListing}
+        onClose={() => setPromoteListing(null)}
+        marketplaceId={marketplaceId}
+        listing={promoteListing}
+        storeBaseUrl={storeBaseUrl}
+        affiliateSettings={affiliateSettings}
+        brandColor={brandColor}
+      />
     </div>
   );
 }

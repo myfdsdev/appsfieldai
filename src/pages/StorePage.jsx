@@ -343,6 +343,8 @@ export default function StorePage() {
         brandColor={brandColor}
         affiliateEnabled={affiliateEnabled}
         affiliatePath={`${storeBasePath}/affiliates`}
+        affiliateSettings={affiliateSettings}
+        storeBaseUrl={storeBaseUrl}
         onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
         onLogout={logout}
       />
