@@ -558,7 +558,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               // Centered (default) — full-page chat with the agent avatar pinned on top
               return (
                 <div className="relative z-10 flex-1 flex flex-col min-h-0">
-                  <div className="pt-8 pb-2 flex justify-center shrink-0">
+                  <div className="relative z-20 pt-8 pb-2 flex justify-center shrink-0">
                     <DealMakerOrb name={dealmakerName} tagline={dealmakerTagline} image={dealmakerImage} brandColor={brandColor} compact />
                   </div>
                   {conversationEl}
