@@ -41,7 +41,7 @@ export default function DealMakerConversation({
           auto-growing top spacer keeps the newest message near the vertical
           center while short, then lets older lines scroll up naturally. */}
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-6">
-        <div className={`mx-auto ${maxWidthClass} w-full min-h-full flex flex-col justify-end pb-10 pt-24`}>
+        <div className={`mx-auto ${maxWidthClass} w-full min-h-full flex flex-col justify-center py-24`}>
           <div className="space-y-6">
             {messages.map((mm, i) => {
               const distance = messages.length - 1 - i;
