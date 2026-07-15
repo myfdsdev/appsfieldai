@@ -6,6 +6,7 @@ import DealMakerLeadForm from "./DealMakerLeadForm";
 import DealMakerOrb from "./DealMakerOrb";
 import DealMakerCharacter from "./DealMakerCharacter";
 import DealMakerConversation from "./DealMakerConversation";
+import DealMakerVoiceWave from "./DealMakerVoiceWave";
 import { getDealMakerBgTheme } from "./dealMakerThemes";
 
 // The Deal Maker Agent — a full-screen, boundary-less immersive experience.
@@ -435,6 +436,8 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             <div className="absolute inset-0 backdrop-blur-xl" style={{ backgroundColor: `rgba(5, 7, 12, ${bgOpacity})` }} />
             {/* Preset gradient theme — sits ABOVE the dim so the chosen color is always visible */}
             <div className="absolute inset-0" style={{ background: bgTheme.css }} />
+            {/* Full-width Siri-style voice waveform across the whole page */}
+            <DealMakerVoiceWave speaking={speaking} brandColor={brandColor} />
 
             {/* Clear chat — start a fresh conversation */}
             {chatting && messages.length > 0 && (
