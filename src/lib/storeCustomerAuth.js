@@ -151,7 +151,14 @@ export async function fetchAffiliateDashboard(marketplaceId) {
 export async function applyAsAffiliate({ marketplaceId, listingId, answers }) {
   const token = getStoredToken(marketplaceId);
   if (!token) throw new Error("Please sign in to apply");
-  const res = await base44.functions.invoke("affiliateApply", { marketplaceId, token, listingId, answers });
+  let res;
+  try {
+    res = await base44.functions.invoke("affiliateApply", { marketplaceId, token, listingId, answers });
+  } catch (err) {
+    // Non-2xx (e.g. 400) throws — surface the server's real error message.
+    const serverError = err?.response?.data?.error;
+    throw new Error(serverError || err.message || "Could not submit your application.");
+  }
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }
