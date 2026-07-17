@@ -32,6 +32,7 @@ import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
 import DealMakerReport from "@/components/marketplace/DealMakerReport";
 import DealMakerLeads from "@/components/marketplace/DealMakerLeads";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import StoreStylePicker from "@/components/store/StoreStylePicker";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -65,6 +66,7 @@ const NAV_GROUPS = [
   {
     label: "Page", items: [
       { id: "page_settings", label: "Page Settings", icon: Layout },
+      { id: "store_style", label: "Store Style", icon: Palette },
       { id: "deal_maker", label: "Deal Maker Agent", icon: Sparkles },
       { id: "testimonials", label: "Testimonials", icon: MessageSquare },
       { id: "custom_pages", label: "Custom Pages", icon: FileText },
@@ -105,6 +107,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
 
   const [pageForm, setPageForm] = useState({
+    storeStyle: marketplace?.pageSections?.storeStyle || "",
     headerEnabled: marketplace?.pageSections?.headerEnabled ?? true,
     headerTitle: marketplace?.pageSections?.headerTitle || "",
     headerSubtitle: marketplace?.pageSections?.headerSubtitle || "",
@@ -333,6 +336,18 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   Publishing saves these sections as a reusable store theme template you can apply to other stores later.
                 </p>
               )}
+            </div>
+          )}
+
+          {/* STORE STYLE */}
+          {activeTab === "store_style" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Store Style</h2>
+              <p className="text-sm text-muted-foreground">Pick a complete visual style — it changes your fonts, header size and product layout. Save to apply it live.</p></div>
+              <StoreStylePicker value={pageForm.storeStyle} onChange={(slug) => setPageForm(f => ({ ...f, storeStyle: slug }))} />
+              <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
+                <Save className="w-4 h-4" /> Save Store Style
+              </Button>
             </div>
           )}
 
