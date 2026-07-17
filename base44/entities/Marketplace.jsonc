@@ -376,6 +376,20 @@
           "type": "string",
           "description": "Store logo shown in the top navigation bar"
         },
+        "heroSideImageUrl": {
+          "type": "string",
+          "description": "Feature image shown beside the hero headline (product shot / illustration)"
+        },
+        "heroSideImagePosition": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "default": "right",
+          "description": "Position of the hero side image relative to the headline"
+        },
         "heroBadgeText": {
           "type": "string",
           "description": "Small badge/pill text above the hero headline"
