@@ -10,7 +10,8 @@ const STORE_DEFAULTS = { title: "Once In A Lifetime Deals", subtitle: "Exclusive
 export default function OneInALifetimeDeals({ listings = [], title, subtitle, styleSlug, currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
   const [search, setSearch] = useState("");
   const style = getStoreStyle(styleSlug);
-  const p = style.products;
+  // Merge the style's fonts into the product spec so cards can apply them.
+  const p = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont };
 
   const filtered = listings.filter(l => {
     if (!search.trim()) return true;

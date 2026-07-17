@@ -62,6 +62,13 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
   const cardRadius = styleSpec?.radius || "rounded-2xl";
   const imgHeight = styleSpec?.imageHeight && styleSpec.imageHeight !== "h-full" ? styleSpec.imageHeight : "h-36";
   const btnShape = styleSpec?.buttonShape || "rounded-lg";
+  // Full style personality: border, background, hover and title treatment + fonts.
+  const cardBorder = styleSpec?.cardBorder || "border border-border/40";
+  const cardBg = styleSpec?.cardBg || "bg-card/60 backdrop-blur-xl";
+  const cardHover = styleSpec?.cardHover || "hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5";
+  const titleClass = styleSpec?.titleClass || "font-display font-bold text-base";
+  const headingFont = styleSpec?.headingFont;
+  const bodyFont = styleSpec?.bodyFont;
   const [favLoading, setFavLoading] = React.useState(false);
   const [linkCopied, setLinkCopied] = React.useState(false);
 
@@ -95,7 +102,8 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className={`group ${cardRadius} border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5 transition-all duration-300 flex flex-col`}
+      style={{ fontFamily: bodyFont }}
+      className={`group ${cardRadius} ${cardBorder} ${cardBg} ${cardHover} overflow-hidden transition-all duration-300 flex flex-col`}
     >
       {/* Image / Header */}
       <div
@@ -148,7 +156,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
         {/* Title */}
-        <h3 className="font-display font-bold text-base leading-snug line-clamp-1">{title}</h3>
+        <h3 className={`${titleClass} leading-snug line-clamp-1`} style={{ fontFamily: headingFont }}>{title}</h3>
 
         {/* Category + Marketplace + Seller Row */}
         <div className="flex items-center gap-1.5 flex-wrap">
