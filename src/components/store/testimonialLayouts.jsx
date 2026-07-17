@@ -1,0 +1,153 @@
+import React from "react";
+import { motion } from "framer-motion";
+import { Quote, Star } from "lucide-react";
+
+// Shared bits ---------------------------------------------------------------
+const Stars = ({ rating, accent }) => (
+  <div className="flex items-center gap-0.5">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <Star key={i} className="w-3.5 h-3.5" style={i < (rating || 0) ? { color: accent, fill: accent } : { color: "rgba(128,128,128,0.3)" }} />
+    ))}
+  </div>
+);
+
+const Avatar = ({ item, accent, accentText, className = "w-8 h-8 text-xs" }) => (
+  <div className={`${className} rounded-full flex items-center justify-center font-bold overflow-hidden shrink-0`} style={{ background: accent, color: accentText || "#fff" }}>
+    {item.avatar ? <img src={item.avatar} alt={item.name} className="w-full h-full object-cover" /> : (item.name || "?")[0].toUpperCase()}
+  </div>
+);
+
+const fade = (i) => ({ initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { delay: i * 0.06 } });
+
+// Aurora — glassy 3-col cards with a gradient top edge ------------------------
+export function AuroraLayout({ items, style }) {
+  const pal = style.palette;
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {items.slice(0, 6).map((r, i) => (
+        <motion.div key={r.id} {...fade(i)} className="rounded-2xl overflow-hidden border" style={{ background: pal.card, borderColor: pal.cardBorder }}>
+          <div className="h-1 w-full" style={{ background: `linear-gradient(to right, ${pal.accent}, transparent)` }} />
+          <div className="p-5">
+            <Stars rating={r.rating} accent={pal.accent} />
+            {r.title && <p className="text-sm font-semibold mt-3 mb-1" style={{ fontFamily: style.headingFont }}>{r.title}</p>}
+            <p className="text-sm opacity-75 leading-relaxed line-clamp-4 mt-3" style={{ fontFamily: style.bodyFont }}>{r.content}</p>
+            <div className="flex items-center gap-2.5 mt-4 pt-3 border-t" style={{ borderColor: pal.cardBorder }}>
+              <Avatar item={r} accent={pal.accent} accentText={pal.accentText} />
+              <div>
+                <p className="text-xs font-medium">{r.name || "Anonymous"}</p>
+                {r.role && <p className="text-[10px] opacity-60">{r.role}</p>}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// Binasea (monolith) — centered avatar-top creator cards, 4-up ----------------
+export function BinaseaLayout({ items, style }) {
+  const pal = style.palette;
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {items.slice(0, 8).map((r, i) => (
+        <motion.div key={r.id} {...fade(i)} className="rounded-2xl border p-5 text-center transition-transform hover:-translate-y-1" style={{ background: pal.card, borderColor: pal.cardBorder }}>
+          <div className="mx-auto w-fit rounded-full p-[3px] mb-3" style={{ background: `linear-gradient(135deg, ${pal.accent}, transparent)` }}>
+            <Avatar item={r} accent={pal.accent} accentText={pal.accentText} className="w-14 h-14 text-lg" />
+          </div>
+          <p className="text-sm font-bold" style={{ fontFamily: style.headingFont }}>{r.name || "Anonymous"}</p>
+          {r.role && <p className="text-[10px] opacity-60 mb-2">{r.role}</p>}
+          <p className="text-xs opacity-75 leading-relaxed line-clamp-4 mt-2" style={{ fontFamily: style.bodyFont }}>{r.content}</p>
+          <div className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-full border" style={{ borderColor: pal.cardBorder, background: "rgba(255,255,255,0.03)" }}>
+            <Stars rating={r.rating} accent={pal.accent} />
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// Neon — bold 2-col slabs, thick accent border, giant quote mark --------------
+export function NeonLayout({ items, style }) {
+  const pal = style.palette;
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      {items.slice(0, 4).map((r, i) => (
+        <motion.div key={r.id} {...fade(i)} className="relative rounded-xl border-2 p-6 overflow-hidden" style={{ background: pal.card, borderColor: `${pal.accent}44` }}>
+          <Quote className="absolute -top-2 -right-2 w-20 h-20 opacity-10 rotate-12" style={{ color: pal.accent }} />
+          <p className="text-base sm:text-lg font-extrabold leading-snug line-clamp-4 uppercase tracking-tight" style={{ fontFamily: style.headingFont }}>
+            "{r.content}"
+          </p>
+          <div className="flex items-center justify-between mt-5">
+            <div className="flex items-center gap-2.5">
+              <Avatar item={r} accent={pal.accent} accentText={pal.accentText} />
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-wide" style={{ color: pal.accent }}>{r.name || "Anonymous"}</p>
+                {r.role && <p className="text-[10px] opacity-60">{r.role}</p>}
+              </div>
+            </div>
+            <Stars rating={r.rating} accent={pal.accent} />
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// Nitro (linen) — one big spotlight quote + small supporting cards ------------
+export function NitroLayout({ items, style }) {
+  const pal = style.palette;
+  const [featured, ...rest] = items;
+  return (
+    <div className="space-y-6">
+      <motion.div {...fade(0)} className="max-w-3xl mx-auto text-center rounded-2xl border px-6 py-10" style={{ background: pal.card, borderColor: pal.cardBorder }}>
+        <div className="flex justify-center mb-4"><Stars rating={featured.rating} accent={pal.accent} /></div>
+        <p className="text-xl sm:text-2xl uppercase leading-snug tracking-wide" style={{ fontFamily: style.headingFont }}>
+          "{featured.content}"
+        </p>
+        <div className="flex items-center justify-center gap-2.5 mt-6">
+          <Avatar item={featured} accent={pal.accent} accentText={pal.accentText} />
+          <div className="text-left">
+            <p className="text-xs font-semibold" style={{ color: pal.accent }}>{featured.name || "Anonymous"}</p>
+            {featured.role && <p className="text-[10px] opacity-60">{featured.role}</p>}
+          </div>
+        </div>
+      </motion.div>
+      {rest.length > 0 && (
+        <div className="grid sm:grid-cols-3 gap-4">
+          {rest.slice(0, 3).map((r, i) => (
+            <motion.div key={r.id} {...fade(i + 1)} className="rounded-2xl border p-4" style={{ background: pal.card, borderColor: pal.cardBorder }}>
+              <Stars rating={r.rating} accent={pal.accent} />
+              <p className="text-xs opacity-75 leading-relaxed line-clamp-3 mt-2.5" style={{ fontFamily: style.bodyFont }}>{r.content}</p>
+              <p className="text-[11px] font-semibold mt-3 uppercase tracking-wide" style={{ color: pal.accent }}>{r.name || "Anonymous"}</p>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Carbon — structured enterprise rows with a left accent bar ------------------
+export function CarbonLayout({ items, style }) {
+  const pal = style.palette;
+  return (
+    <div className="max-w-4xl mx-auto rounded-lg border divide-y overflow-hidden" style={{ background: pal.card, borderColor: pal.cardBorder }}>
+      {items.slice(0, 5).map((r, i) => (
+        <motion.div key={r.id} {...fade(i)} className="flex gap-4 p-5" style={{ borderColor: pal.cardBorder }}>
+          <div className="w-1 rounded-full shrink-0 self-stretch" style={{ background: pal.accent }} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar item={r} accent={pal.accent} accentText={pal.accentText} className="w-7 h-7 text-[10px]" />
+                <p className="text-sm font-bold truncate" style={{ fontFamily: style.headingFont }}>{r.name || "Anonymous"}{r.role ? <span className="font-normal opacity-60 text-xs"> — {r.role}</span> : null}</p>
+              </div>
+              <Stars rating={r.rating} accent={pal.accent} />
+            </div>
+            <p className="text-sm opacity-75 leading-relaxed line-clamp-3" style={{ fontFamily: style.bodyFont }}>{r.content}</p>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
