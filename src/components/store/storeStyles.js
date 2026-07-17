@@ -28,16 +28,17 @@ export const STORE_STYLES = [
       cardBorder: "rgba(139,92,246,0.18)",
       text: "#e6e8f5",
     },
-    // Hero
+    // Hero — Binabox-style full-bleed image hero with a centered subject.
     hero: {
-      size: "md",              // vertical padding preset
+      variant: "fullbleed",    // full-width background image, centered content
+      size: "xl",              // vertical padding preset
       align: "center",
-      titleClass: "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight",
-      gradientTitle: true,
+      titleClass: "text-4xl sm:text-5xl lg:text-6xl font-extrabold uppercase tracking-tight",
+      gradientTitle: false,
       logoShape: "rounded-2xl",
       logoSize: "w-20 h-20",
       badgePill: true,
-      ctaShape: "rounded-full",
+      ctaShape: "rounded-md",
     },
     // Products
     products: {

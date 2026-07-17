@@ -26,6 +26,82 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
     sections.headerSubtitle ||
     "Join group deals on premium software. Lock a slot, split the cost, and save big.";
 
+  // ── Binabox-style full-bleed hero (Aurora) ──────────────────────────────
+  // Full-width background image with a centered subject, big uppercase headline,
+  // subheadline and a solid + outlined CTA pair.
+  if (h.variant === "fullbleed") {
+    const bgImage = sections.headerImageUrl;
+    const fullBg = bgImage
+      ? `linear-gradient(to bottom, rgba(6,10,8,0.35) 0%, rgba(6,10,8,0.55) 60%, ${pal?.surface || "#0b0d1a"} 100%), url(${bgImage}) center/cover no-repeat`
+      : pal
+      ? `radial-gradient(ellipse at 50% 30%, ${pal.accent}33 0%, ${pal.surface} 60%)`
+      : `radial-gradient(ellipse at top, ${brandColor}33 0%, #0a0603 60%)`;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={`relative ${HERO_SIZE_PADDING[h.size] || "py-36"} px-4 overflow-hidden text-center`}
+        style={{ background: fullBg }}
+      >
+        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center">
+          {sections.heroBadgeText && (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.13 }}
+              className={`inline-flex items-center gap-2 px-3 py-1 border border-white/15 bg-white/5 text-white/80 text-xs mb-6 ${h.badgePill ? "rounded-full" : "rounded-none"}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: heroAccent }} />
+              {sections.heroBadgeText}
+            </motion.span>
+          )}
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className={`${h.titleClass} mb-4 text-balance text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]`}
+            style={{ fontFamily: style.headingFont }}
+          >
+            {title}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-white/75 text-sm sm:text-base max-w-xl mb-8"
+            style={{ fontFamily: style.bodyFont }}
+          >
+            {subtitle}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="flex flex-wrap items-center justify-center gap-3"
+          >
+            <button
+              onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}
+              className={`px-6 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 ${h.ctaShape}`}
+              style={{ fontFamily: style.headingFont, background: heroAccent, color: pal?.accentText || "#0a0f05" }}
+            >
+              {sections.heroCtaText || `${listingsCount} ${listingsCount === 1 ? "deal" : "deals"} live now`}
+            </button>
+            {sections.heroSecondaryCtaText && (
+              <button
+                onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}
+                className={`px-6 py-2.5 text-sm font-semibold border transition-colors hover:bg-white/10 ${h.ctaShape} text-white`}
+                style={{ fontFamily: style.headingFont, borderColor: "rgba(255,255,255,0.4)" }}
+              >
+                {sections.heroSecondaryCtaText}
+              </button>
+            )}
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
   const bgType = sections.heroBgType || (sections.headerImageUrl ? "image" : "gradient");
   const opacity = (sections.heroBgOpacity ?? 100) / 100;
   let background;

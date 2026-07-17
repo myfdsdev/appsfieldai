@@ -98,13 +98,22 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
 
       {/* CTA */}
       <div>
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">CTA Button</p>
-        <Input
-          value={form.heroCtaText || ""}
-          onChange={e => set("heroCtaText", e.target.value)}
-          className="bg-secondary/50 border-border/30 rounded-xl"
-          placeholder="Browse deals"
-        />
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">CTA Buttons</p>
+        <div className="space-y-2">
+          <Input
+            value={form.heroCtaText || ""}
+            onChange={e => set("heroCtaText", e.target.value)}
+            className="bg-secondary/50 border-border/30 rounded-xl"
+            placeholder="Primary button (e.g. Connect Wallet)"
+          />
+          <Input
+            value={form.heroSecondaryCtaText || ""}
+            onChange={e => set("heroSecondaryCtaText", e.target.value)}
+            className="bg-secondary/50 border-border/30 rounded-xl"
+            placeholder="Secondary button — outlined (e.g. Whitelist Now)"
+          />
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1">The secondary (outlined) button only shows on the Aurora theme's full-image hero.</p>
       </div>
 
       {/* Background */}
