@@ -45,6 +45,22 @@ export default function StoreCategories({ listings = [], savedCategories = [], b
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <button
+            onClick={() => onSelect?.(null)}
+            className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border text-left transition-all hover:-translate-y-0.5"
+            style={{ background: `${accent}14`, borderColor: `${accent}55` }}
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold truncate" style={{ fontFamily: style.headingFont, color: accent }}>All Deals</p>
+              <p className="text-[11px] text-muted-foreground">{listings.length} {listings.length === 1 ? "deal" : "deals"}</p>
+            </div>
+            <span
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: accent, color: pal?.accentText || "#fff" }}
+            >
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
           {categories.map((cat) => {
             const n = countFor(cat);
             return (
