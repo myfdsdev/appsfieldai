@@ -6,6 +6,7 @@ import { Store, Palette, Tag, Settings, Globe, Mail, Shield, FileText, ArrowLeft
 import DomainManager from "@/components/marketplace/DomainManager";
 import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import StoreStylePicker from "@/components/store/StoreStylePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 const tabs = [
   { id: "general", label: "General", icon: Settings },
   { id: "branding", label: "Branding", icon: Palette },
+  { id: "style", label: "Store Style", icon: Sparkles },
   { id: "domain", label: "Domain", icon: Globe },
   { id: "dealmaker", label: "Deal Maker", icon: Sparkles },
   { id: "pages", label: "Legal Pages", icon: FileText },
@@ -155,6 +157,14 @@ export default function MarketplaceSettings({ marketplace, onBack }) {
               </div>
             </div>
           </>
+        )}
+
+        {/* Store Style Tab */}
+        {activeTab === "style" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Each style completely changes your store's look — fonts, header size and product layout. Pick one, then save.</p>
+            <StoreStylePicker value={form.pageSections.storeStyle} onChange={(slug) => updatePageSections("storeStyle", slug)} />
+          </div>
         )}
 
         {/* Domain Tab */}
