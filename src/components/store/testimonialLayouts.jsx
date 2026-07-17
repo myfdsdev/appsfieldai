@@ -1,6 +1,6 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Quote, Star } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Quote, Star, ChevronUp, ChevronDown } from "lucide-react";
 
 // Shared bits ---------------------------------------------------------------
 const Stars = ({ rating, accent }) => (
@@ -128,26 +128,83 @@ export function NitroLayout({ items, style }) {
   );
 }
 
-// Carbon — structured enterprise rows with a left accent bar ------------------
+// Carbon — vertical slider: active card centered & full, neighbors half-visible
 export function CarbonLayout({ items, style }) {
   const pal = style.palette;
-  return (
-    <div className="max-w-4xl mx-auto rounded-lg border divide-y overflow-hidden" style={{ background: pal.card, borderColor: pal.cardBorder }}>
-      {items.slice(0, 5).map((r, i) => (
-        <motion.div key={r.id} {...fade(i)} className="flex gap-4 p-5" style={{ borderColor: pal.cardBorder }}>
-          <div className="w-1 rounded-full shrink-0 self-stretch" style={{ background: pal.accent }} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-3 mb-1.5">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Avatar item={r} accent={pal.accent} accentText={pal.accentText} className="w-7 h-7 text-[10px]" />
-                <p className="text-sm font-bold truncate" style={{ fontFamily: style.headingFont }}>{r.name || "Anonymous"}{r.role ? <span className="font-normal opacity-60 text-xs"> — {r.role}</span> : null}</p>
-              </div>
-              <Stars rating={r.rating} accent={pal.accent} />
-            </div>
-            <p className="text-sm opacity-75 leading-relaxed line-clamp-3" style={{ fontFamily: style.bodyFont }}>{r.content}</p>
+  const [active, setActive] = useState(0);
+  const timer = useRef(null);
+  const total = items.length;
+
+  const go = (dir) => setActive((a) => (a + dir + total) % total);
+
+  // Auto-advance every 5s; pause on hover.
+  useEffect(() => {
+    if (total <= 1) return;
+    timer.current = setInterval(() => setActive((a) => (a + 1) % total), 5000);
+    return () => clearInterval(timer.current);
+  }, [total]);
+
+  const pause = () => clearInterval(timer.current);
+  const resume = () => {
+    if (total <= 1) return;
+    timer.current = setInterval(() => setActive((a) => (a + 1) % total), 5000);
+  };
+
+  const Card = ({ r }) => (
+    <div className="flex gap-4 rounded-lg border p-5 w-full" style={{ background: pal.card, borderColor: pal.cardBorder }}>
+      <div className="w-1 rounded-full shrink-0 self-stretch" style={{ background: pal.accent }} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-3 mb-1.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Avatar item={r} accent={pal.accent} accentText={pal.accentText} className="w-7 h-7 text-[10px]" />
+            <p className="text-sm font-bold truncate" style={{ fontFamily: style.headingFont }}>{r.name || "Anonymous"}{r.role ? <span className="font-normal opacity-60 text-xs"> — {r.role}</span> : null}</p>
           </div>
-        </motion.div>
-      ))}
+          <Stars rating={r.rating} accent={pal.accent} />
+        </div>
+        <p className="text-sm opacity-75 leading-relaxed line-clamp-3" style={{ fontFamily: style.bodyFont }}>{r.content}</p>
+      </div>
+    </div>
+  );
+
+  const prev = (active - 1 + total) % total;
+  const next = (active + 1) % total;
+
+  return (
+    <div className="max-w-3xl mx-auto flex items-center gap-4" onMouseEnter={pause} onMouseLeave={resume}>
+      <div className="relative flex-1 h-[220px] overflow-hidden">
+        {/* Prev — top, half-visible & dimmed */}
+        {total > 1 && (
+          <div className="absolute -top-2 inset-x-0 opacity-30 scale-[0.94] blur-[0.5px] pointer-events-none" style={{ transform: "translateY(-42%)" }}>
+            <Card r={items[prev]} />
+          </div>
+        )}
+        {/* Active — centered & full */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
+          <AnimatePresence mode="wait">
+            <motion.div key={items[active].id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }} transition={{ duration: 0.35 }}>
+              <Card r={items[active]} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        {/* Next — bottom, half-visible & dimmed */}
+        {total > 2 && (
+          <div className="absolute -bottom-2 inset-x-0 opacity-30 scale-[0.94] blur-[0.5px] pointer-events-none" style={{ transform: "translateY(42%)" }}>
+            <Card r={items[next]} />
+          </div>
+        )}
+      </div>
+
+      {/* Vertical controls */}
+      {total > 1 && (
+        <div className="flex flex-col gap-2 shrink-0">
+          <button onClick={() => go(-1)} className="w-9 h-9 rounded-full border flex items-center justify-center transition-colors" style={{ borderColor: pal.cardBorder, color: pal.accent }}>
+            <ChevronUp className="w-4 h-4" />
+          </button>
+          <button onClick={() => go(1)} className="w-9 h-9 rounded-full border flex items-center justify-center transition-colors" style={{ borderColor: pal.cardBorder, color: pal.accent }}>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
