@@ -113,6 +113,8 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     headerSubtitle: marketplace?.pageSections?.headerSubtitle || "",
     headerImageUrl: marketplace?.pageSections?.headerImageUrl || "",
     headerLogoUrl: marketplace?.pageSections?.headerLogoUrl || "",
+    heroSideImageUrl: marketplace?.pageSections?.heroSideImageUrl || "",
+    heroSideImagePosition: marketplace?.pageSections?.heroSideImagePosition || "right",
     heroBadgeText: marketplace?.pageSections?.heroBadgeText || "",
     heroCtaText: marketplace?.pageSections?.heroCtaText || "",
     heroBgType: marketplace?.pageSections?.heroBgType || "gradient",
