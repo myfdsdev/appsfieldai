@@ -279,7 +279,20 @@
     "pageSections": {
       "type": "object",
       "description": "Page section visibility settings",
+      "additionalProperties": true,
       "properties": {
+        "storeStyle": {
+          "type": "string",
+          "description": "Selected full visual store style slug (aurora, monolith, neon, linen, carbon)"
+        },
+        "productsSectionSubtitle": {
+          "type": "string",
+          "description": "Optional subtitle shown under the products section title"
+        },
+        "dealMakerVoice": {
+          "type": "string",
+          "description": "Text-to-speech voice name used by the Deal Maker agent"
+        },
         "dealMakerEnabled": {
           "type": "boolean",
           "default": true,
