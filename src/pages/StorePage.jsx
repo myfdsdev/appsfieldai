@@ -294,7 +294,7 @@ export default function StorePage() {
           </div>
 
           {/* Categories */}
-          <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} onSelect={handleSelectCategory} />
+          <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} styleSlug={sections.storeStyle} onSelect={handleSelectCategory} />
 
           {/* Lifetime Deals (searchable grid of all store products) */}
           <div id="store-lifetime-deals">
