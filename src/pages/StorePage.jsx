@@ -309,7 +309,7 @@ export default function StorePage() {
       {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={pal?.accent || brandColor} title={sections.testimonialsTitle} styleSlug={sections.storeStyle} />}
 
       {/* Custom Section */}
-      {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}
+      {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} styleSlug={sections.storeStyle} />}
 
       {/* Footer */}
       {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} footerLogoUrl={sections.footerLogoUrl} socialLinks={sections.socialLinks} customPages={customPages} storeBasePath={storeBasePath} affiliateEnabled={affiliateEnabled} styleSlug={sections.storeStyle} />}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Gem, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import SaaSCard from "@/components/marketplace/SaaSCard";
 import StoreEditorialCard from "@/components/store/StoreEditorialCard";
@@ -22,22 +22,42 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, st
   });
 
   const isEditorial = p.layout === "editorial";
+  const accent = style.palette?.accent;
+
+  // Reference-style headline: last word highlighted in the style's accent color.
+  const fullTitle = (title?.trim() || STORE_DEFAULTS.title);
+  const words = fullTitle.split(" ");
+  const lastWord = words.length > 1 ? words.pop() : null;
+  const leadWords = words.join(" ");
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
-            <Gem className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className={style.sectionTitleClass} style={{ fontFamily: style.headingFont }}>{title?.trim() || STORE_DEFAULTS.title}</h2>
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: style.bodyFont }}>{subtitle?.trim() || STORE_DEFAULTS.subtitle}</p>
-          </div>
-        </div>
-        <div className="relative w-full sm:w-72">
+    <section className="max-w-7xl mx-auto px-6 py-12">
+      <div className="text-center mb-8">
+        <p
+          className="text-[11px] uppercase tracking-[0.25em] font-semibold mb-3"
+          style={{ color: accent || "#a78bfa", fontFamily: style.bodyFont }}
+        >
+          {subtitle?.trim() || STORE_DEFAULTS.subtitle}
+        </p>
+        <h2 className={`${style.sectionTitleClass} max-w-3xl mx-auto text-balance`} style={{ fontFamily: style.headingFont }}>
+          {lastWord ? (
+            <>
+              {leadWords}{" "}
+              <span style={{ color: accent || undefined }} className={accent ? "" : "text-primary"}>{lastWord}</span>
+            </>
+          ) : (
+            fullTitle
+          )}
+        </h2>
+        <div className="relative w-full sm:w-80 mx-auto mt-5">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search deals..." className="bg-secondary/50 border-border/30 rounded-xl pl-9" />
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search deals..."
+            className={`rounded-full pl-9 ${accent ? "border" : "bg-secondary/50 border-border/30"}`}
+            style={accent ? { background: style.palette.card, borderColor: style.palette.cardBorder } : undefined}
+          />
         </div>
       </div>
 
