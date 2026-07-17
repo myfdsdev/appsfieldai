@@ -239,7 +239,7 @@ export default function StorePage() {
   return (
     <div
       className="min-h-screen bg-background"
-      style={{ fontFamily: storeStyle.bodyFont, ...(pal ? { background: pal.surface, color: "#e8f0df" } : {}) }}
+      style={{ fontFamily: storeStyle.bodyFont, ...(pal ? { background: pal.surface, color: pal.text || "#e8f0df" } : {}) }}
     >
       {/* Store top nav */}
       <StoreNavbar

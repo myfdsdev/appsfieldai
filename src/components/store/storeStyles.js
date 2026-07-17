@@ -19,6 +19,15 @@ export const STORE_STYLES = [
     headingFont: "'Space Grotesk', sans-serif",
     bodyFont: "'Inter', sans-serif",
     googleFonts: ["Space+Grotesk:wght@500;600;700", "Inter:wght@400;500;600"],
+    // Full palette — deep indigo surface with violet accents.
+    palette: {
+      accent: "#8b5cf6",
+      accentText: "#ffffff",
+      surface: "#0b0d1a",
+      card: "#12152a",
+      cardBorder: "rgba(139,92,246,0.18)",
+      text: "#e6e8f5",
+    },
     // Hero
     hero: {
       size: "md",              // vertical padding preset
@@ -38,9 +47,9 @@ export const STORE_STYLES = [
       radius: "rounded-2xl",
       buttonShape: "rounded-lg",
       imageHeight: "h-36",
-      cardBorder: "border border-border/40",
-      cardBg: "bg-card/60 backdrop-blur-xl",
-      cardHover: "hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10",
+      cardBorder: "border border-[#8b5cf6]/20",
+      cardBg: "bg-[#12152a]",
+      cardHover: "hover:-translate-y-1 hover:border-[#8b5cf6]/60 hover:shadow-xl hover:shadow-[#8b5cf6]/20",
       titleClass: "font-bold text-base tracking-tight",
       uppercaseTitle: false,
     },
@@ -55,6 +64,15 @@ export const STORE_STYLES = [
     headingFont: "'Playfair Display', serif",
     bodyFont: "'Source Sans 3', sans-serif",
     googleFonts: ["Playfair+Display:wght@500;600;700;800", "Source+Sans+3:wght@400;500;600"],
+    // Full palette — dark editorial slate with an aged-gold accent.
+    palette: {
+      accent: "#d6b25e",
+      accentText: "#141009",
+      surface: "#0e1116",
+      card: "#151a21",
+      cardBorder: "rgba(214,178,94,0.22)",
+      text: "#ece7df",
+    },
     hero: {
       size: "lg",
       align: "left",
@@ -72,9 +90,9 @@ export const STORE_STYLES = [
       radius: "rounded-none",
       buttonShape: "rounded-none",
       imageHeight: "h-full",
-      cardBorder: "border border-border/60",
-      cardBg: "bg-transparent",
-      cardHover: "hover:border-foreground/40",
+      cardBorder: "border border-[#d6b25e]/25",
+      cardBg: "bg-[#151a21]",
+      cardHover: "hover:border-[#d6b25e]/60",
       titleClass: "font-bold text-lg tracking-tight",
       uppercaseTitle: false,
     },
@@ -88,6 +106,15 @@ export const STORE_STYLES = [
     headingFont: "'Sora', sans-serif",
     bodyFont: "'Inter', sans-serif",
     googleFonts: ["Sora:wght@600;700;800", "Inter:wght@400;500;600"],
+    // Full palette — near-black with hot rose/neon accents.
+    palette: {
+      accent: "#f43f5e",
+      accentText: "#ffffff",
+      surface: "#0a0a0f",
+      card: "#14101a",
+      cardBorder: "rgba(244,63,94,0.28)",
+      text: "#f2e9ec",
+    },
     hero: {
       size: "xl",
       align: "center",
@@ -105,9 +132,9 @@ export const STORE_STYLES = [
       radius: "rounded-xl",
       buttonShape: "rounded-xl",
       imageHeight: "h-28",
-      cardBorder: "border-2 border-primary/30",
-      cardBg: "bg-black/40",
-      cardHover: "hover:border-primary hover:shadow-[0_0_24px_-4px] hover:shadow-primary/50",
+      cardBorder: "border-2 border-[#f43f5e]/30",
+      cardBg: "bg-[#14101a]",
+      cardHover: "hover:border-[#f43f5e] hover:shadow-[0_0_24px_-4px] hover:shadow-[#f43f5e]/50",
       titleClass: "font-extrabold text-base uppercase tracking-tight",
       uppercaseTitle: true,
     },
@@ -129,6 +156,7 @@ export const STORE_STYLES = [
       surface: "#0d1408",         // near-black green-tinted page bg
       card: "#141c0e",            // card surface
       cardBorder: "rgba(197,248,42,0.18)",
+      text: "#e8f0df",
     },
     hero: {
       size: "xl",
@@ -163,6 +191,15 @@ export const STORE_STYLES = [
     headingFont: "'IBM Plex Sans', sans-serif",
     bodyFont: "'IBM Plex Sans', sans-serif",
     googleFonts: ["IBM+Plex+Sans:wght@400;500;600;700", "IBM+Plex+Mono:wght@500;600"],
+    // Full palette — graphite enterprise surface with a sharp sky-blue accent.
+    palette: {
+      accent: "#38bdf8",
+      accentText: "#06121c",
+      surface: "#0b0f14",
+      card: "#12181f",
+      cardBorder: "rgba(56,189,248,0.18)",
+      text: "#e2eaf0",
+    },
     hero: {
       size: "md",
       align: "left",
@@ -180,9 +217,9 @@ export const STORE_STYLES = [
       radius: "rounded-lg",
       buttonShape: "rounded-md",
       imageHeight: "h-32",
-      cardBorder: "border border-border/50",
-      cardBg: "bg-card/80",
-      cardHover: "hover:border-foreground/30 hover:shadow-md",
+      cardBorder: "border border-[#38bdf8]/20",
+      cardBg: "bg-[#12181f]",
+      cardHover: "hover:border-[#38bdf8]/60 hover:shadow-md",
       titleClass: "font-bold text-base tracking-tight",
       uppercaseTitle: false,
     },
