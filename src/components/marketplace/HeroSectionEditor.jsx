@@ -203,24 +203,63 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
       {/* Live Preview */}
       <div>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Live Preview</p>
-        <div className="rounded-xl overflow-hidden border border-border/20 p-6 text-center" style={{ background: previewBg, opacity: previewOpacity }}>
-          {form.heroBadgeText && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs mb-4">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
-              {form.heroBadgeText}
-            </span>
-          )}
-          <h2 className="text-2xl font-display font-extrabold leading-tight mb-3">
-            <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${brandColor}, ${accentColor})` }}>
-              {form.headerTitle || marketplace?.name || "Your Store"}
-            </span>
-          </h2>
-          <p className="text-muted-foreground text-xs max-w-xs mx-auto mb-4 line-clamp-2">
-            {form.headerSubtitle || "Discover amazing software deals"}
-          </p>
-          <span className="px-4 py-1.5 rounded-full bg-white text-black text-xs font-semibold">
-            {form.heroCtaText || "Browse deals"}
-          </span>
+        <div className="rounded-xl overflow-hidden border border-border/20 p-6" style={{ background: previewBg, opacity: previewOpacity }}>
+          {(() => {
+            const sideImage = form.heroSideImageUrl;
+            const sidePos = form.heroSideImagePosition || "right";
+            const hasSideSplit = sideImage && (sidePos === "left" || sidePos === "right");
+            const textAlign = hasSideSplit ? "text-left" : "text-center";
+
+            const Text = (
+              <div className={hasSideSplit ? "" : "mx-auto"}>
+                {form.heroBadgeText && (
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs mb-4">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
+                    {form.heroBadgeText}
+                  </span>
+                )}
+                <h2 className="text-2xl font-display font-extrabold leading-tight mb-3">
+                  <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${brandColor}, ${accentColor})` }}>
+                    {form.headerTitle || marketplace?.name || "Your Store"}
+                  </span>
+                </h2>
+                <p className={`text-muted-foreground text-xs max-w-xs mb-4 line-clamp-2 ${hasSideSplit ? "" : "mx-auto"}`}>
+                  {form.headerSubtitle || "Discover amazing software deals"}
+                </p>
+                <span className="inline-block px-4 py-1.5 rounded-full bg-white text-black text-xs font-semibold">
+                  {form.heroCtaText || "Browse deals"}
+                </span>
+              </div>
+            );
+
+            const Img = <img src={sideImage} alt="" className="w-full max-w-[140px] rounded-lg object-contain" />;
+
+            if (hasSideSplit) {
+              return (
+                <div className={`grid grid-cols-2 gap-4 items-center ${textAlign}`}>
+                  {sidePos === "left" ? (
+                    <>
+                      <div className="flex justify-start">{Img}</div>
+                      {Text}
+                    </>
+                  ) : (
+                    <>
+                      {Text}
+                      <div className="flex justify-end">{Img}</div>
+                    </>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <div className="text-center">
+                {sideImage && sidePos === "center" && (
+                  <div className="flex justify-center mb-4">{Img}</div>
+                )}
+                {Text}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>
