@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Store, Palette, Tag, Settings, Rocket, Check, Type, ChevronLeft, ChevronRight, Plus, X, Building2, Users, CreditCard } from "lucide-react";
+import { Store, Palette, Tag, Settings, Rocket, Check, Type, ChevronLeft, ChevronRight, Plus, X, Building2, Users, CreditCard, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import BuildingStoreOverlay from "@/components/marketplace/BuildingStoreOverlay";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import StoreStylePicker from "@/components/store/StoreStylePicker";
+import { DEFAULT_STORE_STYLE } from "@/components/store/storeStyles";
 
 const TEMPLATES = [
   { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600", primaryColor: "#7c3aed", accentColor: "#06b6d4" },
@@ -22,7 +24,8 @@ const PRESET_CATEGORIES = ["CRM", "Analytics", "Marketing", "AI & ML", "Dev Tool
 
 const steps = [
   { id: "type", label: "Type", icon: Building2 },
-  { id: "template", label: "Template", icon: Palette },
+  { id: "template", label: "Colors", icon: Palette },
+  { id: "style", label: "Style", icon: Sparkles },
   { id: "branding", label: "Branding", icon: Type },
   { id: "categories", label: "Categories", icon: Tag },
   { id: "settings", label: "Settings", icon: Settings },
@@ -47,6 +50,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   const [data, setData] = useState({
     type: marketplace?.type || "single_vendor",
     template: marketplace?.template || "default",
+    storeStyle: marketplace?.pageSections?.storeStyle || DEFAULT_STORE_STYLE,
     name: marketplace?.name || "",
     slug: marketplace?.slug || "",
     description: marketplace?.description || "",
@@ -112,7 +116,11 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
       status: "active",
     };
     if (marketplace?.id) {
-      await base44.entities.Marketplace.update(marketplace.id, payload);
+      // Preserve existing page content, just update the chosen visual style.
+      await base44.entities.Marketplace.update(marketplace.id, {
+        ...payload,
+        pageSections: { ...(marketplace.pageSections || {}), storeStyle: data.storeStyle },
+      });
     } else {
       setBuilding(true);
       // Inherit the global default store page content for new marketplaces
@@ -134,6 +142,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         trustBadgesEnabled: true,
         footerEnabled: true,
         ...(pageSections || {}),
+        storeStyle: data.storeStyle,
         heroBgType: "gradient",
         heroGradientStart: `${data.branding.primaryColor}33`,
         heroGradientEnd: "#0a0603",
@@ -253,8 +262,17 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             </div>
           )}
 
-          {/* Step 2: Branding */}
+          {/* Step 2: Store Style */}
           {step === 2 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Sparkles className="w-5 h-5 text-violet-400" />Choose Store Style</h3>
+              <p className="text-xs text-muted-foreground -mt-2">Each style gives your store a completely different look — fonts, header size and product layout. You can change it any time from settings.</p>
+              <StoreStylePicker value={data.storeStyle} onChange={(slug) => update("storeStyle", slug)} />
+            </div>
+          )}
+
+          {/* Step 3: Branding */}
+          {step === 3 && (
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Type className="w-5 h-5 text-violet-400" />Branding</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -297,8 +315,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             </div>
           )}
 
-          {/* Step 3: Categories */}
-          {step === 3 && (
+          {/* Step 4: Categories */}
+          {step === 4 && (
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Tag className="w-5 h-5 text-violet-400" />Select Categories</h3>
               <div className="flex gap-2">
@@ -319,8 +337,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             </div>
           )}
 
-          {/* Step 4: Settings */}
-          {step === 4 && (
+          {/* Step 5: Settings */}
+          {step === 5 && (
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Settings className="w-5 h-5 text-violet-400" />Marketplace Settings</h3>
               <div className="space-y-3">
@@ -388,13 +406,14 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             </div>
           )}
 
-          {/* Step 5: Review */}
-          {step === 5 && (
+          {/* Step 6: Review */}
+          {step === 6 && (
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Check className="w-5 h-5 text-emerald-400" />Review & Launch</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Type</p><p className="font-medium">{data.type === "multi_vendor" ? "Multi-Vendor" : "Single Vendor"}</p></div>
-                <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Template</p><p className="font-medium capitalize">{data.template}</p></div>
+                <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Colors</p><p className="font-medium capitalize">{data.template}</p></div>
+                <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Style</p><p className="font-medium capitalize">{data.storeStyle}</p></div>
                 <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Categories</p><p className="font-medium">{data.categories.length || "None"}</p></div>
                 <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Currency</p><p className="font-medium">{data.currency}</p></div>
               </div>

@@ -1,0 +1,187 @@
+// ── Exclusive Store Styles ────────────────────────────────────────────────
+// A "store style" is a full VISUAL identity — far more than a color pair.
+// Each one defines its own font pairing, hero/header treatment, product card
+// layout, grid density, corner rounding, and button shape, so the 5 styles
+// feel like genuinely different websites built by different designers.
+//
+// Stored on marketplace.pageSections.storeStyle (a slug). Selectable at store
+// setup AND changeable any time from the store's page settings.
+//
+// Fonts are loaded on demand by the store page (see loadStyleFonts) so we only
+// pull in the families a given store actually uses.
+
+export const STORE_STYLES = [
+  {
+    slug: "aurora",
+    name: "Aurora",
+    tagline: "Modern SaaS — clean, airy, gradient accents",
+    // Fonts
+    headingFont: "'Space Grotesk', sans-serif",
+    bodyFont: "'Inter', sans-serif",
+    googleFonts: ["Space+Grotesk:wght@500;600;700", "Inter:wght@400;500;600"],
+    // Hero
+    hero: {
+      size: "md",              // vertical padding preset
+      align: "center",
+      titleClass: "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight",
+      gradientTitle: true,
+      logoShape: "rounded-2xl",
+      logoSize: "w-20 h-20",
+      badgePill: true,
+      ctaShape: "rounded-full",
+    },
+    // Products
+    products: {
+      layout: "card",          // SaaSCard variant
+      columns: "sm:grid-cols-2 lg:grid-cols-3",
+      gap: "gap-6",
+      radius: "rounded-2xl",
+      buttonShape: "rounded-lg",
+      imageHeight: "h-36",
+    },
+    // Section headings
+    sectionTitleClass: "text-2xl sm:text-3xl font-bold tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#6d28d9,#06b6d4)", font: "'Space Grotesk',sans-serif" },
+  },
+  {
+    slug: "monolith",
+    name: "Monolith",
+    tagline: "Classic & editorial — serif headlines, roomy layout",
+    headingFont: "'Playfair Display', serif",
+    bodyFont: "'Source Sans 3', sans-serif",
+    googleFonts: ["Playfair+Display:wght@500;600;700;800", "Source+Sans+3:wght@400;500;600"],
+    hero: {
+      size: "lg",
+      align: "left",
+      titleClass: "text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05]",
+      gradientTitle: false,
+      logoShape: "rounded-full",
+      logoSize: "w-16 h-16",
+      badgePill: false,
+      ctaShape: "rounded-none",
+    },
+    products: {
+      layout: "editorial",     // horizontal media-object rows
+      columns: "lg:grid-cols-2",
+      gap: "gap-8",
+      radius: "rounded-none",
+      buttonShape: "rounded-none",
+      imageHeight: "h-full",
+    },
+    sectionTitleClass: "text-3xl sm:text-4xl font-bold",
+    preview: { bg: "linear-gradient(135deg,#1e293b,#0f172a)", font: "'Playfair Display',serif" },
+  },
+  {
+    slug: "neon",
+    name: "Neon Grid",
+    tagline: "Bold & vibrant — big type, dense product grid",
+    headingFont: "'Sora', sans-serif",
+    bodyFont: "'Inter', sans-serif",
+    googleFonts: ["Sora:wght@600;700;800", "Inter:wght@400;500;600"],
+    hero: {
+      size: "xl",
+      align: "center",
+      titleClass: "text-5xl sm:text-6xl lg:text-8xl font-extrabold uppercase tracking-tighter leading-none",
+      gradientTitle: true,
+      logoShape: "rounded-2xl",
+      logoSize: "w-24 h-24",
+      badgePill: true,
+      ctaShape: "rounded-xl",
+    },
+    products: {
+      layout: "compact",       // tighter cards, 4-up grid
+      columns: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+      gap: "gap-4",
+      radius: "rounded-xl",
+      buttonShape: "rounded-lg",
+      imageHeight: "h-28",
+    },
+    sectionTitleClass: "text-3xl sm:text-4xl font-extrabold uppercase tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#f97316,#f43f5e)", font: "'Sora',sans-serif" },
+  },
+  {
+    slug: "linen",
+    name: "Linen",
+    tagline: "Minimal & calm — generous whitespace, soft cards",
+    headingFont: "'Fraunces', serif",
+    bodyFont: "'Inter', sans-serif",
+    googleFonts: ["Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600", "Inter:wght@400;500"],
+    hero: {
+      size: "sm",
+      align: "center",
+      titleClass: "text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight",
+      gradientTitle: false,
+      logoShape: "rounded-2xl",
+      logoSize: "w-14 h-14",
+      badgePill: true,
+      ctaShape: "rounded-full",
+    },
+    products: {
+      layout: "card",
+      columns: "sm:grid-cols-2 lg:grid-cols-3",
+      gap: "gap-8",
+      radius: "rounded-3xl",
+      buttonShape: "rounded-full",
+      imageHeight: "h-40",
+    },
+    sectionTitleClass: "text-2xl sm:text-3xl font-semibold tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#d6d3d1,#a8a29e)", font: "'Fraunces',serif" },
+  },
+  {
+    slug: "carbon",
+    name: "Carbon",
+    tagline: "Enterprise & sharp — structured, mono accents",
+    headingFont: "'IBM Plex Sans', sans-serif",
+    bodyFont: "'IBM Plex Sans', sans-serif",
+    googleFonts: ["IBM+Plex+Sans:wght@400;500;600;700", "IBM+Plex+Mono:wght@500;600"],
+    hero: {
+      size: "md",
+      align: "left",
+      titleClass: "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight",
+      gradientTitle: false,
+      logoShape: "rounded-lg",
+      logoSize: "w-16 h-16",
+      badgePill: false,
+      ctaShape: "rounded-md",
+    },
+    products: {
+      layout: "card",
+      columns: "sm:grid-cols-2 lg:grid-cols-3",
+      gap: "gap-5",
+      radius: "rounded-lg",
+      buttonShape: "rounded-md",
+      imageHeight: "h-32",
+    },
+    sectionTitleClass: "text-2xl sm:text-3xl font-bold tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#0f172a,#334155)", font: "'IBM Plex Sans',sans-serif" },
+  },
+];
+
+export const DEFAULT_STORE_STYLE = "aurora";
+
+export function getStoreStyle(slug) {
+  return STORE_STYLES.find((s) => s.slug === slug) || STORE_STYLES[0];
+}
+
+// Hero vertical padding presets keyed by hero.size.
+export const HERO_SIZE_PADDING = {
+  sm: "py-12",
+  md: "py-20",
+  lg: "py-28",
+  xl: "py-36",
+};
+
+// Inject the Google Fonts a given style needs (once per family). Safe to call
+// repeatedly — it dedupes by href.
+export function loadStyleFonts(style) {
+  if (typeof document === "undefined" || !style?.googleFonts?.length) return;
+  const href = `https://fonts.googleapis.com/css2?${style.googleFonts
+    .map((f) => `family=${f}`)
+    .join("&")}&display=swap`;
+  if (document.querySelector(`link[data-store-font="${style.slug}"]`)) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = href;
+  link.setAttribute("data-store-font", style.slug);
+  document.head.appendChild(link);
+}

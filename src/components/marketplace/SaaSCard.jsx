@@ -55,8 +55,13 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot, onAddToCart, onBuyNow, affiliateLink }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot, onAddToCart, onBuyNow, affiliateLink, styleSpec }) {
   const navigate = useNavigate();
+  // Store style overrides (card radius, image height, button shape). Defaults
+  // preserve the original marketplace look when no styleSpec is passed.
+  const cardRadius = styleSpec?.radius || "rounded-2xl";
+  const imgHeight = styleSpec?.imageHeight && styleSpec.imageHeight !== "h-full" ? styleSpec.imageHeight : "h-36";
+  const btnShape = styleSpec?.buttonShape || "rounded-lg";
   const [favLoading, setFavLoading] = React.useState(false);
   const [linkCopied, setLinkCopied] = React.useState(false);
 
@@ -90,11 +95,11 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="group rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5 transition-all duration-300 flex flex-col"
+      className={`group ${cardRadius} border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5 transition-all duration-300 flex flex-col`}
     >
       {/* Image / Header */}
       <div
-        className={`h-36 bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden cursor-pointer`}
+        className={`${imgHeight} bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden cursor-pointer`}
         onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)}
       >
         {thumbnail ? (
@@ -212,20 +217,20 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         {onAddToCart || onBuyNow ? (
           <div className="flex gap-2 pt-1 mt-auto">
             {dealType !== "single_purchase" ? (
-              <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+              <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className={`flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 ${btnShape} text-[11px] h-8 disabled:opacity-40 text-white border-0`}>
                 {sharesLeft <= 0 ? "Sold Out" : "Reserve a Spot"}
               </Button>
             ) : (
               <>
-                <Button size="sm" variant="outline" onClick={() => onAddToCart?.(listing)} disabled={isSold} className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40 px-2.5" title="Add to cart">
+                <Button size="sm" variant="outline" onClick={() => onAddToCart?.(listing)} disabled={isSold} className={`border-orange-500/40 text-orange-400 hover:bg-orange-500/10 ${btnShape} text-[11px] h-8 disabled:opacity-40 px-2.5`} title="Add to cart">
                   <ShoppingCart className="w-3.5 h-3.5" />
                 </Button>
-                <Button size="sm" onClick={() => onBuyNow?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
+                <Button size="sm" onClick={() => onBuyNow?.(listing)} disabled={isSold} className={`flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 ${btnShape} text-[11px] h-8 disabled:opacity-40 text-white border-0`}>
                   Buy Now — ${fullPrice.toLocaleString()}
                 </Button>
               </>
             )}
-            <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
+            <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className={`${btnShape} text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground`}>
               <ExternalLink className="w-3 h-3" />
             </Button>
           </div>

@@ -1,12 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Store } from "lucide-react";
+import { getStoreStyle, HERO_SIZE_PADDING } from "./storeStyles";
 
-// Full branded hero for a customer's store page — mirrors the main marketplace hero
-// but uses the store's own branding colors and section text.
+// Full branded hero for a customer's store page. Adapts its size, font,
+// alignment, title treatment and shapes to the selected store style.
 export default function StoreHero({ marketplace, sections = {}, listingsCount = 0 }) {
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const accentColor = marketplace.branding?.accentColor || brandColor;
+  const style = getStoreStyle(sections.storeStyle);
+  const h = style.hero;
+  const isLeft = h.align === "left";
 
   const title = sections.headerTitle || marketplace.name;
   const subtitle =
@@ -30,83 +34,92 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative py-20 px-4 text-center overflow-hidden"
+      className={`relative ${HERO_SIZE_PADDING[h.size] || "py-20"} px-4 overflow-hidden ${isLeft ? "text-left" : "text-center"}`}
       style={{ background, opacity }}
     >
-      {/* Badge / logo */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.12, type: "spring", stiffness: 200 }}
-        className="mx-auto mb-5"
-      >
-        {marketplace.branding?.logo ? (
-          <img
-            src={marketplace.branding.logo}
-            alt={marketplace.name}
-            className="w-20 h-20 object-contain mx-auto rounded-2xl"
-          />
-        ) : (
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto"
-            style={{ background: brandColor }}
-          >
-            <Store className="w-10 h-10 text-white" />
-          </div>
-        )}
-      </motion.div>
+      <div className={`max-w-4xl ${isLeft ? "mx-auto md:mx-0 md:pl-8 lg:pl-16" : "mx-auto"}`}>
+        {/* Badge / logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.12, type: "spring", stiffness: 200 }}
+          className={`mb-5 ${isLeft ? "" : "mx-auto"}`}
+        >
+          {marketplace.branding?.logo ? (
+            <img
+              src={marketplace.branding.logo}
+              alt={marketplace.name}
+              className={`${h.logoSize} object-contain ${h.logoShape} ${isLeft ? "" : "mx-auto"}`}
+            />
+          ) : (
+            <div
+              className={`${h.logoSize} ${h.logoShape} flex items-center justify-center ${isLeft ? "" : "mx-auto"}`}
+              style={{ background: brandColor }}
+            >
+              <Store className="w-1/2 h-1/2 text-white" />
+            </div>
+          )}
+        </motion.div>
 
-      {/* Badge */}
-      {sections.heroBadgeText && (
-        <motion.span
+        {/* Badge */}
+        {sections.heroBadgeText && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.13 }}
+            className={`inline-flex items-center gap-2 px-3 py-1 border border-white/10 bg-white/5 text-foreground/70 text-xs mb-5 ${h.badgePill ? "rounded-full" : "rounded-none"}`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
+            {sections.heroBadgeText}
+          </motion.span>
+        )}
+
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className={`${h.titleClass} mb-5 text-balance`}
+          style={{ fontFamily: style.headingFont }}
+        >
+          {h.gradientTitle ? (
+            <span
+              className="text-transparent bg-clip-text"
+              style={{ backgroundImage: `linear-gradient(to right, ${brandColor}, ${accentColor})` }}
+            >
+              {title}
+            </span>
+          ) : (
+            <span>{title}</span>
+          )}
+        </motion.h1>
+
+        {/* Subheadline */}
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.13 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs mb-5"
+          transition={{ delay: 0.2 }}
+          className={`text-muted-foreground text-sm sm:text-base max-w-2xl mb-8 ${isLeft ? "" : "mx-auto"}`}
+          style={{ fontFamily: style.bodyFont }}
         >
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
-          {sections.heroBadgeText}
-        </motion.span>
-      )}
+          {subtitle}
+        </motion.p>
 
-      {/* Headline */}
-      <motion.h1
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5 max-w-4xl mx-auto text-balance"
-      >
-        <span
-          className="text-transparent bg-clip-text"
-          style={{ backgroundImage: `linear-gradient(to right, ${brandColor}, ${accentColor})` }}
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
         >
-          {title}
-        </span>
-      </motion.h1>
-
-      {/* Subheadline */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-8"
-      >
-        {subtitle}
-      </motion.p>
-
-      {/* CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-      >
-        <button
-          onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}
-          className="px-6 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
-        >
-          {sections.heroCtaText || `${listingsCount} ${listingsCount === 1 ? "deal" : "deals"} live now`}
-        </button>
-      </motion.div>
+          <button
+            onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}
+            className={`px-6 py-2.5 bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors ${h.ctaShape}`}
+            style={{ fontFamily: style.headingFont }}
+          >
+            {sections.heroCtaText || `${listingsCount} ${listingsCount === 1 ? "deal" : "deals"} live now`}
+          </button>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }

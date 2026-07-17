@@ -26,6 +26,7 @@ import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { useStoreCart } from "@/hooks/useStoreCart";
 import { getRefFromUrl, saveAffiliateRef } from "@/lib/affiliateRef";
 import DealMakerWidget from "@/components/store/dealmaker/DealMakerWidget";
+import { getStoreStyle, loadStyleFonts } from "@/components/store/storeStyles";
 import { toast } from "sonner";
 
 export default function StorePage() {
@@ -96,6 +97,11 @@ export default function StorePage() {
     const ref = getRefFromUrl();
     if (ref) saveAffiliateRef(marketplaceId, ref);
   }, [marketplaceId]);
+
+  // Load the Google Fonts for the store's selected visual style.
+  useEffect(() => {
+    if (data?.marketplace) loadStyleFonts(getStoreStyle(data.marketplace.pageSections?.storeStyle));
+  }, [data]);
 
   // Deep link from a referral link (/saas/:id) → open that product's detail modal.
   useEffect(() => {
@@ -207,6 +213,8 @@ export default function StorePage() {
   const storeBasePath = slugParam ? `/store/${slugParam}` : "";
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const sections = marketplace.pageSections || {};
+  // Resolve the store's chosen visual style and load its fonts.
+  const storeStyle = getStoreStyle(sections.storeStyle);
   const headerEnabled = sections.headerEnabled ?? true;
   const customBoxesEnabled = sections.customBoxesEnabled ?? false;
   const testimonialsEnabled = sections.testimonialsEnabled ?? false;
@@ -225,7 +233,7 @@ export default function StorePage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={{ fontFamily: storeStyle.bodyFont }}>
       {/* Store top nav */}
       <StoreNavbar
         marketplace={marketplace}
@@ -270,6 +278,8 @@ export default function StorePage() {
               listings={categoryFilter ? software.filter(l => l.category === categoryFilter) : software}
               title={sections.productsSectionTitle}
               subtitle={sections.productsSectionSubtitle}
+              styleSlug={sections.storeStyle}
+              currency={marketplace.currency}
               onViewDetails={setViewDetailListing}
               onReserveSpot={handleReserve}
               onAddToCart={handleAddToCart}

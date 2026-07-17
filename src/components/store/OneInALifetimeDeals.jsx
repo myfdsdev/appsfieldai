@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import { Gem, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import SaaSCard from "@/components/marketplace/SaaSCard";
+import StoreEditorialCard from "@/components/store/StoreEditorialCard";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 const STORE_DEFAULTS = { title: "Once In A Lifetime Deals", subtitle: "Exclusive lifetime offers from this store" };
 
-export default function OneInALifetimeDeals({ listings = [], title, subtitle, onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
+export default function OneInALifetimeDeals({ listings = [], title, subtitle, styleSlug, currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
   const [search, setSearch] = useState("");
+  const style = getStoreStyle(styleSlug);
+  const p = style.products;
 
   const filtered = listings.filter(l => {
     if (!search.trim()) return true;
@@ -16,6 +20,8 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, on
       || (l.category || "").toLowerCase().includes(q);
   });
 
+  const isEditorial = p.layout === "editorial";
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
@@ -24,8 +30,8 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, on
             <Gem className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-display font-bold">{title?.trim() || STORE_DEFAULTS.title}</h2>
-            <p className="text-xs text-muted-foreground">{subtitle?.trim() || STORE_DEFAULTS.subtitle}</p>
+            <h2 className={style.sectionTitleClass} style={{ fontFamily: style.headingFont }}>{title?.trim() || STORE_DEFAULTS.title}</h2>
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: style.bodyFont }}>{subtitle?.trim() || STORE_DEFAULTS.subtitle}</p>
           </div>
         </div>
         <div className="relative w-full sm:w-72">
@@ -39,10 +45,36 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, on
           <p className="text-sm">No deals match "{search}".</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((l, i) => (
-            <SaaSCard key={l.id} listing={l} delay={i * 0.04} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
-          ))}
+        <div className={`grid grid-cols-1 ${p.columns} ${p.gap}`}>
+          {filtered.map((l, i) =>
+            isEditorial ? (
+              <StoreEditorialCard
+                key={l.id}
+                listing={l}
+                delay={i * 0.04}
+                styleSpec={p}
+                currency={currency}
+                onViewDetails={onViewDetails}
+                onReserveSpot={onReserveSpot || onViewDetails}
+                onAddToCart={onAddToCart}
+                onBuyNow={onBuyNow}
+                affiliateLink={affiliateLinkFor?.(l)}
+              />
+            ) : (
+              <SaaSCard
+                key={l.id}
+                listing={l}
+                delay={i * 0.04}
+                styleSpec={p}
+                onViewDetails={onViewDetails}
+                onBuySpot={onViewDetails}
+                onReserveSpot={onReserveSpot || onViewDetails}
+                onAddToCart={onAddToCart}
+                onBuyNow={onBuyNow}
+                affiliateLink={affiliateLinkFor?.(l)}
+              />
+            )
+          )}
         </div>
       )}
     </section>
