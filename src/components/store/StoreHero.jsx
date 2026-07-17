@@ -6,13 +6,13 @@ import { getStoreStyle, HERO_SIZE_PADDING } from "./storeStyles";
 // Full branded hero for a customer's store page. Adapts its size, font,
 // alignment, title treatment and shapes to the selected store style.
 export default function StoreHero({ marketplace, sections = {}, listingsCount = 0 }) {
-  const brandColor = marketplace.branding?.primaryColor || "#f97316";
-  const accentColor = marketplace.branding?.accentColor || brandColor;
   const style = getStoreStyle(sections.storeStyle);
   const h = style.hero;
   const pal = style.palette;
-  // A style with a palette (e.g. Nitro) drives its own hero accent + background glow.
-  const heroAccent = pal?.accent || brandColor;
+  // Theme palette color always wins over the custom brand color.
+  const brandColor = pal?.accent || marketplace.branding?.primaryColor || "#f97316";
+  const accentColor = pal?.accent || marketplace.branding?.accentColor || brandColor;
+  const heroAccent = brandColor;
   const isLeft = h.align === "left";
 
   const title = sections.headerTitle || marketplace.name;

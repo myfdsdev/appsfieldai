@@ -211,10 +211,11 @@ export default function StorePage() {
   ];
   // On a path-based store (/store/:slug) keep the prefix; on a subdomain/custom domain it's root.
   const storeBasePath = slugParam ? `/store/${slugParam}` : "";
-  const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const sections = marketplace.pageSections || {};
   // Resolve the store's chosen visual style and load its fonts.
   const storeStyle = getStoreStyle(sections.storeStyle);
+  // When a theme is applied, its default palette color always wins over the custom brand color.
+  const brandColor = storeStyle.palette?.accent || marketplace.branding?.primaryColor || "#f97316";
   const headerEnabled = sections.headerEnabled ?? true;
   const customBoxesEnabled = sections.customBoxesEnabled ?? false;
   const testimonialsEnabled = sections.testimonialsEnabled ?? false;

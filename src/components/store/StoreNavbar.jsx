@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Store, Menu, X, User, LogOut, ChevronDown, ShoppingCart, Share2 } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
@@ -12,7 +13,8 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
   const goToAccount = () => navigate(`${dashboardPath}?tab=account`);
   // Prefer navigating to the full affiliate page; fall back to the legacy onOpenAffiliate callback.
   const goToAffiliate = () => (affiliatePath ? navigate(affiliatePath) : onOpenAffiliate?.());
-  const brandColor = marketplace.branding?.primaryColor || "#f97316";
+  // Theme palette color always wins over the custom brand color.
+  const brandColor = getStoreStyle(sections.storeStyle).palette?.accent || marketplace.branding?.primaryColor || "#f97316";
   // Theme-aware logo: prefer the dark logo in dark mode, fall back gracefully.
   const lightLogo = marketplace.branding?.logo;
   const darkLogo = marketplace.branding?.logoDark;
