@@ -13,8 +13,9 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
   const goToAccount = () => navigate(`${dashboardPath}?tab=account`);
   // Prefer navigating to the full affiliate page; fall back to the legacy onOpenAffiliate callback.
   const goToAffiliate = () => (affiliatePath ? navigate(affiliatePath) : onOpenAffiliate?.());
-  // Theme palette color always wins over the custom brand color.
-  const brandColor = getStoreStyle(sections.storeStyle).palette?.accent || marketplace.branding?.primaryColor || "#f97316";
+  // Theme palette always wins over the custom brand color.
+  const pal = getStoreStyle(sections.storeStyle).palette;
+  const brandColor = pal?.accent || marketplace.branding?.primaryColor || "#f97316";
   // Theme-aware logo: prefer the dark logo in dark mode, fall back gracefully.
   const lightLogo = marketplace.branding?.logo;
   const darkLogo = marketplace.branding?.logoDark;
@@ -123,7 +124,10 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+    <header
+      className="sticky top-0 z-30 border-b border-border/40 bg-background/80 backdrop-blur-xl"
+      style={pal ? { background: `${pal.surface}e6`, borderColor: pal.cardBorder, color: pal.text } : undefined}
+    >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Brand */}
         <button onClick={() => scrollTo("store-listings")} className="flex items-center gap-2.5">
@@ -184,7 +188,10 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
 
       {/* Mobile menu */}
       {menuOpen && (
-        <nav className="md:hidden border-t border-border/40 px-6 py-3 flex flex-col gap-1 bg-background/95">
+        <nav
+          className="md:hidden border-t border-border/40 px-6 py-3 flex flex-col gap-1 bg-background/95"
+          style={pal ? { background: pal.surface, borderColor: pal.cardBorder } : undefined}
+        >
           {navItems.map((item) => (
             <button
               key={item.target}

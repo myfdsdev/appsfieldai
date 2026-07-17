@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import BuySpotModal from "@/components/marketplace/BuySpotModal";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -157,7 +158,18 @@ function ImageSlider({ images, videoUrl }) {
   );
 }
 
-export default function SaaSDetailModal({ listingId, open, onClose, requireAuth, sellerName, onAddToCart, onBuyNow }) {
+export default function SaaSDetailModal({ listingId, open, onClose, requireAuth, sellerName, onAddToCart, onBuyNow, styleSlug }) {
+  // Store-theme palette (only when opened from a themed store page).
+  const pal = styleSlug ? getStoreStyle(styleSlug).palette : null;
+  const accent = pal?.accent;
+  const solidBtnClass = accent
+    ? "rounded-xl h-9 font-semibold text-sm border-0 disabled:opacity-40 hover:opacity-90"
+    : "bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0 disabled:opacity-40";
+  const solidBtnStyle = accent ? { background: accent, color: pal.accentText } : undefined;
+  const outlineBtnClass = accent
+    ? "rounded-xl h-9 text-sm bg-transparent hover:bg-transparent hover:opacity-80"
+    : "border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm";
+  const outlineBtnStyle = accent ? { borderColor: `${accent}66`, color: accent } : undefined;
   // requireAuth (optional): called before buy/reserve. Return true if allowed to proceed,
   // false to block (e.g. store visitor must log in first — caller opens its auth modal).
   const guard = (action) => () => {
@@ -216,7 +228,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.25 }}
             className="relative z-10 w-full max-w-4xl bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden flex"
-            style={{ height: "min(580px, 90vh)" }}
+            style={{ height: "min(580px, 90vh)", ...(pal ? { background: pal.card, borderColor: pal.cardBorder, color: pal.text } : {}) }}
           >
             {/* Close Button */}
             <button
@@ -319,7 +331,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                     </div>
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
                       <p className="text-[9px] text-muted-foreground uppercase">Profit</p>
-                      <p className="text-xs font-display font-bold text-[#f79a1b]">${monthlyProfit.toLocaleString()}</p>
+                      <p className="text-xs font-display font-bold" style={{ color: accent || "#f79a1b" }}>${monthlyProfit.toLocaleString()}</p>
                       <p className="text-[9px] text-muted-foreground">/mo</p>
                     </div>
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
@@ -331,10 +343,14 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                   {/* Share Price & Progress */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Per Share: <span className="text-[#f79a1b] font-bold">${listing.sharePrice}</span></span>
+                      <span className="text-muted-foreground">Per Share: <span className="font-bold" style={{ color: accent || "#f79a1b" }}>${listing.sharePrice}</span></span>
                       <span className="text-muted-foreground">{listing.soldShares}/{listing.totalShares} sold</span>
                     </div>
-                    <Progress value={(listing.soldShares / listing.totalShares) * 100} className="h-1.5 bg-secondary [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
+                    <Progress
+                      value={(listing.soldShares / listing.totalShares) * 100}
+                      className={accent ? "h-1.5 bg-secondary [&>div]:bg-[var(--acc)]" : "h-1.5 bg-secondary [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400"}
+                      style={accent ? { "--acc": accent } : undefined}
+                    />
                     <p className="text-[10px] text-muted-foreground">{sharesLeft} shares remaining</p>
                   </div>
 
@@ -388,13 +404,15 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                         <div className="grid grid-cols-2 gap-2 pt-1">
                           <Button
                             variant="outline"
-                            className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
+                            className={outlineBtnClass}
+                            style={outlineBtnStyle}
                             onClick={() => onAddToCart?.(listing)}
                           >
                             <ShoppingCart className="w-4 h-4 mr-1.5" /> Add to Cart
                           </Button>
                           <Button
-                            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
+                            className={solidBtnClass}
+                            style={solidBtnStyle}
                             onClick={() => onBuyNow?.(listing)}
                           >
                             Buy Now
@@ -403,7 +421,8 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                       ) : (
                         <div className="grid grid-cols-2 gap-2 pt-1">
                           <Button
-                            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0 disabled:opacity-40"
+                            className={solidBtnClass}
+                            style={solidBtnStyle}
                             onClick={guard(() => setBuySpotListing(listing))}
                             disabled={sharesLeft <= 0}
                           >
@@ -411,7 +430,8 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                           </Button>
                           <Button
                             variant="outline"
-                            className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
+                            className={outlineBtnClass}
+                            style={outlineBtnStyle}
                             onClick={guard(() => setReserveSpotListing(listing))}
                           >
                             <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve

@@ -320,6 +320,7 @@ export default function StorePage() {
 
       <SaaSDetailModal
         listingId={viewDetailListing?.id}
+        styleSlug={sections.storeStyle || "aurora"}
         open={!!viewDetailListing}
         sellerName={viewDetailListing?.resolvedSellerName}
         onClose={() => setViewDetailListing(null)}
