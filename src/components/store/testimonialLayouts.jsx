@@ -75,7 +75,7 @@ export function NeonLayout({ items, style }) {
       {items.slice(0, 4).map((r, i) => (
         <motion.div key={r.id} {...fade(i)} className="relative rounded-xl border-2 p-6 overflow-hidden" style={{ background: pal.card, borderColor: `${pal.accent}44` }}>
           <Quote className="absolute -top-2 -right-2 w-20 h-20 opacity-10 rotate-12" style={{ color: pal.accent }} />
-          <p className="text-base sm:text-lg font-extrabold leading-snug line-clamp-4 uppercase tracking-tight" style={{ fontFamily: style.headingFont }}>
+          <p className="text-base sm:text-lg font-light leading-snug line-clamp-4" style={{ fontFamily: style.bodyFont }}>
             "{r.content}"
           </p>
           <div className="flex items-center justify-between mt-5">
@@ -102,7 +102,7 @@ export function NitroLayout({ items, style }) {
     <div className="space-y-6">
       <motion.div {...fade(0)} className="max-w-3xl mx-auto text-center rounded-2xl border px-6 py-10" style={{ background: pal.card, borderColor: pal.cardBorder }}>
         <div className="flex justify-center mb-4"><Stars rating={featured.rating} accent={pal.accent} /></div>
-        <p className="text-xl sm:text-2xl uppercase leading-snug tracking-wide" style={{ fontFamily: style.headingFont }}>
+        <p className="text-xl sm:text-2xl font-light leading-snug" style={{ fontFamily: style.bodyFont }}>
           "{featured.content}"
         </p>
         <div className="flex items-center justify-center gap-2.5 mt-6">
