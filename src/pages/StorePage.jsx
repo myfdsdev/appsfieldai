@@ -10,6 +10,7 @@ import StoreTestimonials from "@/components/store/StoreTestimonials";
 import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
 import StoreTrustBadges from "@/components/store/StoreTrustBadges";
+import StoreCustomBanner from "@/components/store/StoreCustomBanner";
 import StoreFAQ from "@/components/store/StoreFAQ";
 import { useCustomCode } from "@/hooks/useCustomCode";
 import StoreHero from "@/components/store/StoreHero";
@@ -219,6 +220,7 @@ export default function StorePage() {
   const brandColor = storeStyle.palette?.accent || marketplace.branding?.primaryColor || "#f97316";
   const headerEnabled = sections.headerEnabled ?? true;
   const customBoxesEnabled = sections.customBoxesEnabled ?? false;
+  const customBannerEnabled = sections.customBannerEnabled ?? false;
   const testimonialsEnabled = sections.testimonialsEnabled ?? false;
   const footerEnabled = sections.footerEnabled ?? true;
   const faqEnabled = sections.faqEnabled ?? false;
@@ -318,6 +320,9 @@ export default function StorePage() {
           )}
         </>
       )}
+
+      {/* Custom banner band */}
+      {customBannerEnabled && <StoreCustomBanner sections={sections} brandColor={brandColor} />}
 
       {/* Trust / policy badges */}
       {trustBadgesEnabled && <StoreTrustBadges badges={sections.trustBadges} title={sections.trustBadgesTitle} brandColor={pal?.accent || brandColor} styleSlug={sections.storeStyle} />}

@@ -22,6 +22,7 @@ import CustomPagesManager from "@/components/marketplace/CustomPagesManager";
 import TestimonialsManager from "@/components/marketplace/TestimonialsManager";
 import FooterPagesList from "@/components/marketplace/FooterPagesList";
 import TrustBadgesEditor from "@/components/marketplace/TrustBadgesEditor";
+import CustomBannerEditor from "@/components/marketplace/CustomBannerEditor";
 import CustomCodeEditor from "@/components/marketplace/CustomCodeEditor";
 import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
@@ -130,6 +131,11 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     faqTitle: marketplace?.pageSections?.faqTitle || "",
     faqs: marketplace?.pageSections?.faqs || [],
     customBoxesEnabled: marketplace?.pageSections?.customBoxesEnabled ?? false,
+    customBannerEnabled: marketplace?.pageSections?.customBannerEnabled ?? false,
+    customBannerImageUrl: marketplace?.pageSections?.customBannerImageUrl || "",
+    customBannerTitle: marketplace?.pageSections?.customBannerTitle || "",
+    customBannerSubtitle: marketplace?.pageSections?.customBannerSubtitle || "",
+    customBannerTextPosition: marketplace?.pageSections?.customBannerTextPosition || "center",
     trustBadgesEnabled: marketplace?.pageSections?.trustBadgesEnabled ?? false,
     trustBadgesTitle: marketplace?.pageSections?.trustBadgesTitle || "",
     trustBadges: marketplace?.pageSections?.trustBadges || [],
@@ -272,6 +278,10 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <SectionCard title="Custom Section Boxes" icon={Layers}
                   enabled={pageForm.customBoxesEnabled} onToggle={() => setPageForm(f => ({ ...f, customBoxesEnabled: !f.customBoxesEnabled }))}>
                   <p className="text-xs text-muted-foreground">Custom content boxes can be managed from your Admin Hub.</p>
+                </SectionCard>
+                <SectionCard title="Custom Banner" icon={Image}
+                  enabled={pageForm.customBannerEnabled} onToggle={() => setPageForm(f => ({ ...f, customBannerEnabled: !f.customBannerEnabled }))}>
+                  <CustomBannerEditor form={pageForm} setForm={setPageForm} />
                 </SectionCard>
                 <SectionCard title="Trust & Policy Badges" icon={ShieldCheck}
                   enabled={pageForm.trustBadgesEnabled} onToggle={() => setPageForm(f => ({ ...f, trustBadgesEnabled: !f.trustBadgesEnabled }))}>

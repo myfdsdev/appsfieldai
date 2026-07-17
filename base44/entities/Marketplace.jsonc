@@ -507,6 +507,33 @@
             "type": "object"
           }
         },
+        "customBannerEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the custom banner band is shown on the store page"
+        },
+        "customBannerImageUrl": {
+          "type": "string",
+          "description": "Background image for the custom banner band"
+        },
+        "customBannerTitle": {
+          "type": "string",
+          "description": "Custom banner heading"
+        },
+        "customBannerSubtitle": {
+          "type": "string",
+          "description": "Custom banner subheadline"
+        },
+        "customBannerTextPosition": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "default": "center",
+          "description": "Alignment of the banner heading/subheadline"
+        },
         "footerEnabled": {
           "type": "boolean",
           "default": true
