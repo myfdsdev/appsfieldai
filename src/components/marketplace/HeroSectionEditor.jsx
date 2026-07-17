@@ -35,6 +35,37 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
         <p className="text-[10px] text-muted-foreground mt-1">Shown in your store's top navigation bar. Leave empty to use your brand logo.</p>
       </div>
 
+      {/* Hero Side Image + position */}
+      <div>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Hero Side Image</p>
+        <R2ImageUpload
+          value={form.heroSideImageUrl}
+          onChange={val => set("heroSideImageUrl", val)}
+          campaignId={`${marketplace?.id || "store"}_hero_side`}
+          placeholder="https://example.com/hero-visual.png"
+        />
+        <p className="text-[10px] text-muted-foreground mt-1">A feature image shown beside your hero headline (e.g. a product shot or illustration).</p>
+        <div className="flex gap-2 mt-2">
+          {[
+            { val: "left", label: "Left" },
+            { val: "center", label: "Center" },
+            { val: "right", label: "Right" },
+          ].map(opt => (
+            <button
+              key={opt.val}
+              onClick={() => set("heroSideImagePosition", opt.val)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                (form.heroSideImagePosition || "right") === opt.val
+                  ? "bg-orange-500/20 text-orange-400 border-orange-500/40"
+                  : "bg-secondary/50 text-muted-foreground border-border/30 hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Badge */}
       <div>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Badge</p>
