@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Store, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 // Simple TikTok glyph (not in lucide) so we can show a TikTok link too.
 const TikTokIcon = (props) => (
@@ -18,8 +19,10 @@ const SOCIALS = [
   { key: "tiktok", Icon: TikTokIcon },
 ];
 
-export default function StoreFooter({ marketplace, footerText, footerLogoUrl, socialLinks = {}, customPages = [], storeBasePath = "", affiliateEnabled = false }) {
-  const brandColor = marketplace?.branding?.primaryColor || "#f97316";
+export default function StoreFooter({ marketplace, footerText, footerLogoUrl, socialLinks = {}, customPages = [], storeBasePath = "", affiliateEnabled = false, styleSlug }) {
+  const style = getStoreStyle(styleSlug);
+  const pal = style.palette;
+  const brandColor = pal?.accent || marketplace?.branding?.primaryColor || "#f97316";
   const year = new Date().getFullYear();
   const defaultText = `© ${year} ${marketplace?.name || "Our Store"}. All rights reserved.`;
   const footerPages = (customPages || []).filter(p => p.showInFooter);
@@ -27,8 +30,11 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
   const socials = SOCIALS.filter(s => (socialLinks?.[s.key] || "").trim());
 
   return (
-    <footer className="border-t border-border/40 bg-card/40 backdrop-blur-xl mt-8">
-      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6">
+    <footer
+      className="border-t border-border/40 bg-card/40 backdrop-blur-xl mt-8"
+      style={pal ? { background: pal.card, borderColor: pal.cardBorder } : undefined}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6" style={{ fontFamily: style.bodyFont }}>
         {(footerPages.length > 0 || affiliateEnabled) && (
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {footerPages.map(p => (
@@ -74,7 +80,7 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
                 <Store className="w-4 h-4 text-white" />
               </div>
             )}
-            <span className="font-display font-semibold text-sm">{marketplace?.name}</span>
+            <span className="font-display font-semibold text-sm" style={pal ? { fontFamily: style.headingFont, letterSpacing: "0.02em" } : undefined}>{marketplace?.name}</span>
           </div>
           <p className="text-xs text-muted-foreground text-center">{footerText || defaultText}</p>
           {marketplace?.supportEmail && (
