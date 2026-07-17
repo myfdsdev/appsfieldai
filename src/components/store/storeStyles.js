@@ -116,17 +116,26 @@ export const STORE_STYLES = [
   },
   {
     slug: "linen",
-    name: "Linen",
-    tagline: "Minimal & calm — generous whitespace, soft cards",
-    headingFont: "'Fraunces', serif",
+    name: "Nitro",
+    tagline: "Bold NFT drop — heavy condensed caps, lime on near-black",
+    // Anton = heavy condensed uppercase display, like the reference headline.
+    headingFont: "'Anton', sans-serif",
     bodyFont: "'Inter', sans-serif",
-    googleFonts: ["Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600", "Inter:wght@400;500"],
+    googleFonts: ["Anton", "Inter:wght@400;500;600"],
+    // Full color palette used across ALL sections (hero, cards, FAQs, footer, badges).
+    palette: {
+      accent: "#c5f82a",          // lime-yellow
+      accentText: "#0a0f05",      // near-black text on lime buttons
+      surface: "#0d1408",         // near-black green-tinted page bg
+      card: "#141c0e",            // card surface
+      cardBorder: "rgba(197,248,42,0.18)",
+    },
     hero: {
-      size: "sm",
+      size: "xl",
       align: "center",
-      titleClass: "text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight",
+      titleClass: "text-5xl sm:text-6xl lg:text-7xl font-normal uppercase tracking-tight leading-[0.95]",
       gradientTitle: false,
-      logoShape: "rounded-2xl",
+      logoShape: "rounded-xl",
       logoSize: "w-14 h-14",
       badgePill: true,
       ctaShape: "rounded-full",
@@ -134,18 +143,18 @@ export const STORE_STYLES = [
     products: {
       layout: "card",
       columns: "sm:grid-cols-2 lg:grid-cols-3",
-      gap: "gap-8",
-      radius: "rounded-3xl",
+      gap: "gap-6",
+      radius: "rounded-2xl",
       buttonShape: "rounded-full",
       imageHeight: "h-40",
-      cardBorder: "border border-border/30",
-      cardBg: "bg-card/40",
-      cardHover: "hover:shadow-lg hover:shadow-black/5",
-      titleClass: "font-semibold text-base tracking-tight",
-      uppercaseTitle: false,
+      cardBorder: "border border-[#c5f82a]/15",
+      cardBg: "bg-[#141c0e]",
+      cardHover: "hover:border-[#c5f82a]/50 hover:shadow-[0_0_28px_-6px] hover:shadow-[#c5f82a]/30",
+      titleClass: "font-normal text-lg uppercase tracking-wide",
+      uppercaseTitle: true,
     },
-    sectionTitleClass: "text-2xl sm:text-3xl font-semibold tracking-tight",
-    preview: { bg: "linear-gradient(135deg,#d6d3d1,#a8a29e)", font: "'Fraunces',serif" },
+    sectionTitleClass: "text-3xl sm:text-4xl font-normal uppercase tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#c5f82a,#0d1408)", font: "'Anton',sans-serif" },
   },
   {
     slug: "carbon",

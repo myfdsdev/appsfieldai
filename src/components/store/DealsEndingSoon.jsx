@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Flame, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import SaaSCard from "@/components/marketplace/SaaSCard";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
-const STORE_DEFAULTS = { title: "Deals Ending Soon 🔥", subtitle: "Grab these before the timer runs out" };
+const STORE_DEFAULTS = { title: "Exclusive Deals 🔥", subtitle: "Grab these before the timer runs out" };
 
 function CountdownPill({ endDate }) {
   const [now, setNow] = useState(Date.now());
@@ -29,8 +30,11 @@ function CountdownPill({ endDate }) {
   );
 }
 
-export default function DealsEndingSoon({ listings = [], onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
+export default function DealsEndingSoon({ listings = [], styleSlug, onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
   const scrollRef = useRef(null);
+  const style = getStoreStyle(styleSlug);
+  const pal = style.palette;
+  const styleSpec = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont, accent: style.palette?.accent, accentText: style.palette?.accentText };
 
   // Deals with an upcoming end date, soonest first, max 6.
   const deals = listings
@@ -49,12 +53,15 @@ export default function DealsEndingSoon({ listings = [], onViewDetails, onReserv
     <section className="max-w-7xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
-            <Flame className="w-5 h-5 text-white" />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={pal ? { background: pal.accent } : undefined}
+          >
+            <Flame className={`w-5 h-5 ${pal ? "" : "text-white"}`} style={pal ? { color: pal.accentText } : undefined} />
           </div>
           <div>
-            <h2 className="text-xl font-display font-bold">{STORE_DEFAULTS.title}</h2>
-            <p className="text-xs text-muted-foreground">{STORE_DEFAULTS.subtitle}</p>
+            <h2 className={style.sectionTitleClass} style={{ fontFamily: style.headingFont }}>{STORE_DEFAULTS.title}</h2>
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: style.bodyFont }}>{STORE_DEFAULTS.subtitle}</p>
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-2">
@@ -70,7 +77,7 @@ export default function DealsEndingSoon({ listings = [], onViewDetails, onReserv
               <div className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-sm rounded-full px-2.5 py-1 border border-border/40">
                 <CountdownPill endDate={l.dealEndDate} />
               </div>
-              <SaaSCard listing={l} delay={0} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
+              <SaaSCard listing={l} delay={0} styleSpec={styleSpec} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
             </div>
           </motion.div>
         ))}

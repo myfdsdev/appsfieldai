@@ -232,8 +232,15 @@ export default function StorePage() {
       ? `${storeBaseUrl}/saas/${listing.id}?ref=${affiliateInfo.refCode}`
       : null;
 
+  // A style may define a full color palette (e.g. Nitro's dark-green + lime look)
+  // that overrides the page surface across every section.
+  const pal = storeStyle.palette;
+
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: storeStyle.bodyFont }}>
+    <div
+      className="min-h-screen bg-background"
+      style={{ fontFamily: storeStyle.bodyFont, ...(pal ? { background: pal.surface, color: "#e8f0df" } : {}) }}
+    >
       {/* Store top nav */}
       <StoreNavbar
         marketplace={marketplace}
@@ -266,7 +273,7 @@ export default function StorePage() {
         <>
           {/* Best Sellers / 🔥 Deals Ending Soon */}
           <div id="store-best-sellers">
-            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
+            <DealsEndingSoon listings={software} styleSlug={sections.storeStyle} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
           </div>
 
           {/* Categories */}
@@ -296,10 +303,10 @@ export default function StorePage() {
       )}
 
       {/* Trust / policy badges */}
-      {trustBadgesEnabled && <StoreTrustBadges badges={sections.trustBadges} title={sections.trustBadgesTitle} brandColor={brandColor} />}
+      {trustBadgesEnabled && <StoreTrustBadges badges={sections.trustBadges} title={sections.trustBadgesTitle} brandColor={pal?.accent || brandColor} styleSlug={sections.storeStyle} />}
 
       {/* Testimonials */}
-      {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={brandColor} title={sections.testimonialsTitle} />}
+      {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={pal?.accent || brandColor} title={sections.testimonialsTitle} styleSlug={sections.storeStyle} />}
 
       {/* Custom Section */}
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}
@@ -308,7 +315,7 @@ export default function StorePage() {
       {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} footerLogoUrl={sections.footerLogoUrl} socialLinks={sections.socialLinks} customPages={customPages} storeBasePath={storeBasePath} affiliateEnabled={affiliateEnabled} />}
 
       {/* FAQ — below the footer */}
-      {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={brandColor} />}
+      {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={pal?.accent || brandColor} styleSlug={sections.storeStyle} />}
 
       <SaaSDetailModal
         listingId={viewDetailListing?.id}

@@ -69,6 +69,14 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
   const titleClass = styleSpec?.titleClass || "font-display font-bold text-base";
   const headingFont = styleSpec?.headingFont;
   const bodyFont = styleSpec?.bodyFont;
+  // A style palette accent (e.g. Nitro's lime) recolors the primary CTAs.
+  const accent = styleSpec?.accent;
+  const accentText = styleSpec?.accentText || "#0a0f05";
+  // When an accent is set, drop the orange gradient and use a solid accent fill.
+  const primaryBtnClass = accent
+    ? `flex-1 ${btnShape} text-[11px] h-8 disabled:opacity-40 border-0 font-semibold`
+    : `flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 ${btnShape} text-[11px] h-8 disabled:opacity-40 text-white border-0`;
+  const primaryBtnStyle = accent ? { background: accent, color: accentText } : undefined;
   const [favLoading, setFavLoading] = React.useState(false);
   const [linkCopied, setLinkCopied] = React.useState(false);
 
@@ -225,7 +233,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         {onAddToCart || onBuyNow ? (
           <div className="flex gap-2 pt-1 mt-auto">
             {dealType !== "single_purchase" ? (
-              <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className={`flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 ${btnShape} text-[11px] h-8 disabled:opacity-40 text-white border-0`}>
+              <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className={primaryBtnClass} style={primaryBtnStyle}>
                 {sharesLeft <= 0 ? "Sold Out" : "Reserve a Spot"}
               </Button>
             ) : (
@@ -233,7 +241,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
                 <Button size="sm" variant="outline" onClick={() => onAddToCart?.(listing)} disabled={isSold} className={`border-orange-500/40 text-orange-400 hover:bg-orange-500/10 ${btnShape} text-[11px] h-8 disabled:opacity-40 px-2.5`} title="Add to cart">
                   <ShoppingCart className="w-3.5 h-3.5" />
                 </Button>
-                <Button size="sm" onClick={() => onBuyNow?.(listing)} disabled={isSold} className={`flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 ${btnShape} text-[11px] h-8 disabled:opacity-40 text-white border-0`}>
+                <Button size="sm" onClick={() => onBuyNow?.(listing)} disabled={isSold} className={primaryBtnClass} style={primaryBtnStyle}>
                   Buy Now — ${fullPrice.toLocaleString()}
                 </Button>
               </>

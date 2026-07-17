@@ -10,6 +10,9 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
   const accentColor = marketplace.branding?.accentColor || brandColor;
   const style = getStoreStyle(sections.storeStyle);
   const h = style.hero;
+  const pal = style.palette;
+  // A style with a palette (e.g. Nitro) drives its own hero accent + background glow.
+  const heroAccent = pal?.accent || brandColor;
   const isLeft = h.align === "left";
 
   const title = sections.headerTitle || marketplace.name;
@@ -24,6 +27,9 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
     background = `linear-gradient(to bottom, rgba(10,6,3,0.7), rgba(10,6,3,0.95)), url(${sections.headerImageUrl}) center/cover`;
   } else if (bgType === "solid") {
     background = sections.heroSolidColor || "#0a0603";
+  } else if (pal && !sections.heroGradientStart) {
+    // Nitro-style palette: lime glow fading into the near-black surface.
+    background = `radial-gradient(ellipse at 50% 0%, ${pal.accent}2e 0%, ${pal.surface} 55%)`;
   } else {
     const gStart = sections.heroGradientStart || `${brandColor}33`;
     const gEnd = sections.heroGradientEnd || "#0a0603";
@@ -69,7 +75,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
             transition={{ delay: 0.13 }}
             className={`inline-flex items-center gap-2 px-3 py-1 border border-white/10 bg-white/5 text-foreground/70 text-xs mb-5 ${h.badgePill ? "rounded-full" : "rounded-none"}`}
           >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: heroAccent }} />
             {sections.heroBadgeText}
           </motion.span>
         )}
@@ -113,8 +119,8 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
         >
           <button
             onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}
-            className={`px-6 py-2.5 bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors ${h.ctaShape}`}
-            style={{ fontFamily: style.headingFont }}
+            className={`px-6 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 ${h.ctaShape} ${pal ? "" : "bg-white text-black hover:bg-white/90"}`}
+            style={{ fontFamily: style.headingFont, ...(pal ? { background: pal.accent, color: pal.accentText } : {}) }}
           >
             {sections.heroCtaText || `${listingsCount} ${listingsCount === 1 ? "deal" : "deals"} live now`}
           </button>

@@ -1,10 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Quote, Star } from "lucide-react";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 const STORE_DEFAULTS = { title: "What Our Customers Say", subtitle: "Real reviews from real buyers" };
 
-export default function StoreTestimonials({ testimonials = [], reviews = [], brandColor = "#f97316", title, subtitle }) {
+export default function StoreTestimonials({ testimonials = [], reviews = [], brandColor = "#f97316", title, subtitle, styleSlug }) {
+  const style = getStoreStyle(styleSlug);
   // Prefer owner-managed testimonials; fall back to approved product reviews.
   const items = (testimonials && testimonials.length > 0)
     ? testimonials.map(t => ({
@@ -21,8 +23,8 @@ export default function StoreTestimonials({ testimonials = [], reviews = [], bra
   return (
     <section className="max-w-7xl mx-auto px-6 py-12">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-display font-bold">{title || STORE_DEFAULTS.title}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{subtitle || STORE_DEFAULTS.subtitle}</p>
+        <h2 className={style.sectionTitleClass} style={{ fontFamily: style.headingFont }}>{title || STORE_DEFAULTS.title}</h2>
+        <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: style.bodyFont }}>{subtitle || STORE_DEFAULTS.subtitle}</p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.slice(0, 6).map((r, i) => (

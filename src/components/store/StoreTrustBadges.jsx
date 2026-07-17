@@ -1,5 +1,6 @@
 import React from "react";
 import { Shield, Lock, BadgeCheck, CreditCard, Award, ShieldCheck, Globe } from "lucide-react";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 // Preset icon keys sellers can pick per badge.
 const ICONS = {
@@ -14,14 +15,18 @@ const ICONS = {
   globe: Globe,
 };
 
-export default function StoreTrustBadges({ badges = [], title, brandColor = "#f97316" }) {
+export default function StoreTrustBadges({ badges = [], title, brandColor = "#f97316", styleSlug }) {
+  const style = getStoreStyle(styleSlug);
   const items = (badges || []).filter((b) => b && (b.text || b.imageUrl));
   if (items.length === 0) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-8">
       {title && (
-        <h3 className="text-center text-sm font-display font-semibold text-muted-foreground uppercase tracking-wider mb-5">
+        <h3
+          className="text-center text-lg text-muted-foreground uppercase tracking-wider mb-5"
+          style={{ fontFamily: style.headingFont }}
+        >
           {title}
         </h3>
       )}
