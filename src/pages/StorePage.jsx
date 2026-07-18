@@ -284,6 +284,9 @@ export default function StorePage() {
           currency={marketplace.currency}
           onViewDetails={setViewDetailListing}
           onReserveSpot={handleReserve}
+          onAddToCart={handleAddToCart}
+          onBuyNow={handleBuyNow}
+          affiliateLinkFor={affiliateLinkFor}
         />
       )}
 
@@ -298,10 +301,12 @@ export default function StorePage() {
         </div>
       ) : (
         <>
-          {/* Best Sellers / 🔥 Deals Ending Soon */}
-          <div id="store-best-sellers">
-            <DealsEndingSoon listings={software} styleSlug={sections.storeStyle} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
-          </div>
+          {/* Best Sellers / 🔥 Deals Ending Soon — Binasea shows these in the header instead */}
+          {sections.storeStyle !== "monolith" && (
+            <div id="store-best-sellers">
+              <DealsEndingSoon listings={software} styleSlug={sections.storeStyle} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
+            </div>
+          )}
 
           {/* Categories */}
           <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} styleSlug={sections.storeStyle} onSelect={handleSelectCategory} />

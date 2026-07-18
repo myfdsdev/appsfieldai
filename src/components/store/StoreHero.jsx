@@ -5,7 +5,7 @@ import StoreBinaseaHero from "./StoreBinaseaHero";
 
 // Full branded hero for a customer's store page. Adapts its size, font,
 // alignment, title treatment and shapes to the selected store style.
-export default function StoreHero({ marketplace, sections = {}, listingsCount = 0, listings = [], currency = "USD", onViewDetails, onReserveSpot }) {
+export default function StoreHero({ marketplace, sections = {}, listingsCount = 0, listings = [], currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
   // Binasea (monolith) uses a dedicated hero: centered text + character image
   // left + auto-rotating Exclusive Deals product slider on the right.
   if (sections.storeStyle === "monolith") {
@@ -17,6 +17,9 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
         currency={currency}
         onViewDetails={onViewDetails}
         onReserveSpot={onReserveSpot}
+        onAddToCart={onAddToCart}
+        onBuyNow={onBuyNow}
+        affiliateLinkFor={affiliateLinkFor}
       />
     );
   }

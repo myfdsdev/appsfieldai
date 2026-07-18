@@ -1,35 +1,22 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Zap, Clock, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
+import SaaSCard from "@/components/marketplace/SaaSCard";
 import { getStoreStyle, HERO_SIZE_PADDING } from "./storeStyles";
 
-// Live countdown to a deal/auction end — mirrors the "12 : 30 : 15" chip.
-function useCountdown(endDate) {
-  const [now, setNow] = React.useState(Date.now());
-  React.useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  if (!endDate) return null;
-  const diff = new Date(endDate).getTime() - now;
-  if (diff <= 0) return "00 : 00 : 00";
-  const h = Math.floor(diff / 3.6e6);
-  const m = Math.floor((diff % 3.6e6) / 6e4);
-  const s = Math.floor((diff % 6e4) / 1000);
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${pad(h)} : ${pad(m)} : ${pad(s)}`;
-}
+const DEALS_DEFAULTS = { title: "Exclusive Deals 🔥", subtitle: "Grab these before the timer runs out" };
 
 // ── Binasea-style hero ────────────────────────────────────────────────────
 // Centered headline + subheadline + two CTAs on top, then a two-column band:
-// a large character image on the LEFT and an auto-rotating "Exclusive Deals"
-// product card on the RIGHT (one product at a time, with prev/next controls).
-export default function StoreBinaseaHero({ marketplace, sections = {}, listings = [], currency = "USD", onViewDetails, onReserveSpot }) {
+// a large character image on the LEFT and the "Exclusive Deals" product cards
+// on the RIGHT — the real store SaaSCard, shown one at a time with a slider.
+export default function StoreBinaseaHero({ marketplace, sections = {}, listings = [], currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
   const style = getStoreStyle(sections.storeStyle);
   const h = style.hero;
   const pal = style.palette;
   const accent = pal?.accent || marketplace.branding?.primaryColor || "#5142fc";
   const accentText = pal?.accentText || "#ffffff";
+  const styleSpec = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont, accent, accentText };
 
   const title = sections.headerTitle || marketplace.name;
   const subtitle =
@@ -37,26 +24,25 @@ export default function StoreBinaseaHero({ marketplace, sections = {}, listings 
     "Join group deals on premium software. Lock a slot, split the cost, and save big.";
   const sideImage = sections.heroSideImageUrl;
 
-  // Products to feature in the slider — up to 8 live listings.
-  const featured = listings.slice(0, 8);
+  // Same deal set as the Exclusive Deals section: time-limited deals, soonest first.
+  const deals = listings
+    .filter((l) => !l.noDayLimit && l.dealEndDate && new Date(l.dealEndDate).getTime() > Date.now())
+    .sort((a, b) => new Date(a.dealEndDate) - new Date(b.dealEndDate))
+    .slice(0, 6);
+
   const [idx, setIdx] = React.useState(0);
   const [paused, setPaused] = React.useState(false);
 
-  React.useEffect(() => { setIdx(0); }, [featured.length]);
+  React.useEffect(() => { setIdx(0); }, [deals.length]);
   React.useEffect(() => {
-    if (paused || featured.length <= 1) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % featured.length), 4500);
+    if (paused || deals.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % deals.length), 4500);
     return () => clearInterval(t);
-  }, [paused, featured.length]);
+  }, [paused, deals.length]);
 
-  const current = featured[idx];
-  const countdown = useCountdown(current?.dealEndDate || current?.auctionEndsAt);
-  const next = () => setIdx((i) => (i + 1) % featured.length);
-  const prev = () => setIdx((i) => (i - 1 + featured.length) % featured.length);
-
-  const priceOf = (l) => l?.sharePrice || l?.discountPrice || l?.price || 0;
-  const fmtPrice = (n) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(n || 0);
+  const current = deals[idx];
+  const next = () => setIdx((i) => (i + 1) % deals.length);
+  const prev = () => setIdx((i) => (i - 1 + deals.length) % deals.length);
 
   const bg = pal
     ? `radial-gradient(ellipse at 80% 20%, ${accent}26 0%, ${pal.surface} 55%)`
@@ -105,7 +91,7 @@ export default function StoreBinaseaHero({ marketplace, sections = {}, listings 
         </div>
       </motion.div>
 
-      {/* Two-column band: character image left, product slider right */}
+      {/* Two-column band: character image left, Exclusive Deals card right */}
       <div className="relative z-10 max-w-6xl mx-auto mt-14 grid md:grid-cols-2 gap-10 items-center">
         {/* Left — character / feature image */}
         <div className="flex justify-center md:justify-start">
@@ -128,36 +114,21 @@ export default function StoreBinaseaHero({ marketplace, sections = {}, listings 
           )}
         </div>
 
-        {/* Right — Exclusive Deals product slider card */}
+        {/* Right — Exclusive Deals product card slider */}
         {current && (
-          <div
-            className="relative rounded-2xl border p-5 sm:p-6 backdrop-blur-sm"
-            style={{ background: pal ? `${pal.card}cc` : "rgba(31,31,43,0.8)", borderColor: pal?.cardBorder || "rgba(255,255,255,0.08)" }}
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-          >
-            {/* Header row: title + slider controls */}
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider font-semibold mb-1" style={{ color: accent }}>
-                  <Zap className="w-3.5 h-3.5" /> Exclusive Deals
+          <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+            {/* Section heading */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: accent }}>
+                  <Flame className="w-4.5 h-4.5" style={{ color: accentText }} />
                 </div>
-                <AnimatePresence mode="wait">
-                  <motion.h3
-                    key={current.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.25 }}
-                    className="text-lg sm:text-xl font-bold truncate"
-                    style={{ fontFamily: style.headingFont }}
-                  >
-                    {current.softwareName}
-                  </motion.h3>
-                </AnimatePresence>
-                <p className="text-xs opacity-60 truncate">{current.category || current.shortDescription || "Limited edition"}</p>
+                <div>
+                  <h2 className="text-lg font-bold" style={{ fontFamily: style.headingFont }}>{DEALS_DEFAULTS.title}</h2>
+                  <p className="text-[11px] opacity-60" style={{ fontFamily: style.bodyFont }}>{DEALS_DEFAULTS.subtitle}</p>
+                </div>
               </div>
-              {featured.length > 1 && (
+              {deals.length > 1 && (
                 <div className="flex items-center gap-2 shrink-0">
                   <button onClick={prev} className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-white/10 transition-colors" style={{ borderColor: pal?.cardBorder || "rgba(255,255,255,0.15)" }}>
                     <ChevronLeft className="w-4 h-4" />
@@ -169,72 +140,33 @@ export default function StoreBinaseaHero({ marketplace, sections = {}, listings 
               )}
             </div>
 
-            {/* Product visual */}
+            {/* The real Exclusive Deals card */}
             <AnimatePresence mode="wait">
               <motion.div
-                key={current.id + "_img"}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="rounded-xl overflow-hidden mb-4 h-40 flex items-center justify-center"
-                style={{ background: current.imageGradient || `linear-gradient(135deg, ${accent}44, ${pal?.surface || "#14141f"})` }}
+                key={current.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
               >
-                {(current.screenshots?.[0] || current.logo) ? (
-                  <img src={current.screenshots?.[0] || current.logo} alt={current.softwareName} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-bold opacity-70" style={{ fontFamily: style.headingFont }}>{current.softwareName?.[0] || "•"}</span>
-                )}
+                <SaaSCard
+                  listing={current}
+                  delay={0}
+                  styleSpec={styleSpec}
+                  onViewDetails={onViewDetails}
+                  onBuySpot={onViewDetails}
+                  onReserveSpot={onReserveSpot || onViewDetails}
+                  onAddToCart={onAddToCart}
+                  onBuyNow={onBuyNow}
+                  affiliateLink={affiliateLinkFor?.(current)}
+                />
               </motion.div>
-
-              {/* Creator */}
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: `${accent}22` }}>
-                  <User className="w-4 h-4" style={{ color: accent }} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] opacity-55">Creator</p>
-                  <p className="text-sm font-medium truncate" style={{ color: accent }}>{current.sellerName || marketplace.name}</p>
-                </div>
-              </div>
-
-              {/* Bid + countdown */}
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <p className="text-[11px] opacity-55 mb-0.5">Current price</p>
-                  <p className="text-lg font-bold" style={{ fontFamily: style.headingFont }}>{fmtPrice(priceOf(current))}</p>
-                </div>
-                {countdown && (
-                  <div className="text-right">
-                    <p className="text-[11px] opacity-55 mb-0.5 flex items-center gap-1 justify-end"><Clock className="w-3 h-3" /> Ends in</p>
-                    <p className="text-lg font-bold tabular-nums" style={{ fontFamily: style.headingFont }}>{countdown}</p>
-                  </div>
-                )}
-              </div>
             </AnimatePresence>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => onReserveSpot?.(current)}
-                className="flex-1 py-2.5 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{ fontFamily: style.headingFont, background: accent, color: accentText }}
-              >
-                Reserve spot
-              </button>
-              <button
-                onClick={() => onViewDetails?.(current)}
-                className="flex-1 py-2.5 rounded-full text-sm font-semibold border transition-colors hover:bg-white/10"
-                style={{ fontFamily: style.headingFont, borderColor: pal?.cardBorder || "rgba(255,255,255,0.2)" }}
-              >
-                View details
-              </button>
-            </div>
-
             {/* Dots */}
-            {featured.length > 1 && (
+            {deals.length > 1 && (
               <div className="flex items-center justify-center gap-1.5 mt-4">
-                {featured.map((_, i) => (
+                {deals.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setIdx(i)}
