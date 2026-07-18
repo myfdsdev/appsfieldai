@@ -276,7 +276,15 @@ export default function StorePage() {
 
       {/* Store hero */}
       {headerEnabled && (
-        <StoreHero marketplace={marketplace} sections={sections} listingsCount={software.length} />
+        <StoreHero
+          marketplace={marketplace}
+          sections={sections}
+          listingsCount={software.length}
+          listings={software}
+          currency={marketplace.currency}
+          onViewDetails={setViewDetailListing}
+          onReserveSpot={handleReserve}
+        />
       )}
 
       <div id="store-listings" />

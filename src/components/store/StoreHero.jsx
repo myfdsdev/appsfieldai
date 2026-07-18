@@ -1,10 +1,26 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { getStoreStyle, HERO_SIZE_PADDING } from "./storeStyles";
+import StoreBinaseaHero from "./StoreBinaseaHero";
 
 // Full branded hero for a customer's store page. Adapts its size, font,
 // alignment, title treatment and shapes to the selected store style.
-export default function StoreHero({ marketplace, sections = {}, listingsCount = 0 }) {
+export default function StoreHero({ marketplace, sections = {}, listingsCount = 0, listings = [], currency = "USD", onViewDetails, onReserveSpot }) {
+  // Binasea (monolith) uses a dedicated hero: centered text + character image
+  // left + auto-rotating Exclusive Deals product slider on the right.
+  if (sections.storeStyle === "monolith") {
+    return (
+      <StoreBinaseaHero
+        marketplace={marketplace}
+        sections={sections}
+        listings={listings}
+        currency={currency}
+        onViewDetails={onViewDetails}
+        onReserveSpot={onReserveSpot}
+      />
+    );
+  }
+
   const style = getStoreStyle(sections.storeStyle);
   const h = style.hero;
   const pal = style.palette;
