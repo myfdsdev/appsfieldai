@@ -98,6 +98,26 @@
       "default": false,
       "description": "Can feature listings"
     },
+    "liveAuctionsAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to Live Auctions"
+    },
+    "vendorManagementAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to Vendor Management"
+    },
+    "myRequestsAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to My Requests"
+    },
+    "investmentsAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to Investments"
+    },
     "premiumTemplatesAccess": {
       "type": "boolean",
       "default": false,

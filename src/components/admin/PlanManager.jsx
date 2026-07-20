@@ -20,6 +20,10 @@ const FEATURE_TOGGLES = [
   { key: "whiteLabelAllowed", label: "White-Label", desc: "Remove platform branding" },
   { key: "commissionModuleAllowed", label: "Commission Module", desc: "Users can set commission rates" },
   { key: "featuredListingsAllowed", label: "Featured Listings", desc: "Users can feature listings" },
+  { key: "liveAuctionsAllowed", label: "Live Auctions", desc: "Access to the Live Auctions section" },
+  { key: "vendorManagementAllowed", label: "Vendor Management", desc: "Access to vendor management" },
+  { key: "myRequestsAllowed", label: "My Requests", desc: "Access to the My Requests section" },
+  { key: "investmentsAllowed", label: "Investments", desc: "Access to the Investments section" },
 ];
 
 const SwitchRow = ({ label, desc, checked, onChange }) => (
@@ -44,7 +48,7 @@ export default function PlanManager() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };

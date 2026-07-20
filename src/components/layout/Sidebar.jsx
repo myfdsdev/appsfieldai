@@ -1,6 +1,8 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import {
   LayoutDashboard, Store, Gavel, PieChart, Upload, Shield, Zap, ChevronLeft, ChevronRight, ClipboardList
 } from "lucide-react";
@@ -10,15 +12,29 @@ import { useAuth } from "@/lib/AuthContext";
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/marketplace", icon: Store, label: "Marketplace" },
-  { to: "/auctions", icon: Gavel, label: "Live Auctions" },
-  { to: "/requests", icon: ClipboardList, label: "My Requests" },
+  { to: "/auctions", icon: Gavel, label: "Live Auctions", feature: "liveAuctionsAllowed" },
+  { to: "/requests", icon: ClipboardList, label: "My Requests", feature: "myRequestsAllowed" },
   { to: "/sell", icon: Upload, label: "Sell My SaaS" },
   { to: "/admin", icon: Shield, label: "Admin Panel", adminOnly: true },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
   const { user } = useAuth();
-  const filteredItems = navItems.filter((item) => !item.adminOnly || user?.role === "admin");
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+
+  // Resolve the user's plan so paid features can be gated in the nav.
+  const { data: userPlan = null } = useQuery({
+    queryKey: ["userPlan", user?.planId],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: user.planId }).then((r) => r[0] || null),
+    enabled: !!user?.planId,
+  });
+
+  const filteredItems = navItems.filter((item) => {
+    if (item.adminOnly && !isAdmin) return false;
+    // Plan-gated items: only show to admins or plans that include the feature.
+    if (item.feature && !isAdmin && !userPlan?.[item.feature]) return false;
+    return true;
+  });
   return (
     <motion.aside
       animate={{ width: collapsed ? 72 : 240 }}
