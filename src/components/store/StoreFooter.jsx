@@ -35,20 +35,21 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
       style={pal ? { background: pal.card, borderColor: pal.cardBorder } : undefined}
     >
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6" style={{ fontFamily: style.bodyFont }}>
-        {(footerPages.length > 0 || affiliateEnabled) && (
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            {footerPages.map(p => (
-              <Link key={p.id} to={`${storeBasePath}/page/${p.slug}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                {p.title}
-              </Link>
-            ))}
-            {affiliateEnabled && (
-              <Link to={`${storeBasePath}/affiliates`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                Affiliate Program
-              </Link>
-            )}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          <Link to={`${storeBasePath}/blog`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Blog
+          </Link>
+          {footerPages.map(p => (
+            <Link key={p.id} to={`${storeBasePath}/page/${p.slug}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              {p.title}
+            </Link>
+          ))}
+          {affiliateEnabled && (
+            <Link to={`${storeBasePath}/affiliates`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Affiliate Program
+            </Link>
+          )}
+        </div>
 
         {/* Social profiles */}
         {socials.length > 0 && (
