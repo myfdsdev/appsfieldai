@@ -21,12 +21,12 @@ const mainNavLinks = [
 
 const profileMenuItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/auctions", label: "Live Auctions", icon: Gavel },
-  { to: "/requests", label: "My Requests", icon: ClipboardList },
-  { to: "/investments", label: "Investments", icon: TrendingUp },
+  { to: "/auctions", label: "Live Auctions", icon: Gavel, feature: "liveAuctionsAllowed" },
+  { to: "/requests", label: "My Requests", icon: ClipboardList, feature: "myRequestsAllowed" },
+  { to: "/investments", label: "Investments", icon: TrendingUp, feature: "investmentsAllowed" },
   { to: "/dashboard", label: "My Marketplaces", icon: Building2 },
   { to: "/my-account", label: "My Account", icon: ShoppingCart },
-  { to: "/vendor/dashboard", label: "Vendor Management", icon: Settings },
+  { to: "/vendor/dashboard", label: "Vendor Management", icon: Settings, feature: "vendorManagementAllowed" },
   { to: "/pricing", label: "Plans", icon: Package },
 ];
 
@@ -63,6 +63,16 @@ export default function Topbar() {
   }, []);
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+
+  // Resolve the user's plan to gate paid features in the profile menu.
+  const { data: userPlan = null } = useQuery({
+    queryKey: ["userPlan", user?.planId],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: user.planId }).then((r) => r[0] || null),
+    enabled: !!user?.planId,
+  });
+  const visibleProfileItems = profileMenuItems.filter(
+    (item) => !item.feature || isAdmin || userPlan?.[item.feature]
+  );
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/80 backdrop-blur-xl">
@@ -129,7 +139,7 @@ export default function Topbar() {
                       </div>
                     </div>
 
-                    {profileMenuItems.map(({ to, label, icon: Icon }) => (
+                    {visibleProfileItems.map(({ to, label, icon: Icon }) => (
                       <button key={to} onClick={() => { setProfileOpen(false); navigate(to); }}
                         className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
                         <Icon className="w-4 h-4" /> {label}
@@ -190,7 +200,7 @@ export default function Topbar() {
             <p className="px-4 py-1 text-[10px] uppercase text-muted-foreground tracking-wider">Account</p>
             {isAuthenticated && user ? (
               <>
-                {profileMenuItems.map(({ to, label, icon: Icon }) => (
+                {visibleProfileItems.map(({ to, label, icon: Icon }) => (
                   <NavLink key={to} to={to} onClick={() => setMobileOpen(false)}
                     className={({ isActive }) => cn("flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors", isActive ? "text-orange-400 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")}>
                     <Icon className="w-4 h-4" /> {label}
