@@ -1,0 +1,64 @@
+{
+  "name": "StoreBlog",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace this blog post belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Blog post title (H1)"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique slug within the marketplace"
+    },
+    "focusKeyword": {
+      "type": "string",
+      "description": "Primary SEO keyword the post targets"
+    },
+    "metaTitle": {
+      "type": "string",
+      "description": "SEO meta title (<title> tag)"
+    },
+    "metaDescription": {
+      "type": "string",
+      "description": "SEO meta description"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Secondary keywords / tags for the post"
+    },
+    "excerpt": {
+      "type": "string",
+      "description": "Short summary shown in listings and social cards"
+    },
+    "coverImageUrl": {
+      "type": "string",
+      "description": "Hero cover image for the post"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full blog body in Markdown"
+    },
+    "isPublished": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the post is publicly visible"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order in the blog index"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "title",
+    "slug"
+  ]
+}

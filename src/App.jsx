@@ -39,6 +39,8 @@ import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import StorePage from '@/pages/StorePage';
 import StoreCustomPage from '@/pages/StoreCustomPage';
+import StoreBlogIndex from '@/pages/StoreBlogIndex';
+import StoreBlogPost from '@/pages/StoreBlogPost';
 import StoreDashboard from '@/pages/StoreDashboard';
 import StoreAffiliatePage from '@/pages/StoreAffiliatePage';
 import { getStoreKeyFromHost, getCustomDomainFromHost } from '@/lib/storeHost';
@@ -52,6 +54,8 @@ const StoreSubdomainApp = () => (
   <Routes>
     <Route path="/saas/:id" element={<StorePage />} />
     <Route path="/page/:pageSlug" element={<StoreCustomPage />} />
+    <Route path="/blog" element={<StoreBlogIndex />} />
+    <Route path="/blog/:blogSlug" element={<StoreBlogPost />} />
     <Route path="/affiliates" element={<StoreAffiliatePage />} />
     <Route path="/dashboard" element={<StoreDashboard />} />
     <Route path="*" element={<StorePage />} />
@@ -102,6 +106,8 @@ const AuthenticatedApp = () => {
       <Route path="/store/:slug/dashboard" element={<StoreDashboard />} />
       <Route path="/store/:slug/affiliates" element={<StoreAffiliatePage />} />
       <Route path="/store/:slug/page/:pageSlug" element={<StoreCustomPage />} />
+      <Route path="/store/:slug/blog" element={<StoreBlogIndex />} />
+      <Route path="/store/:slug/blog/:blogSlug" element={<StoreBlogPost />} />
       {/* Public routes — accessible without login */}
       <Route element={<DashboardLayout />}>
         <Route path="/marketplace" element={<Marketplace />} />

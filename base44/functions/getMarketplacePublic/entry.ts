@@ -25,12 +25,13 @@ Deno.serve(async (req) => {
 
     const m = marketplace[0];
 
-    const [software, categories, reviews, customPages, testimonials] = await Promise.all([
+    const [software, categories, reviews, customPages, testimonials, blogs] = await Promise.all([
       base44.asServiceRole.entities.SaaSListing.filter({ marketplaceId: m.id, status: 'active' }, '-created_date', 50),
       base44.asServiceRole.entities.SoftwareCategory.filter({ marketplaceId: m.id }),
       base44.asServiceRole.entities.Review.filter({ marketplaceId: m.id, status: 'approved' }, '-created_date', 20),
       base44.asServiceRole.entities.CustomPage.filter({ marketplaceId: m.id, isPublished: true }, 'sortOrder'),
       base44.asServiceRole.entities.Testimonial.filter({ marketplaceId: m.id, isPublished: true }, 'sortOrder'),
+      base44.asServiceRole.entities.StoreBlog.filter({ marketplaceId: m.id, isPublished: true }, 'sortOrder'),
     ]);
 
     // Resolve seller display name for each listing:
@@ -92,6 +93,7 @@ Deno.serve(async (req) => {
       reviews,
       customPages,
       testimonials,
+      blogs,
       totalSoftware: software.length,
     });
   } catch (error) {
