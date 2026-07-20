@@ -8,6 +8,32 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.39';
 const slugify = (s: string) =>
   String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70);
 
+// Download a generated image and re-upload it to Cloudflare R2 so it's served
+// from the store's own R2 domain instead of media.base44.com. Best-effort:
+// falls back to the original URL if anything fails.
+async function mirrorToR2(base44: any, srcUrl: string, slug: string): Promise<string> {
+  try {
+    const resp = await fetch(srcUrl);
+    if (!resp.ok) return srcUrl;
+    const contentType = resp.headers.get('content-type') || 'image/png';
+    const buf = new Uint8Array(await resp.arrayBuffer());
+    let binary = '';
+    for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]);
+    const base64 = btoa(binary);
+    const ext = (contentType.split('/')[1] || 'png').split(';')[0];
+    const up = await base44.functions.invoke('uploadToR2', {
+      fileData: base64,
+      fileName: `blog-${slug || 'cover'}.${ext}`,
+      contentType,
+      campaignId: 'blog-cover',
+    });
+    return up?.data?.fileUrl || srcUrl;
+  } catch (e) {
+    console.error('mirrorToR2 failed:', (e as Error).message);
+    return srcUrl;
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -133,7 +159,10 @@ Also produce SEO metadata: an SEO meta title (<= 60 chars), a meta description (
         const img = await base44.integrations.Core.GenerateImage({
           prompt: g.coverImagePrompt || `Modern, clean blog cover illustration about ${topic} for a SaaS deals marketplace. Vibrant, professional, no text.`,
         });
-        coverImageUrl = img?.url || '';
+        const generatedUrl = img?.url || '';
+        coverImageUrl = generatedUrl
+          ? await mirrorToR2(base44, generatedUrl, slugify(g.slug || g.title || topic))
+          : '';
       } catch (e) {
         console.error('blog cover image failed:', (e as Error).message);
       }
