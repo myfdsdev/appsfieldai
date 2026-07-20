@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Search, Newspaper, Wand2, Loader2, Pencil, Trash2, ExternalLink, TrendingUp, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import BlogEditor from "@/components/marketplace/BlogEditor";
+import SeoRankFasterNote from "@/components/marketplace/SeoRankFasterNote";
 
 const INTENT_COLORS = {
   transactional: "bg-emerald-500/10 text-emerald-400",
@@ -80,6 +81,8 @@ export default function SeoGrowthManager({ marketplace }) {
 
   return (
     <div className="space-y-6">
+      <SeoRankFasterNote />
+
       {/* Keyword Generator */}
       <div className="rounded-2xl border border-border/40 bg-card/60 p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
