@@ -244,11 +244,23 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
     setPlanSubmitting(false);
   };
 
+  // Call the chat function, retrying once on a transient failure/timeout before
+  // giving up — the AI turn can take a few seconds, so a single hiccup shouldn't
+  // burn the visitor's message.
+  const invokeChat = async (history) => {
+    try {
+      return await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
+    } catch (e) {
+      await new Promise((r) => setTimeout(r, 800));
+      return await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
+    }
+  };
+
   const sendTurn = async (history) => {
     setThinking(true);
     setSuggestions([]);
     try {
-      const res = await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
+      const res = await invokeChat(history);
       const reply = res.data?.reply;
       const actions = res.data?.actions || [];
       // Build the assistant message WITH its card/plan already attached, so the
