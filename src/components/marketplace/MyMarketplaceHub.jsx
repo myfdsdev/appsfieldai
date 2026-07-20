@@ -539,6 +539,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
             </div>
           )}
 
+          {/* SEO & GROWTH */}
+          {activeTab === "seo_growth" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">SEO & Growth</h2>
+              <p className="text-sm text-muted-foreground">Generate SEO keywords and publish keyword-optimized blog posts that bring organic Google traffic to your store.</p></div>
+              <SeoGrowthManager marketplace={marketplace} />
+            </div>
+          )}
+
           {/* CUSTOMERS */}
           {activeTab === "customers" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Customers</h2>
