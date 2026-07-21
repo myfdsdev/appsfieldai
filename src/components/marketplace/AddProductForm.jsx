@@ -338,6 +338,40 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
               </div>
             </div>
 
+            {/* Custom Button — redirect URL instead of the default Buy button */}
+            <div className="p-4 rounded-xl border-2 border-orange-500/30 bg-orange-500/5">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.customButton.enabled} onChange={e => update("customButton", { ...form.customButton, enabled: e.target.checked })} className="accent-orange-500 w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <MousePointerClick className="w-4 h-4 text-orange-400" />
+                  <div>
+                    <p className="text-sm font-semibold">Custom Button (redirect to a URL)</p>
+                    <p className="text-[10px] text-muted-foreground">Replace the default Buy button with your own button that opens any link — an external offer or landing page</p>
+                  </div>
+                </div>
+              </label>
+
+              {form.customButton.enabled && (
+                <div className="space-y-3 mt-3 pt-3 border-t border-orange-500/20">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Button Label</label>
+                    <Input value={form.customButton.label} onChange={e => update("customButton", { ...form.customButton, label: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="e.g. Check Our Offer" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground flex items-center gap-1.5"><Link2 className="w-3 h-3" /> Redirect URL</label>
+                    <Input value={form.customButton.url} onChange={e => update("customButton", { ...form.customButton, url: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://yourbrand.com/offer" />
+                  </div>
+                  <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                    <input type="checkbox" checked={form.customButton.openInNewTab} onChange={e => update("customButton", { ...form.customButton, openInNewTab: e.target.checked })} className="accent-orange-500 w-4 h-4" />
+                    <div>
+                      <p className="text-sm font-medium">Open in a new tab</p>
+                      <p className="text-[10px] text-muted-foreground">Keep the store open when the button is clicked</p>
+                    </div>
+                  </label>
+                </div>
+              )}
+            </div>
+
             {/* Pricing */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -420,43 +454,6 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
               </div>
             </div>
 
-            {/* Custom Button — redirect URL instead of the default Buy button */}
-            <div className="pt-2 border-t border-border/30">
-              <div className="flex items-center gap-2 mb-1">
-                <MousePointerClick className="w-4 h-4 text-orange-400" />
-                <p className="text-sm font-semibold">Custom Button</p>
-              </div>
-              <p className="text-[11px] text-muted-foreground mb-3">
-                Replace the default Buy button on the store with your own button that redirects to any URL (e.g. an external offer or landing page).
-              </p>
-              <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
-                <input type="checkbox" checked={form.customButton.enabled} onChange={e => update("customButton", { ...form.customButton, enabled: e.target.checked })} className="accent-orange-500 w-4 h-4" />
-                <div>
-                  <p className="text-sm font-medium">Use a custom redirect button</p>
-                  <p className="text-[10px] text-muted-foreground">When on, this product's main button opens your URL instead of starting checkout</p>
-                </div>
-              </label>
-
-              {form.customButton.enabled && (
-                <div className="space-y-3 mt-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground">Button Label</label>
-                    <Input value={form.customButton.label} onChange={e => update("customButton", { ...form.customButton, label: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="e.g. Check Our Offer" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground flex items-center gap-1.5"><Link2 className="w-3 h-3" /> Redirect URL</label>
-                    <Input value={form.customButton.url} onChange={e => update("customButton", { ...form.customButton, url: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://yourbrand.com/offer" />
-                  </div>
-                  <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
-                    <input type="checkbox" checked={form.customButton.openInNewTab} onChange={e => update("customButton", { ...form.customButton, openInNewTab: e.target.checked })} className="accent-orange-500 w-4 h-4" />
-                    <div>
-                      <p className="text-sm font-medium">Open in a new tab</p>
-                      <p className="text-[10px] text-muted-foreground">Keep the store open when the button is clicked</p>
-                    </div>
-                  </label>
-                </div>
-              )}
-            </div>
           </>
         )}
 
