@@ -87,7 +87,13 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
     toast.success("Affiliate link copied!");
     setTimeout(() => setLinkCopied(false), 1500);
   };
-  const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, price = 0, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
+  const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, price = 0, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType, customButton } = listing || {};
+  // When the owner sets a custom redirect button, it replaces the default Buy button.
+  const hasCustomButton = customButton?.enabled && customButton?.url;
+  const openCustomButton = () => {
+    if (customButton.openInNewTab === false) window.location.href = customButton.url;
+    else window.open(customButton.url, "_blank", "noopener,noreferrer");
+  };
   const thumbnail = logo || screenshots?.[0];
   const displaySeller = resolvedSellerName || sellerName;
   const title = softwareName || "Untitled";
@@ -230,7 +236,16 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
 
         {/* Buttons */}
         {/* Store context (cart enabled): single-purchase → Add to Cart + Buy Now; group deals → Reserve. */}
-        {onAddToCart || onBuyNow ? (
+        {hasCustomButton ? (
+          <div className="flex gap-2 pt-1 mt-auto">
+            <Button size="sm" onClick={openCustomButton} disabled={isSold} className={primaryBtnClass} style={primaryBtnStyle}>
+              <ExternalLink className="w-3.5 h-3.5" /> {customButton.label || "Learn More"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className={`${btnShape} text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground`}>
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+          </div>
+        ) : onAddToCart || onBuyNow ? (
           <div className="flex gap-2 pt-1 mt-auto">
             {dealType !== "single_purchase" ? (
               <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className={primaryBtnClass} style={primaryBtnStyle}>

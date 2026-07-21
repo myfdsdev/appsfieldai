@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Package, DollarSign, Image, Rocket, Save, Plus, X,
-  Clock, Users, ShoppingCart, Layers, Info, KeyRound, Link2, Share2
+  Clock, Users, ShoppingCart, Layers, Info, KeyRound, Link2, Share2, MousePointerClick
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     refundPolicy: "",
     redemptionInstructions: "",
     delivery: { accessUrl: "", instructions: "" },
+    customButton: { enabled: false, label: "", url: "", openInNewTab: true },
     affiliateEnabled: false,
     affiliateCommissionRate: 30,
     affiliateCommissionRule: "",
@@ -117,6 +118,12 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         delivery: {
           accessUrl: listing.delivery?.accessUrl || "",
           instructions: listing.delivery?.instructions || "",
+        },
+        customButton: {
+          enabled: listing.customButton?.enabled || false,
+          label: listing.customButton?.label || "",
+          url: listing.customButton?.url || "",
+          openInNewTab: listing.customButton?.openInNewTab ?? true,
         },
         affiliateEnabled: listing.affiliateEnabled || false,
         affiliateCommissionRate: listing.affiliateCommissionRate ?? 30,
@@ -411,6 +418,44 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                 <label className="text-xs text-muted-foreground">Growth Rate (%)</label>
                 <Input type="number" value={form.growthRate} onChange={e => update("growthRate", parseFloat(e.target.value) || 0)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" />
               </div>
+            </div>
+
+            {/* Custom Button — redirect URL instead of the default Buy button */}
+            <div className="pt-2 border-t border-border/30">
+              <div className="flex items-center gap-2 mb-1">
+                <MousePointerClick className="w-4 h-4 text-orange-400" />
+                <p className="text-sm font-semibold">Custom Button</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Replace the default Buy button on the store with your own button that redirects to any URL (e.g. an external offer or landing page).
+              </p>
+              <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                <input type="checkbox" checked={form.customButton.enabled} onChange={e => update("customButton", { ...form.customButton, enabled: e.target.checked })} className="accent-orange-500 w-4 h-4" />
+                <div>
+                  <p className="text-sm font-medium">Use a custom redirect button</p>
+                  <p className="text-[10px] text-muted-foreground">When on, this product's main button opens your URL instead of starting checkout</p>
+                </div>
+              </label>
+
+              {form.customButton.enabled && (
+                <div className="space-y-3 mt-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Button Label</label>
+                    <Input value={form.customButton.label} onChange={e => update("customButton", { ...form.customButton, label: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="e.g. Check Our Offer" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground flex items-center gap-1.5"><Link2 className="w-3 h-3" /> Redirect URL</label>
+                    <Input value={form.customButton.url} onChange={e => update("customButton", { ...form.customButton, url: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://yourbrand.com/offer" />
+                  </div>
+                  <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                    <input type="checkbox" checked={form.customButton.openInNewTab} onChange={e => update("customButton", { ...form.customButton, openInNewTab: e.target.checked })} className="accent-orange-500 w-4 h-4" />
+                    <div>
+                      <p className="text-sm font-medium">Open in a new tab</p>
+                      <p className="text-[10px] text-muted-foreground">Keep the store open when the button is clicked</p>
+                    </div>
+                  </label>
+                </div>
+              )}
             </div>
           </>
         )}
