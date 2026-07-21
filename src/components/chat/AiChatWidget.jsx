@@ -54,15 +54,15 @@ export default function AiChatWidget() {
       base44.auth.redirectToLogin();
       return;
     }
-    const existing = await base44.agents.listConversations({ agent_name: "listing_bot" });
+    const existing = await base44.agents.listConversations({ agent_name: "appsfield_help_agent" });
     if (existing.length > 0) {
       const convo = await base44.agents.getConversation(existing[0].id);
       setConversation(convo);
       setMessages(convo.messages || []);
     } else {
       const convo = await base44.agents.createConversation({
-        agent_name: "listing_bot",
-        metadata: { name: "AI Assistant", description: "Chat with SaaSShare assistant" },
+        agent_name: "appsfield_help_agent",
+        metadata: { name: "AppsField Help Agent", description: "Get help using the app's features" },
       });
       setConversation(convo);
     }
@@ -105,9 +105,9 @@ export default function AiChatWidget() {
   };
 
   const quickPrompts = [
-    "What listings are available?",
-    "How does bidding work?",
-    "How to list my SaaS?",
+    "How do I set up a custom domain?",
+    "How do I enable PayPal payments?",
+    "How do I configure the Deal Maker agent?",
   ];
 
   return (
@@ -145,8 +145,8 @@ export default function AiChatWidget() {
               <div className="flex items-center gap-2.5">
                 <img src={MASCOT_IMAGE} alt="" className="w-8 h-8 object-contain" />
                 <div>
-                  <h3 className="text-sm font-semibold">AI Assistant</h3>
-                  <p className="text-[10px] text-muted-foreground">Ask me anything about SaaS listings</p>
+                  <h3 className="text-sm font-semibold">AppsField Help Agent</h3>
+                  <p className="text-[10px] text-muted-foreground">Help with your app's features & settings</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setOpen(false)}>
