@@ -66,12 +66,32 @@ export default function UserManager() {
   const openEdit = (u) => { setEditUser(u); setEditForm({ full_name: u.full_name || "", role: u.role || "user", planId: u.planId || "" }); };
   const handleEditSave = async () => {
     if (!editUser) return;
+    const planChanged = (editForm.planId || "") !== (editUser.planId || "");
     await base44.entities.User.update(editUser.id, {
       full_name: editForm.full_name,
       role: editForm.role,
       planId: editForm.planId || null,
     });
     queryClient.invalidateQueries({ queryKey: ["allUsers"] });
+
+    // Notify the user by email when their plan is newly assigned/changed.
+    if (planChanged && editForm.planId && editUser.email) {
+      const planLabel = allPlans.find(p => p.id === editForm.planId)?.name || "your new plan";
+      base44.functions.sendEmail({
+        to: editUser.email,
+        subject: `Your plan has been updated to ${planLabel}`,
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a">
+            <h2 style="color:#f97316;margin-bottom:8px">Your plan is now active 🎉</h2>
+            <p>Hi ${editForm.full_name || "there"},</p>
+            <p>Your account has been upgraded to the <strong>${planLabel}</strong> plan. All the features included in this plan are now available on your dashboard.</p>
+            <p style="margin-top:24px">Log in to start using your new plan.</p>
+            <p style="color:#888;font-size:12px;margin-top:32px">If you have any questions, just reply to this email.</p>
+          </div>
+        `,
+      }).catch(() => {});
+    }
+
     setEditUser(null);
     toast.success(`User updated: ${editForm.full_name || editUser.email}`);
   };
