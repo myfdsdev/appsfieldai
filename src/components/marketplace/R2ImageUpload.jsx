@@ -11,6 +11,13 @@ export default function R2ImageUpload({ value, onChange, campaignId = "store-ass
   const isVideo = accept.includes("video");
   const defaultTab = isVideo ? "video" : "image";
 
+  // Detect a YouTube URL and pull its video ID for a thumbnail preview
+  const youtubeId = (() => {
+    if (!value) return null;
+    const m = value.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    return m ? m[1] : null;
+  })();
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -31,7 +38,9 @@ export default function R2ImageUpload({ value, onChange, campaignId = "store-ass
       </div>
       {value && (
         <div className="relative inline-block">
-          {isVideo ? (
+          {youtubeId ? (
+            <img src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`} alt="YouTube preview" className="h-16 rounded-lg border border-border/30 object-cover bg-secondary/30" />
+          ) : isVideo ? (
             <video src={value} className="h-16 rounded-lg border border-border/30 object-contain bg-secondary/30" muted />
           ) : (
             <img src={value} alt="preview" className="h-16 rounded-lg border border-border/30 object-contain bg-secondary/30" />
