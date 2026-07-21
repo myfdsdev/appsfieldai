@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import CustomBannerEditor from "@/components/marketplace/CustomBannerEditor";
 import CustomCodeEditor from "@/components/marketplace/CustomCodeEditor";
 import SeoGrowthManager from "@/components/marketplace/SeoGrowthManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
+import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
 import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
 import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
@@ -90,6 +91,7 @@ const NAV_GROUPS = [
   {
     label: "Store", items: [
       { id: "domain", label: "Custom Domain", icon: Globe },
+      { id: "payments", label: "Payment Settings", icon: CreditCard },
       { id: "email", label: "Email Settings", icon: Mail },
       { id: "store_settings", label: "Marketplace Settings", icon: Settings },
     ]
@@ -576,6 +578,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
               <div><h2 className="text-lg font-display font-bold">Custom Domain</h2>
               <p className="text-sm text-muted-foreground">Connect your own domain or use a free subdomain.</p></div>
               <DomainManager marketplace={marketplace} onUpdate={() => queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] })} />
+            </div>
+          )}
+
+          {/* PAYMENT SETTINGS */}
+          {activeTab === "payments" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Payment Settings</h2>
+              <p className="text-sm text-muted-foreground">Accept payments on your store via PayPal or Cash on Delivery.</p></div>
+              <PaymentSettingsManager marketplace={marketplace} />
             </div>
           )}
 
