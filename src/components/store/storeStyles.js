@@ -228,6 +228,48 @@ export const STORE_STYLES = [
     sectionTitleClass: "text-2xl sm:text-3xl font-bold tracking-tight",
     preview: { bg: "linear-gradient(135deg,#0f172a,#334155)", font: "'IBM Plex Sans',sans-serif" },
   },
+  {
+    slug: "nexus",
+    name: "Nexus",
+    tagline: "Productized services — clean white, violet→fuchsia gradients",
+    headingFont: "'Inter', sans-serif",
+    bodyFont: "'Inter', sans-serif",
+    googleFonts: ["Inter:wght@300;400;500;600;700;800;900"],
+    // Full palette — bright white surface with violet/fuchsia accents.
+    palette: {
+      accent: "#7c3aed",
+      accentText: "#ffffff",
+      surface: "#ffffff",
+      card: "#ffffff",
+      cardBorder: "rgba(124,58,237,0.12)",
+      text: "#0f172a",
+    },
+    hero: {
+      size: "xl",
+      align: "center",
+      titleClass: "text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1]",
+      gradientTitle: true,
+      logoShape: "rounded-xl",
+      logoSize: "w-16 h-16",
+      badgePill: true,
+      ctaShape: "rounded-full",
+    },
+    products: {
+      layout: "card",
+      columns: "sm:grid-cols-2 lg:grid-cols-3",
+      gap: "gap-8",
+      radius: "rounded-2xl",
+      buttonShape: "rounded-xl",
+      imageHeight: "h-48",
+      cardBorder: "border border-gray-100",
+      cardBg: "bg-white",
+      cardHover: "hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#7c3aed]/10",
+      titleClass: "font-bold text-xl tracking-tight",
+      uppercaseTitle: false,
+    },
+    sectionTitleClass: "text-4xl sm:text-5xl font-extrabold tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#7c3aed,#d946ef)", font: "'Inter',sans-serif" },
+  },
 ];
 
 export const DEFAULT_STORE_STYLE = "aurora";
