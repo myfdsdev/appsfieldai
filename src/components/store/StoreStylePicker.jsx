@@ -9,11 +9,15 @@ import { STORE_STYLES } from "./storeStyles";
 // the admin under Marketplace Preset → Marketplace Templates).
 export default function StoreStylePicker({ value, onChange }) {
   const [thumbnails, setThumbnails] = useState({});
+  const [names, setNames] = useState({});
   const [preview, setPreview] = useState(null); // { name, url }
 
   useEffect(() => {
     base44.entities.StorePageDefault.filter({ key: "default" })
-      .then(rows => { if (rows?.[0]?.themeThumbnails) setThumbnails(rows[0].themeThumbnails); })
+      .then(rows => {
+        if (rows?.[0]?.themeThumbnails) setThumbnails(rows[0].themeThumbnails);
+        if (rows?.[0]?.themeNames) setNames(rows[0].themeNames);
+      })
       .catch(() => {});
   }, []);
 
@@ -23,6 +27,7 @@ export default function StoreStylePicker({ value, onChange }) {
         {STORE_STYLES.map((s) => {
           const selected = value === s.slug;
           const thumb = thumbnails[s.slug];
+          const displayName = names[s.slug] || s.name;
           return (
             <div
               key={s.slug}
@@ -42,7 +47,7 @@ export default function StoreStylePicker({ value, onChange }) {
                   <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-900">
                     <img
                       src={thumb}
-                      alt={`${s.name} preview`}
+                      alt={`${displayName} preview`}
                       className="w-full h-auto block object-top"
                     />
                   </div>
@@ -54,7 +59,7 @@ export default function StoreStylePicker({ value, onChange }) {
                         className="text-[13px] font-bold text-neutral-900 leading-tight"
                         style={{ fontFamily: s.preview.font, textAlign: s.hero.align === "left" ? "left" : "center" }}
                       >
-                        {s.name}
+                        {displayName}
                       </div>
                       <div
                         className="text-[8px] text-neutral-500 mt-0.5"
@@ -91,13 +96,13 @@ export default function StoreStylePicker({ value, onChange }) {
 
               <div className="p-3 bg-card flex items-end justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold">{s.name}</p>
+                  <p className="text-sm font-semibold">{displayName}</p>
                   <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{s.tagline}</p>
                 </div>
                 {thumb && (
                   <button
                     type="button"
-                    onClick={() => setPreview({ name: s.name, url: thumb })}
+                    onClick={() => setPreview({ name: displayName, url: thumb })}
                     className="shrink-0 inline-flex items-center gap-1.5 px-2.5 h-8 rounded-lg bg-violet-500/15 text-violet-400 border border-violet-500/30 text-xs font-medium hover:bg-violet-500/25 transition-colors"
                   >
                     <Eye className="w-3.5 h-3.5" />

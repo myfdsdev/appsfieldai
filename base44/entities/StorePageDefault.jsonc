@@ -61,6 +61,11 @@
       "type": "object",
       "description": "Preview thumbnail/full-page image URLs keyed by store style slug (aurora, monolith, neon, linen, carbon, nexus). Shown in the theme picker's full-width scrollable preview popup.",
       "additionalProperties": true
+    },
+    "themeNames": {
+      "type": "object",
+      "description": "Admin-editable display name overrides keyed by store style slug. When set, overrides the built-in theme name in the store style picker.",
+      "additionalProperties": true
     }
   },
   "required": [
