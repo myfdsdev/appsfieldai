@@ -255,7 +255,7 @@ export const STORE_STYLES = [
       ctaShape: "rounded-full",
     },
     products: {
-      layout: "card",
+      layout: "nexus",
       columns: "sm:grid-cols-2 lg:grid-cols-3",
       gap: "gap-8",
       radius: "rounded-2xl",

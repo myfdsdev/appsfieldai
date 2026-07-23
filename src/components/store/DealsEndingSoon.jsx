@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Flame, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import SaaSCard from "@/components/marketplace/SaaSCard";
+import NexusProductCard from "@/components/store/NexusProductCard";
 import { getStoreStyle } from "@/components/store/storeStyles";
 
 const STORE_DEFAULTS = { title: "Exclusive Deals 🔥", subtitle: "Grab these before the timer runs out" };
@@ -35,6 +36,7 @@ export default function DealsEndingSoon({ listings = [], styleSlug, onViewDetail
   const style = getStoreStyle(styleSlug);
   const pal = style.palette;
   const styleSpec = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont, accent: style.palette?.accent, accentText: style.palette?.accentText };
+  const isNexus = style.products?.layout === "nexus";
 
   // Deals with an upcoming end date, soonest first, max 6.
   const deals = listings
@@ -77,7 +79,11 @@ export default function DealsEndingSoon({ listings = [], styleSlug, onViewDetail
               <div className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-sm rounded-full px-2.5 py-1 border border-border/40">
                 <CountdownPill endDate={l.dealEndDate} />
               </div>
-              <SaaSCard listing={l} delay={0} styleSpec={styleSpec} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
+              {isNexus ? (
+                <NexusProductCard listing={l} delay={0} onViewDetails={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
+              ) : (
+                <SaaSCard listing={l} delay={0} styleSpec={styleSpec} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
+              )}
             </div>
           </motion.div>
         ))}
