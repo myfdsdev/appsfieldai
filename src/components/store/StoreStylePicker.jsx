@@ -37,45 +37,56 @@ export default function StoreStylePicker({ value, onChange }) {
               )}
 
               <button type="button" onClick={() => onChange(s.slug)} className="block w-full text-left">
-                {/* Mini mock */}
-                <div className="p-3 pb-0" style={{ background: s.preview.bg }}>
-                  <div className="rounded-t-lg bg-white/95 p-3">
-                    <div
-                      className="text-[13px] font-bold text-neutral-900 leading-tight"
-                      style={{ fontFamily: s.preview.font, textAlign: s.hero.align === "left" ? "left" : "center" }}
-                    >
-                      {s.name}
-                    </div>
-                    <div
-                      className="text-[8px] text-neutral-500 mt-0.5"
-                      style={{ textAlign: s.hero.align === "left" ? "left" : "center" }}
-                    >
-                      Your headline goes here
-                    </div>
-                    <div
-                      className={`mt-2 grid ${
-                        s.products.layout === "editorial"
-                          ? "grid-cols-1"
-                          : s.products.layout === "compact"
-                          ? "grid-cols-4"
-                          : "grid-cols-3"
-                      } gap-1`}
-                    >
-                      {Array.from({ length: s.products.layout === "editorial" ? 2 : s.products.layout === "compact" ? 4 : 3 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`bg-neutral-200 ${
-                            s.products.radius === "rounded-none"
-                              ? "rounded-none"
-                              : s.products.radius === "rounded-3xl"
-                              ? "rounded-lg"
-                              : "rounded"
-                          } ${s.products.layout === "editorial" ? "h-4" : "h-6"}`}
-                        />
-                      ))}
+                {thumb ? (
+                  /* Actual thumbnail — top-aligned so the header part is visible */
+                  <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-900">
+                    <img
+                      src={thumb}
+                      alt={`${s.name} preview`}
+                      className="w-full h-auto block object-top"
+                    />
+                  </div>
+                ) : (
+                  /* Fallback mini mock when no screenshot uploaded */
+                  <div className="p-3 pb-0" style={{ background: s.preview.bg }}>
+                    <div className="rounded-t-lg bg-white/95 p-3">
+                      <div
+                        className="text-[13px] font-bold text-neutral-900 leading-tight"
+                        style={{ fontFamily: s.preview.font, textAlign: s.hero.align === "left" ? "left" : "center" }}
+                      >
+                        {s.name}
+                      </div>
+                      <div
+                        className="text-[8px] text-neutral-500 mt-0.5"
+                        style={{ textAlign: s.hero.align === "left" ? "left" : "center" }}
+                      >
+                        Your headline goes here
+                      </div>
+                      <div
+                        className={`mt-2 grid ${
+                          s.products.layout === "editorial"
+                            ? "grid-cols-1"
+                            : s.products.layout === "compact"
+                            ? "grid-cols-4"
+                            : "grid-cols-3"
+                        } gap-1`}
+                      >
+                        {Array.from({ length: s.products.layout === "editorial" ? 2 : s.products.layout === "compact" ? 4 : 3 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`bg-neutral-200 ${
+                              s.products.radius === "rounded-none"
+                                ? "rounded-none"
+                                : s.products.radius === "rounded-3xl"
+                                ? "rounded-lg"
+                                : "rounded"
+                            } ${s.products.layout === "editorial" ? "h-4" : "h-6"}`}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </button>
 
               <div className="p-3 bg-card flex items-end justify-between gap-2">
