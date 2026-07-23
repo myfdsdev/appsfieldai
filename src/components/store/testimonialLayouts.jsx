@@ -165,6 +165,47 @@ export function NexusLayout({ items, style }) {
   );
 }
 
+// Appsfield — big average-rating panel on the left + 2-col verified-buyer cards
+export function AppsfieldLayout({ items, style }) {
+  const accent = "#FF6B00";
+  const avg = items.length
+    ? (items.reduce((s, r) => s + (r.rating || 5), 0) / items.length).toFixed(1)
+    : "5.0";
+  return (
+    <div className="flex flex-col md:flex-row gap-8 items-stretch">
+      {/* Rating panel */}
+      <div className="bg-[#F7F7F7] rounded-2xl p-8 border border-[#E5E7EB] flex flex-col items-center justify-center text-center w-full md:w-1/3">
+        <span className="text-6xl font-extrabold text-[#161616] mb-2" style={{ fontFamily: "'Outfit', sans-serif" }}>{avg}</span>
+        <div className="mb-3"><Stars rating={Math.round(Number(avg))} accent={accent} /></div>
+        <p className="text-sm font-bold text-[#161616] mb-1 uppercase tracking-wide" style={{ fontFamily: "'Outfit', sans-serif" }}>Average Rating</p>
+        <p className="text-xs text-[#6B7280] font-medium">Based on {items.length} verified {items.length === 1 ? "review" : "reviews"}</p>
+      </div>
+
+      {/* Reviews grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full md:w-2/3">
+        {items.slice(0, 4).map((r, i) => (
+          <motion.div key={r.id} {...fade(i)} className="bg-white p-6 rounded-xl border border-[#E5E7EB] shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <Avatar item={r} accent={accent} accentText="#fff" className="w-10 h-10 text-lg" />
+                <div>
+                  <h4 className="font-bold text-sm text-[#161616]" style={{ fontFamily: "'Outfit', sans-serif" }}>{r.name || "Anonymous"}</h4>
+                  {r.role && <p className="text-[11px] text-[#6B7280] font-medium uppercase tracking-wide">{r.role}</p>}
+                </div>
+              </div>
+              <Stars rating={r.rating} accent={accent} />
+            </div>
+            <p className="text-sm text-[#161616] mb-4 italic leading-relaxed flex-grow">"{r.content}"</p>
+            <div className="flex items-center gap-1 text-xs border-t border-gray-100 pt-3 text-[#179447] font-bold">
+              <Star className="w-4 h-4 fill-[#179447] text-[#179447]" /> Verified Buyer
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Carbon — vertical slider: active card centered & full, neighbors half-visible
 export function CarbonLayout({ items, style }) {
   const pal = style.palette;

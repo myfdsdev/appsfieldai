@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { getStoreStyle, HERO_SIZE_PADDING } from "./storeStyles";
 import StoreBinaseaHero from "./StoreBinaseaHero";
 import StoreNexusHero from "./StoreNexusHero";
+import StoreAppsfieldHero from "./StoreAppsfieldHero";
 
 // Full branded hero for a customer's store page. Adapts its size, font,
 // alignment, title treatment and shapes to the selected store style.
@@ -28,6 +29,11 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
   // Nexus uses a dedicated light-brand spotlight hero with trust row + dual CTAs.
   if (sections.storeStyle === "nexus") {
     return <StoreNexusHero marketplace={marketplace} sections={sections} listingsCount={listingsCount} />;
+  }
+
+  // Appsfield uses a dedicated auto-rotating 3-slide marketplace hero.
+  if (sections.storeStyle === "appsfield") {
+    return <StoreAppsfieldHero marketplace={marketplace} sections={sections} />;
   }
 
   const style = getStoreStyle(sections.storeStyle);

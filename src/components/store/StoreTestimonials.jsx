@@ -1,6 +1,6 @@
 import React from "react";
 import { getStoreStyle } from "@/components/store/storeStyles";
-import { AuroraLayout, BinaseaLayout, NeonLayout, NitroLayout, CarbonLayout, NexusLayout } from "@/components/store/testimonialLayouts";
+import { AuroraLayout, BinaseaLayout, NeonLayout, NitroLayout, CarbonLayout, NexusLayout, AppsfieldLayout } from "@/components/store/testimonialLayouts";
 
 const STORE_DEFAULTS = { title: "What Our Customers Say", subtitle: "Real reviews from real buyers" };
 
@@ -12,6 +12,7 @@ const LAYOUTS = {
   linen: NitroLayout,
   carbon: CarbonLayout,
   nexus: NexusLayout,
+  appsfield: AppsfieldLayout,
 };
 
 export default function StoreTestimonials({ testimonials = [], reviews = [], brandColor = "#f97316", title, subtitle, styleSlug }) {

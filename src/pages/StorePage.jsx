@@ -16,6 +16,7 @@ import { useCustomCode } from "@/hooks/useCustomCode";
 import StoreHero from "@/components/store/StoreHero";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCarbonNavbar from "@/components/store/StoreCarbonNavbar";
+import StoreAppsfieldNavbar from "@/components/store/StoreAppsfieldNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
@@ -245,8 +246,21 @@ export default function StorePage() {
       className="min-h-screen bg-background"
       style={{ fontFamily: storeStyle.bodyFont, ...(pal ? { background: pal.surface, color: pal.text || "#e8f0df" } : {}) }}
     >
-      {/* Store top nav — Carbon theme uses its own Binabox-style navbar */}
-      {sections.storeStyle === "carbon" ? (
+      {/* Store top nav — Carbon & Appsfield themes use their own navbars */}
+      {sections.storeStyle === "appsfield" ? (
+        <StoreAppsfieldNavbar
+          marketplace={marketplace}
+          sections={sections}
+          customer={customer}
+          cartCount={cart.count}
+          onOpenCart={() => setCartOpen(true)}
+          onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
+          affiliateEnabled={affiliateEnabled}
+          affiliatePath={`${storeBasePath}/affiliates`}
+          dashboardPath={`${storeBasePath}/dashboard`}
+          onLogout={logout}
+        />
+      ) : sections.storeStyle === "carbon" ? (
         <StoreCarbonNavbar
           marketplace={marketplace}
           sections={sections}

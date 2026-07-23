@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import SaaSCard from "@/components/marketplace/SaaSCard";
 import StoreEditorialCard from "@/components/store/StoreEditorialCard";
 import NexusProductCard from "@/components/store/NexusProductCard";
+import AppsfieldProductCard from "@/components/store/AppsfieldProductCard";
 import { getStoreStyle } from "@/components/store/storeStyles";
 
 const STORE_DEFAULTS = { title: "Once In A Lifetime Deals", subtitle: "Exclusive lifetime offers from this store" };
@@ -24,6 +25,7 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, st
 
   const isEditorial = p.layout === "editorial";
   const isNexus = p.layout === "nexus";
+  const isAppsfield = p.layout === "appsfield";
   const accent = style.palette?.accent;
 
   // Reference-style headline: last word highlighted in the style's accent color.
@@ -70,7 +72,19 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, st
       ) : (
         <div className={`grid grid-cols-1 ${p.columns} ${p.gap}`}>
           {filtered.map((l, i) =>
-            isNexus ? (
+            isAppsfield ? (
+              <AppsfieldProductCard
+                key={l.id}
+                listing={l}
+                delay={i * 0.04}
+                currency={currency}
+                onViewDetails={onViewDetails}
+                onReserveSpot={onReserveSpot || onViewDetails}
+                onAddToCart={onAddToCart}
+                onBuyNow={onBuyNow}
+                affiliateLink={affiliateLinkFor?.(l)}
+              />
+            ) : isNexus ? (
               <NexusProductCard
                 key={l.id}
                 listing={l}
