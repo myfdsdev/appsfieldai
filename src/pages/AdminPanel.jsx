@@ -16,6 +16,7 @@ import HookManagement from "@/components/admin/HookManagement";
 import JvzooManager from "@/components/admin/JvzooManager";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
+import MarketplaceThemeManager from "@/components/admin/MarketplaceThemeManager";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
@@ -613,6 +614,8 @@ export default function AdminPanel() {
         return <DFYProductManager />;
       case "mktpl_templates":
         return <StorePageDefaultManager />;
+      case "mktpl_theme":
+        return <MarketplaceThemeManager />;
       case "pricing_presets":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

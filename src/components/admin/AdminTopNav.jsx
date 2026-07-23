@@ -53,6 +53,7 @@ const NAV_GROUPS = [
       { id: "dfy_products",   label: "Product",              icon: ShoppingBag },
       { id: "hooks",          label: "Hook Management",      icon: Ticket },
       { id: "mktpl_templates",label: "Marketplace Templates",icon: Globe },
+      { id: "mktpl_theme",    label: "Marketplace Theme",    icon: Palette },
       { id: "pricing_presets",label: "Pricing Presets",      icon: Star },
       { id: "email_templates",label: "Email Templates",      icon: FileCode },
     ],

@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Globe, Save, Plus, Trash2, LayoutTemplate, Image as ImageIcon } from "lucide-react";
+import { Globe, Save, Plus, Trash2, LayoutTemplate } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
-import { STORE_STYLES } from "@/components/store/storeStyles";
 
 const EMPTY = {
   headerEnabled: true, headerTitle: "", headerSubtitle: "",
@@ -29,7 +27,6 @@ const TOGGLES = [
 export default function StorePageDefaultManager() {
   const [recordId, setRecordId] = useState(null);
   const [form, setForm] = useState(EMPTY);
-  const [thumbnails, setThumbnails] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -38,13 +35,10 @@ export default function StorePageDefaultManager() {
       if (rows?.[0]) {
         setRecordId(rows[0].id);
         setForm({ ...EMPTY, ...(rows[0].pageSections || {}) });
-        setThumbnails(rows[0].themeThumbnails || {});
       }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
-
-  const setThumb = (slug, url) => setThumbnails(t => ({ ...t, [slug]: url }));
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setBox = (i, k, v) => setForm(f => ({ ...f, customBoxes: f.customBoxes.map((b, idx) => idx === i ? { ...b, [k]: v } : b) }));
@@ -55,9 +49,9 @@ export default function StorePageDefaultManager() {
     setSaving(true);
     try {
       if (recordId) {
-        await base44.entities.StorePageDefault.update(recordId, { pageSections: form, themeThumbnails: thumbnails });
+        await base44.entities.StorePageDefault.update(recordId, { pageSections: form });
       } else {
-        const created = await base44.entities.StorePageDefault.create({ key: "default", pageSections: form, themeThumbnails: thumbnails });
+        const created = await base44.entities.StorePageDefault.create({ key: "default", pageSections: form });
         setRecordId(created.id);
       }
       toast.success("Default store page saved — new marketplaces will use it.");
@@ -119,28 +113,6 @@ export default function StorePageDefaultManager() {
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Theme preview thumbnails */}
-          <div className="pt-4 border-t border-border/30">
-            <div className="flex items-center gap-2 mb-1">
-              <ImageIcon className="w-4 h-4 text-violet-400" />
-              <label className="text-sm font-medium text-foreground">Marketplace Theme Previews</label>
-            </div>
-            <p className="text-[11px] text-muted-foreground mb-3">Upload a full-page screenshot for each theme. Store owners see a <span className="text-foreground font-medium">Preview</span> button on the theme in the picker that opens this image full-width and scrollable.</p>
-            <div className="space-y-3">
-              {STORE_STYLES.map(s => (
-                <div key={s.slug} className="p-3 rounded-xl bg-secondary/20">
-                  <p className="text-xs font-medium text-foreground mb-2">{s.name} <span className="text-muted-foreground font-normal">— {s.tagline}</span></p>
-                  <R2ImageUpload
-                    value={thumbnails[s.slug] || ""}
-                    onChange={(url) => setThumb(s.slug, url)}
-                    campaignId={`theme-preview-${s.slug}`}
-                    placeholder="Full-page screenshot URL"
-                  />
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="pt-3 border-t border-border/30 flex justify-end">
