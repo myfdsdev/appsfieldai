@@ -108,7 +108,6 @@ export default function NexusProductCard({
         <div className="mt-auto">
           <div className="flex items-baseline gap-1.5 mb-5">
             <span className="text-3xl font-extrabold tracking-tight">{cur}{fullPrice.toLocaleString()}</span>
-            <span className="text-sm text-slate-400 font-medium">/project</span>
           </div>
 
           <button
