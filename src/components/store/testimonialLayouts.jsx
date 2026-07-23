@@ -128,6 +128,43 @@ export function NitroLayout({ items, style }) {
   );
 }
 
+// Nexus — clean light 3-col white cards: gold stars, big quote glyph, italic
+// quote, avatar + name/role. Matches the productized-services reference.
+export function NexusLayout({ items, style }) {
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {items.slice(0, 6).map((r, i) => (
+        <motion.div
+          key={r.id}
+          {...fade(i)}
+          className="relative rounded-2xl bg-white border border-gray-100 shadow-sm p-7 overflow-hidden"
+        >
+          <span className="absolute top-4 right-5 font-serif text-6xl leading-none select-none" style={{ color: "#7c3aed", opacity: 0.12 }}>
+            &rdquo;
+          </span>
+          <div className="flex items-center gap-0.5 mb-4">
+            {Array.from({ length: 5 }).map((_, s) => (
+              <Star key={s} className="w-4 h-4" style={s < (r.rating || 0) ? { color: "#facc15", fill: "#facc15" } : { color: "rgba(0,0,0,0.12)" }} />
+            ))}
+          </div>
+          <p className="text-[15px] italic text-slate-600 leading-relaxed mb-6" style={{ fontFamily: style.bodyFont }}>
+            {r.content}
+          </p>
+          <div className="flex items-center gap-3 pt-1">
+            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 flex items-center justify-center font-bold text-white" style={{ background: "#7c3aed" }}>
+              {r.avatar ? <img src={r.avatar} alt={r.name} className="w-full h-full object-cover" /> : (r.name || "?")[0].toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-900">{r.name || "Anonymous"}</p>
+              {r.role && <p className="text-xs text-slate-400">{r.role}</p>}
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 // Carbon — vertical slider: active card centered & full, neighbors half-visible
 export function CarbonLayout({ items, style }) {
   const pal = style.palette;
