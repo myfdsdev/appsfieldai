@@ -56,6 +56,11 @@
           "type": "string"
         }
       }
+    },
+    "themeThumbnails": {
+      "type": "object",
+      "description": "Preview thumbnail/full-page image URLs keyed by store style slug (aurora, monolith, neon, linen, carbon, nexus). Shown in the theme picker's full-width scrollable preview popup.",
+      "additionalProperties": true
     }
   },
   "required": [
