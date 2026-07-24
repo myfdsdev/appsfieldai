@@ -101,12 +101,15 @@ Generate compelling, professional, conversion-focused content for this store's l
     const existing = marketplace.pageSections || {};
     const fullHeadline = [g.preHeadline, g.headline].filter(Boolean).join(' — ') || g.headline || storeName;
     const agent = g.agent || {};
+    // Default Deal Maker avatar — also used as the default hero side image.
+    const DEFAULT_DEAL_MAKER_AVATAR = 'http://cdn.appsfieldai.com/uploads/6a2402b3a9b98ed1e7bf2a17/deal-maker-avatar_1784889432609.png';
     const updatedPageSections = {
       ...existing,
       // Deal Maker sales agent — trained from the store description & catalog.
       dealMakerEnabled: true,
       dealMakerName: agent.name || existing.dealMakerName || 'Max',
       dealMakerTagline: agent.tagline || existing.dealMakerTagline || 'AI Deal Strategist',
+      dealMakerImageUrl: existing.dealMakerImageUrl || DEFAULT_DEAL_MAKER_AVATAR,
       dealMakerNiche: agent.niche || existing.dealMakerNiche || '',
       dealMakerGuarantee: agent.guarantee || existing.dealMakerGuarantee || '',
       dealMakerGreeting: agent.greeting || existing.dealMakerGreeting || '',
@@ -115,6 +118,7 @@ Generate compelling, professional, conversion-focused content for this store's l
       heroBadgeText: g.badge || existing.heroBadgeText || '',
       headerTitle: g.headline || existing.headerTitle || storeName,
       headerSubtitle: g.subheadline || existing.headerSubtitle || '',
+      heroSideImageUrl: existing.heroSideImageUrl || DEFAULT_DEAL_MAKER_AVATAR,
       heroCtaText: g.ctaText || existing.heroCtaText || 'Browse Deals',
       testimonialsEnabled: true,
       testimonialsTitle: existing.testimonialsTitle || 'What our customers say',
