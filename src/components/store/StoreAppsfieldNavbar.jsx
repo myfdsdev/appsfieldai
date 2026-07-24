@@ -9,6 +9,7 @@ import { useTheme } from "@/lib/ThemeContext";
 export default function StoreAppsfieldNavbar({
   marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAffiliate,
   affiliateEnabled = false, affiliatePath, cartCount = 0, onOpenCart, dashboardPath = "/dashboard",
+  searchQuery = "", onSearch,
 }) {
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -76,17 +77,23 @@ export default function StoreAppsfieldNavbar({
               </button>
             </div>
 
-            {/* Search (visual — focuses the deals search below) */}
-            <div className="hidden lg:flex flex-1 max-w-2xl">
-              <button
-                onClick={() => scrollTo("store-lifetime-deals")}
-                className="flex w-full border-2 border-[#E5E7EB] rounded-lg overflow-hidden transition hover:border-[#FF6B00] text-left"
-              >
+            {/* Search — filters the deals grid below in real time */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); scrollTo("store-lifetime-deals"); }}
+              className="hidden lg:flex flex-1 max-w-2xl"
+            >
+              <div className="no-global-input-style flex w-full border-2 border-[#E5E7EB] rounded-lg overflow-hidden transition focus-within:border-[#FF6B00]">
                 <div className="px-3 flex items-center bg-gray-50 text-[#6B7280]"><Search className="w-5 h-5" /></div>
-                <span className="w-full py-2.5 px-2 text-sm text-[#6B7280]">Search software, AI tools and lifetime deals</span>
-                <span className="bg-[#FF6B00] text-white px-6 font-semibold flex items-center text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>Search</span>
-              </button>
-            </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearch?.(e.target.value)}
+                  placeholder="Search software, AI tools and lifetime deals"
+                  className="w-full py-2.5 px-2 text-sm text-[#161616] placeholder:text-[#6B7280] outline-none border-0 focus:ring-0 bg-white"
+                />
+                <button type="submit" className="bg-[#FF6B00] text-white px-6 font-semibold flex items-center text-sm hover:bg-orange-700 transition" style={{ fontFamily: "'Outfit', sans-serif" }}>Search</button>
+              </div>
+            </form>
 
             {/* Actions */}
             <div className="flex items-center gap-3 sm:gap-5">

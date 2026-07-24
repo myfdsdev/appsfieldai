@@ -9,8 +9,12 @@ import { getStoreStyle } from "@/components/store/storeStyles";
 
 const STORE_DEFAULTS = { title: "Once In A Lifetime Deals", subtitle: "Exclusive lifetime offers from this store" };
 
-export default function OneInALifetimeDeals({ listings = [], title, subtitle, styleSlug, currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
-  const [search, setSearch] = useState("");
+export default function OneInALifetimeDeals({ listings = [], title, subtitle, styleSlug, currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor, searchQuery, onSearchChange }) {
+  const [internalSearch, setInternalSearch] = useState("");
+  // Controlled when a searchQuery prop is supplied (e.g. from the navbar search); otherwise self-managed.
+  const isControlled = searchQuery !== undefined;
+  const search = isControlled ? searchQuery : internalSearch;
+  const setSearch = (v) => (isControlled ? onSearchChange?.(v) : setInternalSearch(v));
   const style = getStoreStyle(styleSlug);
   // Merge the style's fonts + palette accent into the product spec so cards can apply them.
   const p = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont, accent: style.palette?.accent, accentText: style.palette?.accentText };
@@ -18,9 +22,15 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, st
   const filtered = listings.filter(l => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return (l.softwareName || "").toLowerCase().includes(q)
-      || (l.shortDescription || "").toLowerCase().includes(q)
-      || (l.category || "").toLowerCase().includes(q);
+    const haystack = [
+      l.softwareName,
+      l.shortDescription,
+      l.fullDescription,
+      l.category,
+      ...(Array.isArray(l.features) ? l.features : []),
+      ...(Array.isArray(l.tags) ? l.tags : []),
+    ].filter(Boolean).join(" ").toLowerCase();
+    return haystack.includes(q);
   });
 
   const isEditorial = p.layout === "editorial";

@@ -70,6 +70,7 @@ export default function StorePage() {
   const [notFound, setNotFound] = useState(false);
   const [viewDetailListing, setViewDetailListing] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
   const [accountPanel, setAccountPanel] = useState({ open: false, tab: "account" });
   // Approved affiliate applications for the logged-in customer → drives "Grab affiliate link" buttons.
@@ -259,6 +260,8 @@ export default function StorePage() {
           affiliatePath={`${storeBasePath}/affiliates`}
           dashboardPath={`${storeBasePath}/dashboard`}
           onLogout={logout}
+          searchQuery={searchQuery}
+          onSearch={setSearchQuery}
         />
       ) : sections.storeStyle === "carbon" ? (
         <StoreCarbonNavbar
@@ -338,6 +341,8 @@ export default function StorePage() {
               onAddToCart={handleAddToCart}
               onBuyNow={handleBuyNow}
               affiliateLinkFor={affiliateLinkFor}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           </div>
 
