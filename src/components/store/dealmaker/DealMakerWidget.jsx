@@ -439,7 +439,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            style={closing ? { pointerEvents: "none" } : undefined}
+            style={(closing || !open) ? { pointerEvents: "none" } : undefined}
             onAnimationComplete={() => { if (!open) setClosing(false); }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
