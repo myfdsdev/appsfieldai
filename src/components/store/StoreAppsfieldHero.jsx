@@ -61,13 +61,13 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
             </div>
           </div>
 
-          {/* Hero Side Image — placed at the top-right */}
+          {/* Hero Side Image — placed at the top-right, shown in full (no crop) */}
           {sideImage && (
-            <div className="w-full md:w-[42%] shrink-0 flex items-start justify-end p-6 md:p-8">
+            <div className="w-full md:w-[42%] shrink-0 flex items-center justify-center md:justify-end p-4 md:p-8">
               <img
                 src={sideImage}
                 alt=""
-                className="w-full h-44 md:h-64 object-cover rounded-xl shadow-lg"
+                className="max-h-56 md:max-h-80 w-auto object-contain drop-shadow-2xl"
               />
             </div>
           )}
