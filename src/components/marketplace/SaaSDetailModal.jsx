@@ -259,7 +259,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                   <div className="pr-6">
                     <h2 className="text-lg font-display font-bold leading-snug">{listing.softwareName}</h2>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <Badge variant="outline" className="text-[10px] border-border/40">{listing.category}</Badge>
+                      <Badge variant="outline" className="text-[10px] font-medium" style={pal ? { borderColor: `${pal.accent}55`, color: pal.text } : undefined}>{listing.category}</Badge>
                       <div className="flex items-center gap-1 text-xs">
                         <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                         <span className="font-medium">{listing.rating}</span>
