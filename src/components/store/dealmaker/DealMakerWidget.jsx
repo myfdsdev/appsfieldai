@@ -430,17 +430,15 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
         )}
       </AnimatePresence>
 
-      {/* Immersive full-page mode — the whole page dims, agent centered, floating chat */}
-      <AnimatePresence>
-        {open && (
+      {/* Immersive full-page mode — the whole page dims, agent centered, floating chat.
+          No exit animation / AnimatePresence so the overlay unmounts INSTANTLY on
+          close — a fading layer was lingering and intercepting clicks (ghost layer). */}
+      {open && (
           <motion.div
             key="dm-immersive"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            style={(closing || !open) ? { pointerEvents: "none" } : undefined}
-            onAnimationComplete={() => { if (!open) setClosing(false); }}
             className="fixed inset-0 z-[70] flex flex-col"
           >
             {/* Glassy dim — blurs & darkens the store page behind the chat */}
@@ -578,8 +576,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
               );
             })()}
           </motion.div>
-        )}
-      </AnimatePresence>
+      )}
     </>
   );
 }
