@@ -360,11 +360,11 @@ export default function StorePage() {
       {/* Custom Section */}
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} styleSlug={sections.storeStyle} />}
 
+      {/* FAQ — above the footer */}
+      {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={pal?.accent || brandColor} styleSlug={sections.storeStyle} />}
+
       {/* Footer */}
       {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} footerLogoUrl={sections.footerLogoUrl} socialLinks={sections.socialLinks} customPages={customPages} storeBasePath={storeBasePath} affiliateEnabled={affiliateEnabled} styleSlug={sections.storeStyle} />}
-
-      {/* FAQ — below the footer */}
-      {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={pal?.accent || brandColor} styleSlug={sections.storeStyle} />}
 
       <SaaSDetailModal
         listingId={viewDetailListing?.id}
