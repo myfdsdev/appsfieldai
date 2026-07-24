@@ -144,6 +144,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     trustBadges: marketplace?.pageSections?.trustBadges || [],
     footerEnabled: marketplace?.pageSections?.footerEnabled ?? true,
     footerText: marketplace?.pageSections?.footerText || "",
+    footerCopyright: marketplace?.pageSections?.footerCopyright ?? "Copyright © AppsfieldAI",
     footerLogoUrl: marketplace?.pageSections?.footerLogoUrl || "",
     dealMakerEnabled: marketplace?.pageSections?.dealMakerEnabled ?? true,
     dealMakerName: marketplace?.pageSections?.dealMakerName || "",
@@ -293,6 +294,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <SectionCard title="Footer" icon={PanelBottom}
                   enabled={pageForm.footerEnabled} onToggle={() => setPageForm(f => ({ ...f, footerEnabled: !f.footerEnabled }))}>
                   <div><label className="text-xs text-muted-foreground">Footer Text</label><Textarea value={pageForm.footerText} onChange={e => setPageForm(f => ({ ...f, footerText: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20 resize-none" placeholder="© 2025 Your Store. All rights reserved." /></div>
+                  <div><label className="text-xs text-muted-foreground">Footer Copyright Line (bottom bar — shown on all themes)</label><Input value={pageForm.footerCopyright} onChange={e => setPageForm(f => ({ ...f, footerCopyright: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Copyright © AppsfieldAI" /></div>
                   <div>
                     <label className="text-xs text-muted-foreground">Footer Logo (optional — falls back to store logo)</label>
                     <div className="mt-1"><R2ImageUpload value={pageForm.footerLogoUrl} onChange={url => setPageForm(f => ({ ...f, footerLogoUrl: url }))} campaignId="store-footer-logo" placeholder="https://..." /></div>

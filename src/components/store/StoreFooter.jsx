@@ -25,6 +25,8 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
   const brandColor = pal?.accent || marketplace?.branding?.primaryColor || "#f97316";
   const year = new Date().getFullYear();
   const defaultText = `© ${year} ${marketplace?.name || "Our Store"}. All rights reserved.`;
+  // Bottom copyright bar — customizable, shown on every theme. Defaults to AppsfieldAI.
+  const copyrightLine = (marketplace?.pageSections?.footerCopyright ?? "").trim() || "Copyright © AppsfieldAI";
   const footerPages = (customPages || []).filter(p => p.showInFooter);
   const logo = footerLogoUrl || marketplace?.branding?.logo;
   const socials = SOCIALS.filter(s => (socialLinks?.[s.key] || "").trim());
@@ -88,6 +90,13 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
             <a href={`mailto:${marketplace.supportEmail}`} className="text-xs text-muted-foreground hover:text-foreground">{marketplace.supportEmail}</a>
           )}
         </div>
+      </div>
+
+      {/* Bottom copyright bar — always shown, all themes */}
+      <div className="border-t border-border/40" style={pal ? { borderColor: pal.cardBorder } : undefined}>
+        <p className="max-w-7xl mx-auto px-6 py-4 text-center text-[11px] text-muted-foreground" style={{ fontFamily: style.bodyFont }}>
+          {copyrightLine}
+        </p>
       </div>
     </footer>
   );
