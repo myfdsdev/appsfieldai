@@ -39,8 +39,8 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
         {/* Full-card background */}
         <div className="absolute inset-0" style={{ ...bgStyle, opacity }} />
 
-        <div className="relative z-10 flex w-full h-[450px] md:h-[400px] flex-col md:flex-row items-stretch">
-          <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+        <div className="relative z-10 flex w-full min-h-[400px] flex-col md:flex-row items-stretch">
+          <div className="w-full md:flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
             <span className="inline-block px-3 py-1 bg-white rounded-full text-[10px] font-bold tracking-wider mb-4 border border-orange-200 self-start uppercase" style={{ color: "#FF6B00" }}>
               {badge}
             </span>
@@ -59,13 +59,13 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
             </div>
           </div>
 
-          {/* Hero Side Image — top-right feature image */}
+          {/* Hero Side Image — placed at the top-right */}
           {sideImage && (
-            <div className="w-full md:w-1/2 relative flex items-start justify-end p-6 md:p-8">
+            <div className="w-full md:w-[42%] shrink-0 flex items-start justify-end p-6 md:p-8">
               <img
                 src={sideImage}
                 alt=""
-                className="w-full h-40 md:h-full object-cover rounded-xl shadow-lg"
+                className="w-full h-44 md:h-64 object-cover rounded-xl shadow-lg"
               />
             </div>
           )}
