@@ -15,20 +15,20 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
   const cta = sections.heroCtaText || "Explore Exclusive Deals";
 
   // Background driven by Page Settings → Background (gradient / solid / image).
+  // Defaults to the store's cover image (headerImageUrl) when set, so the hero
+  // shows the cover instead of a plain color.
   const opacity = (sections.heroBgOpacity ?? 100) / 100;
-  let bgStyle = { backgroundColor: "#FFF7ED" }; // default warm cream
-  let fadeColor = "#FFF7ED";
+  let bgStyle = sections.headerImageUrl
+    ? { backgroundImage: `url(${sections.headerImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : { backgroundColor: "#FFF7ED" };
   if (sections.heroBgType === "solid" && sections.heroSolidColor) {
     bgStyle = { backgroundColor: sections.heroSolidColor };
-    fadeColor = sections.heroSolidColor;
   } else if (sections.heroBgType === "gradient" && (sections.heroGradientStart || sections.heroGradientEnd)) {
     const start = sections.heroGradientStart || "#FFF7ED";
     const end = sections.heroGradientEnd || "#FFEDD5";
     bgStyle = { background: `linear-gradient(135deg, ${start}, ${end})` };
-    fadeColor = start;
   } else if (sections.heroBgType === "image" && sections.headerImageUrl) {
     bgStyle = { backgroundImage: `url(${sections.headerImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
-    fadeColor = "#FFF7ED";
   }
 
   const scrollToDeals = () => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" });
@@ -38,6 +38,8 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
       <div className="relative rounded-2xl overflow-hidden shadow-sm border border-[#E5E7EB]">
         {/* Full-card background */}
         <div className="absolute inset-0" style={{ ...bgStyle, opacity }} />
+        {/* Light gradient scrim on the left so the dark text stays readable over a photo */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/50 to-transparent" />
 
         <div className="relative z-10 flex w-full min-h-[400px] flex-col md:flex-row items-stretch">
           <div className="w-full md:flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
