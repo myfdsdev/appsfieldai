@@ -390,9 +390,11 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
 
                   {/* Deal Timer */}
                   {!listing.noDayLimit && listing.dealEndDate && new Date(listing.dealEndDate) > new Date() && (
-                    <div className="rounded-xl bg-orange-500/5 border border-orange-500/20 p-2.5">
-                      <p className="text-[9px] text-orange-400 uppercase mb-1">Deal Ends In</p>
-                      <CountdownTimer endDate={listing.dealEndDate} />
+                    <div className="rounded-xl bg-yellow-400 border border-yellow-500 p-2.5 text-black">
+                      <p className="text-[9px] uppercase mb-1 font-bold text-black">Deal Ends In</p>
+                      <div className="[&_*]:!text-black">
+                        <CountdownTimer endDate={listing.dealEndDate} />
+                      </div>
                     </div>
                   )}
 
