@@ -14,21 +14,21 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
   const badge = sections.heroBadgeText || "Appsfield Exclusive";
   const cta = sections.heroCtaText || "Explore Exclusive Deals";
 
-  // Background driven by Page Settings → Background (gradient / solid / image).
-  // Defaults to the store's cover image (headerImageUrl) when set, so the hero
-  // shows the cover instead of a plain color.
+  // The cover image (headerImageUrl) is always shown as the hero background when
+  // set. Only when there's no cover image do we fall back to the configured
+  // gradient / solid background.
   const opacity = (sections.heroBgOpacity ?? 100) / 100;
-  let bgStyle = sections.headerImageUrl
-    ? { backgroundImage: `url(${sections.headerImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : { backgroundColor: "#FFF7ED" };
-  if (sections.heroBgType === "solid" && sections.heroSolidColor) {
+  let bgStyle;
+  if (sections.headerImageUrl) {
+    bgStyle = { backgroundImage: `url(${sections.headerImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
+  } else if (sections.heroBgType === "solid" && sections.heroSolidColor) {
     bgStyle = { backgroundColor: sections.heroSolidColor };
   } else if (sections.heroBgType === "gradient" && (sections.heroGradientStart || sections.heroGradientEnd)) {
     const start = sections.heroGradientStart || "#FFF7ED";
     const end = sections.heroGradientEnd || "#FFEDD5";
     bgStyle = { background: `linear-gradient(135deg, ${start}, ${end})` };
-  } else if (sections.heroBgType === "image" && sections.headerImageUrl) {
-    bgStyle = { backgroundImage: `url(${sections.headerImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
+  } else {
+    bgStyle = { backgroundColor: "#FFF7ED" };
   }
 
   const scrollToDeals = () => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" });
