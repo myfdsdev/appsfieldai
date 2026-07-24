@@ -9,9 +9,8 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
   const subtitle =
     sections.headerSubtitle ||
     "Get white label and reseller software deals designed for marketers, agencies and entrepreneurs.";
-  const heroImage =
-    sections.headerImageUrl ||
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80";
+  // Right-side feature image uses the dedicated Hero Side Image field.
+  const sideImage = sections.heroSideImageUrl;
   const badge = sections.heroBadgeText || "Appsfield Exclusive";
   const cta = sections.heroCtaText || "Explore Exclusive Deals";
 
@@ -37,9 +36,11 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="relative rounded-2xl overflow-hidden shadow-sm border border-[#E5E7EB]">
-        <div className="flex w-full h-[450px] md:h-[400px] flex-col md:flex-row items-center relative">
-          <div className="absolute inset-0" style={{ ...bgStyle, opacity }} />
-          <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center z-10">
+        {/* Full-card background */}
+        <div className="absolute inset-0" style={{ ...bgStyle, opacity }} />
+
+        <div className="relative z-10 flex w-full h-[450px] md:h-[400px] flex-col md:flex-row items-stretch">
+          <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
             <span className="inline-block px-3 py-1 bg-white rounded-full text-[10px] font-bold tracking-wider mb-4 border border-orange-200 self-start uppercase" style={{ color: "#FF6B00" }}>
               {badge}
             </span>
@@ -57,10 +58,17 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
               </button>
             </div>
           </div>
-          <div className="w-full md:w-1/2 h-48 md:h-full relative opacity-40 md:opacity-100 z-10">
-            <div className="absolute inset-0 bg-gradient-to-r to-transparent z-10 hidden md:block" style={{ backgroundImage: `linear-gradient(to right, ${fadeColor}, transparent)` }} />
-            <img src={heroImage} alt="" className="w-full h-full object-cover object-left" />
-          </div>
+
+          {/* Hero Side Image — top-right feature image */}
+          {sideImage && (
+            <div className="w-full md:w-1/2 relative flex items-start justify-end p-6 md:p-8">
+              <img
+                src={sideImage}
+                alt=""
+                className="w-full h-40 md:h-full object-cover rounded-xl shadow-lg"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
