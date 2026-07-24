@@ -275,11 +275,11 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
 
                   {/* Description */}
                   <div>
-                    <p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">About this SaaS</p>
+                    <p className="text-[11px] font-semibold uppercase mb-1" style={pal ? { color: pal.text, opacity: 0.55 } : undefined}>About this SaaS</p>
                     {listing.shortDescription && (
-                      <p className="text-sm font-medium text-foreground mb-1.5">{listing.shortDescription}</p>
+                      <p className="text-sm font-medium mb-1.5" style={pal ? { color: pal.text } : undefined}>{listing.shortDescription}</p>
                     )}
-                    <p className="text-sm text-muted-foreground leading-relaxed">{listing.fullDescription || "No description provided."}</p>
+                    <p className="text-sm leading-relaxed" style={pal ? { color: pal.text, opacity: 0.8 } : undefined}>{listing.fullDescription || "No description provided."}</p>
                   </div>
 
                   {/* What's Included — clear buyer policies */}
@@ -324,18 +324,18 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
 
                   {/* Financials */}
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
-                      <p className="text-[9px] text-muted-foreground uppercase">Revenue</p>
+                    <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
+                      <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Revenue</p>
                       <p className="text-xs font-display font-bold text-emerald-400">${listing.monthlyRevenue?.toLocaleString()}</p>
-                      <p className="text-[9px] text-muted-foreground">/mo</p>
+                      <p className="text-[9px]" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>/mo</p>
                     </div>
-                    <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
-                      <p className="text-[9px] text-muted-foreground uppercase">Profit</p>
+                    <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
+                      <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Profit</p>
                       <p className="text-xs font-display font-bold" style={{ color: accent || "#f79a1b" }}>${monthlyProfit.toLocaleString()}</p>
-                      <p className="text-[9px] text-muted-foreground">/mo</p>
+                      <p className="text-[9px]" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>/mo</p>
                     </div>
-                    <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
-                      <p className="text-[9px] text-muted-foreground uppercase">Full Price</p>
+                    <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
+                      <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Full Price</p>
                       <p className="text-xs font-display font-bold">${((listing.sharePrice || 0) * (listing.totalShares || 0)).toLocaleString()}</p>
                     </div>
                   </div>

@@ -35,7 +35,7 @@ export default function DealsEndingSoon({ listings = [], styleSlug, onViewDetail
   const scrollRef = useRef(null);
   const style = getStoreStyle(styleSlug);
   const pal = style.palette;
-  const styleSpec = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont, accent: style.palette?.accent, accentText: style.palette?.accentText };
+  const styleSpec = { ...style.products, headingFont: style.headingFont, bodyFont: style.bodyFont, accent: style.palette?.accent, accentText: style.palette?.accentText, text: style.palette?.text };
   const isNexus = style.products?.layout === "nexus";
 
   // Deals with an upcoming end date, soonest first, max 6.

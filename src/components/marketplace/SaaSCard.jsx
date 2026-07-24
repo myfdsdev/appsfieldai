@@ -72,6 +72,13 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
   // A style palette accent (e.g. Nitro's lime) recolors the primary CTAs.
   const accent = styleSpec?.accent;
   const accentText = styleSpec?.accentText || "#0a0f05";
+  const palText = styleSpec?.text;
+  // When a store style provides its own palette, drive the pricing boxes,
+  // category pill and muted text off it so they don't fall back to washed
+  // theme-token grays.
+  const boxStyle = accent ? { background: `${accent}12` } : undefined;
+  const mutedStyle = palText ? { color: palText, opacity: 0.6 } : undefined;
+  const priceColor = accent || "#f79a1b";
   // When an accent is set, drop the orange gradient and use a solid accent fill.
   const primaryBtnClass = accent
     ? `flex-1 ${btnShape} text-[11px] h-8 disabled:opacity-40 border-0 font-semibold`
@@ -174,7 +181,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
 
         {/* Category + Marketplace + Seller Row */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge variant="outline" className="text-[10px] border-border/40">{category}</Badge>
+          <Badge variant="outline" className="text-[10px] border-border/40" style={accent ? { borderColor: `${accent}55`, color: palText || accent } : undefined}>{category}</Badge>
           {marketplaceName && (
             <Badge variant="secondary" className="text-[10px] bg-violet-500/10 text-violet-400 border-violet-500/20">{marketplaceName}</Badge>
           )}
@@ -199,28 +206,28 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         {/* Pricing — fixed-height block so single-purchase & group-deal cards align */}
         <div className="space-y-3 min-h-[104px] flex flex-col justify-center">
           {dealType === "single_purchase" ? (
-            <div className="rounded-lg bg-secondary/40 p-3 text-center">
-              <p className="text-[10px] text-muted-foreground">Deal Price</p>
-              <p className="text-lg font-display font-bold text-[#f79a1b]">${fullPrice.toLocaleString()}</p>
+            <div className="rounded-lg bg-secondary/40 p-3 text-center" style={boxStyle}>
+              <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Deal Price</p>
+              <p className="text-lg font-display font-bold" style={{ color: priceColor }}>${fullPrice.toLocaleString()}</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="rounded-lg bg-secondary/40 p-2.5">
-                  <p className="text-[10px] text-muted-foreground">Full Price</p>
-                  <p className="text-sm font-display font-bold">${fullPrice.toLocaleString()}</p>
+                <div className="rounded-lg bg-secondary/40 p-2.5" style={boxStyle}>
+                  <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Full Price</p>
+                  <p className="text-sm font-display font-bold" style={palText ? { color: palText } : undefined}>${fullPrice.toLocaleString()}</p>
                 </div>
-                <div className="rounded-lg bg-secondary/40 p-2.5">
-                  <p className="text-[10px] text-muted-foreground">Per Spot</p>
-                  <p className="text-sm font-display font-bold text-[#f79a1b]">${sharePrice}</p>
+                <div className="rounded-lg bg-secondary/40 p-2.5" style={boxStyle}>
+                  <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Per Spot</p>
+                  <p className="text-sm font-display font-bold" style={{ color: priceColor }}>${sharePrice}</p>
                 </div>
               </div>
 
               {/* Spots Progress */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-muted-foreground">Spots filled</span>
-                  <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
+                  <span className="text-muted-foreground" style={mutedStyle}>Spots filled</span>
+                  <span className="font-medium" style={palText ? { color: palText } : undefined}>{soldShares}/{totalShares} <span className="text-muted-foreground" style={mutedStyle}>({sharesLeft} left)</span></span>
                 </div>
                 <Progress value={sharePercent} className="h-2 bg-[#2b2b2b] [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-amber-400" />
               </div>
@@ -229,7 +236,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         </div>
 
         {/* Revenue & Growth */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground" style={mutedStyle}>
           <span>+{growthRate}% growth</span>
           <span>${monthlyRevenue}/mo</span>
         </div>
