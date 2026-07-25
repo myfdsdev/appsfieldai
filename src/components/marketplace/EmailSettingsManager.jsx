@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Save, Server, Mail, Info } from "lucide-react";
+import { Save, Server, Mail, Info, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Template-mail definitions, one tab per transactional action.
@@ -17,6 +17,8 @@ const TEMPLATE_TABS = [
 export default function EmailSettingsManager({ marketplace }) {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testTo, setTestTo] = useState("");
   const [section, setSection] = useState("smtp"); // "smtp" | "templates"
   const [activeTpl, setActiveTpl] = useState("welcome");
 
@@ -57,6 +59,29 @@ export default function EmailSettingsManager({ marketplace }) {
     setSaving(false);
   };
 
+  const handleSendTest = async () => {
+    const dest = testTo.trim();
+    if (!isValidEmail(dest)) { toast.error("Enter a valid email address to send the test to."); return; }
+    const fe = form.fromEmail.trim();
+    if (fe && (!isValidEmail(fe) || isBlockedEmail(fe))) {
+      toast.error("Fix the From Email before sending a test."); return;
+    }
+    setTesting(true);
+    try {
+      const { data } = await base44.functions.sendStoreEmail({
+        marketplaceId: marketplace.id,
+        templateKey: "test",
+        to: dest,
+        testOverride: { fromName: form.fromName, fromEmail: form.fromEmail },
+      });
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Test email sent to ${dest} via ${data?.via === "smtp" ? "your SMTP server" : "the default sender"}.`);
+    } catch (err) {
+      toast.error(err?.message || "Failed to send test email.");
+    }
+    setTesting(false);
+  };
+
   const tpl = form.templates[activeTpl];
   const tplMeta = TEMPLATE_TABS.find(t => t.key === activeTpl);
 
@@ -95,6 +120,19 @@ export default function EmailSettingsManager({ marketplace }) {
               <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
                 Must be a valid <span className="font-medium text-foreground">custom domain email</span> (e.g. info@yourdomain.com). It cannot be an <span className="font-medium">appsfieldai.com</span> or <span className="font-medium">gmail.com</span> address. Leave empty to use your account's default sender.
               </p>
+            </div>
+          </div>
+
+          {/* Send test email */}
+          <div className="rounded-xl border border-border/30 bg-secondary/20 p-4">
+            <p className="text-sm font-semibold mb-1">Send a test email</p>
+            <p className="text-[11px] text-muted-foreground mb-3">Sends a quick test using this store's sender through your account's SMTP server.</p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input value={testTo} onChange={e => setTestTo(e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl flex-1" placeholder="you@example.com" type="email" />
+              <Button onClick={handleSendTest} disabled={testing} variant="outline" className="rounded-xl gap-1.5 shrink-0">
+                {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {testing ? "Sending…" : "Send Test"}
+              </Button>
             </div>
           </div>
         </div>

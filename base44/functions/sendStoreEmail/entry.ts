@@ -46,6 +46,10 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: 'Update on your project "{{project_title}}" — {{status_label}}',
     body: 'Hi {{customer_name}},\n\nHere is an update on your project "{{project_title}}" with {{store_name}}.\n\nCurrent status: {{status_label}}\n\n{{status_note}}\n\nWe\'ll keep you posted on the next steps.\n\n— {{store_name}}',
   },
+  test: {
+    subject: 'Test email from {{store_name}}',
+    body: 'This is a test email from {{store_name}}.\n\nIf you received this, your store email sender is configured correctly.\n\n— {{store_name}}',
+  },
 };
 
 function applyVars(text: string, vars: Record<string, string>): string {
@@ -266,7 +270,7 @@ function projectStatusHtml(opts: {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { marketplaceId, templateKey, to, vars, order, dashboardUrl } = await req.json();
+    const { marketplaceId, templateKey, to, vars, order, dashboardUrl, testOverride } = await req.json();
 
     if (!marketplaceId || !templateKey || !to) {
       return Response.json({ error: 'Missing marketplaceId, templateKey, or to' }, { status: 400 });
@@ -276,7 +280,9 @@ Deno.serve(async (req) => {
     const marketplace = mpList[0];
     if (!marketplace) return Response.json({ error: 'Store not found' }, { status: 404 });
 
-    const es = marketplace.emailSettings || {};
+    // testOverride lets the Sender settings screen preview the current (possibly
+    // unsaved) From Name / From Email without persisting them first.
+    const es = { ...(marketplace.emailSettings || {}), ...(testOverride || {}) };
     const tpl = es.templates?.[templateKey];
 
     // If the owner explicitly disabled this template, skip silently.
