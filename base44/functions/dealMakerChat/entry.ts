@@ -40,6 +40,24 @@ Deno.serve(async (req) => {
         status: 'new',
       });
 
+      // Also save this as a proper Project Request so the owner can track it in
+      // the dashboard (client info, requirements, status pipeline).
+      try {
+        await svcP.entities.ProjectRequest.create({
+          marketplaceId,
+          clientName: contact.name || '',
+          clientEmail: contact.email || '',
+          clientPhone: contact.phone || '',
+          businessType: contact.businessType || '',
+          painPoint: contact.painPoint || '',
+          projectTitle: plan.title || 'Custom software',
+          projectOverview: plan.overview || '',
+          features: featureLines,
+          conversationSummary: contact.summary || '',
+          status: 'new',
+        });
+      } catch (e) { console.error('project request create failed:', e); }
+
       const storeName = m.name || 'our store';
       const featuresHtml = featureLines.map((f: string) =>
         `<li style="margin-bottom:6px;color:#333;">${String(f).replace(/</g, '&lt;')}</li>`).join('');

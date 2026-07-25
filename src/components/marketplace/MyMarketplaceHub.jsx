@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard, FolderKanban, Contact
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,8 @@ import AffiliateApplicationsManager from "@/components/marketplace/AffiliateAppl
 import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
 import DealMakerReport from "@/components/marketplace/DealMakerReport";
 import DealMakerLeads from "@/components/marketplace/DealMakerLeads";
+import ProjectRequestsManager from "@/components/marketplace/ProjectRequestsManager";
+import ProjectClients from "@/components/marketplace/ProjectClients";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import StoreStylePicker from "@/components/store/StoreStylePicker";
 
@@ -79,6 +81,8 @@ const NAV_GROUPS = [
     label: "Products", items: [
       { id: "products", label: "Products", icon: Package },
       { id: "orders", label: "Orders", icon: ShoppingBag },
+      { id: "project_requests", label: "Project Requests", icon: FolderKanban },
+      { id: "project_clients", label: "Client Management", icon: Contact },
       { id: "categories", label: "Categories", icon: Tags },
       { id: "coupons", label: "Coupons", icon: Tag },
       { id: "deals", label: "Deals", icon: Zap },
@@ -492,6 +496,24 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
               <div><h2 className="text-lg font-display font-bold">Orders</h2>
               <p className="text-sm text-muted-foreground">Store orders placed through the cart and checkout.</p></div>
               <StoreOrderManager marketplaceId={marketplace?.id} />
+            </div>
+          )}
+
+          {/* PROJECT REQUESTS */}
+          {activeTab === "project_requests" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Project Requests</h2>
+              <p className="text-sm text-muted-foreground">Custom project requests captured by your Deal Maker agent. Track requirements and push status updates to clients.</p></div>
+              <ProjectRequestsManager marketplaceId={marketplace?.id} />
+            </div>
+          )}
+
+          {/* CLIENT MANAGEMENT */}
+          {activeTab === "project_clients" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Client Management</h2>
+              <p className="text-sm text-muted-foreground">Everyone who requested a new project through your Deal Maker. Export the list as CSV.</p></div>
+              <ProjectClients marketplaceId={marketplace?.id} />
             </div>
           )}
 

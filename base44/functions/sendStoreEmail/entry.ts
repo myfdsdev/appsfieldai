@@ -42,6 +42,10 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: '🔥 New project request: {{plan_title}}',
     body: 'A visitor approved an AI-drafted plan on {{store_name}}.\n\nPlan: {{plan_title}}\n{{plan_overview}}\n\nContact:\nName: {{customer_name}}\nEmail: {{customer_email}}\nPhone: {{customer_phone}}\nBusiness: {{business_type}}\nPain: {{pain_point}}',
   },
+  projectStatus: {
+    subject: 'Update on your project "{{project_title}}" — {{status_label}}',
+    body: 'Hi {{customer_name}},\n\nHere is an update on your project "{{project_title}}" with {{store_name}}.\n\nCurrent status: {{status_label}}\n\n{{status_note}}\n\nWe\'ll keep you posted on the next steps.\n\n— {{store_name}}',
+  },
 };
 
 function applyVars(text: string, vars: Record<string, string>): string {
@@ -234,6 +238,31 @@ function proposalHtml(opts: {
     <p style="margin:16px 0 0;color:#555;">We'll be in touch soon.</p>`;
 }
 
+// Builds the branded project status-update body sent to the client when the
+// owner pushes a new status (Started / In Progress / Done).
+function projectStatusHtml(opts: {
+  brand: string; storeName: string; customerName: string;
+  projectTitle: string; statusLabel: string; statusNote: string;
+}): string {
+  const { brand, storeName, customerName, projectTitle, statusLabel, statusNote } = opts;
+  const noteBlock = statusNote
+    ? `<div style="margin:18px 0;padding:16px 20px;background:#f7f7fb;border-radius:12px;">
+        <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Note from the team</div>
+        <div style="font-size:14px;color:#333;white-space:pre-wrap;">${esc(statusNote)}</div>
+      </div>`
+    : '';
+  return `
+    <h1 style="margin:0 0 4px;font-size:22px;color:#111;">Project update 📦</h1>
+    <p style="margin:0 0 18px;color:#555;">Hi ${esc(customerName)}, here's the latest on your project with <strong>${esc(storeName)}</strong>.</p>
+    <h2 style="margin:0 0 12px;font-size:17px;color:${esc(brand)};">${esc(projectTitle)}</h2>
+    <div style="margin:0 0 8px;padding:20px;background:#f2f7f4;border-radius:14px;text-align:center;">
+      <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Current status</div>
+      <div style="font-size:26px;font-weight:800;color:${esc(brand)};">${esc(statusLabel)}</div>
+    </div>
+    ${noteBlock}
+    <p style="margin:16px 0 0;color:#555;">We'll keep you posted on the next steps.</p>`;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -297,6 +326,15 @@ Deno.serve(async (req) => {
           businessType: mergedVars.business_type || '',
           painPoint: mergedVars.pain_point || '',
         },
+      });
+      html = shell({ brand, logo, storeName, inner, footer });
+    } else if (templateKey === 'projectStatus') {
+      const inner = projectStatusHtml({
+        brand, storeName,
+        customerName: mergedVars.customer_name || 'there',
+        projectTitle: mergedVars.project_title || 'Your project',
+        statusLabel: mergedVars.status_label || '',
+        statusNote: mergedVars.status_note || '',
       });
       html = shell({ brand, logo, storeName, inner, footer });
     } else if (templateKey === 'magicLink') {

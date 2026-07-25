@@ -1,0 +1,72 @@
+{
+  "name": "ProjectRequest",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace/store this project request belongs to"
+    },
+    "clientName": {
+      "type": "string",
+      "description": "Client full name"
+    },
+    "clientEmail": {
+      "type": "string",
+      "description": "Client email address"
+    },
+    "clientPhone": {
+      "type": "string",
+      "description": "Client phone number"
+    },
+    "businessType": {
+      "type": "string",
+      "description": "The kind of business the client runs"
+    },
+    "painPoint": {
+      "type": "string",
+      "description": "Biggest headache / problem the client described"
+    },
+    "projectTitle": {
+      "type": "string",
+      "description": "Title of the requested software / project"
+    },
+    "projectOverview": {
+      "type": "string",
+      "description": "Short description of what the project does and who it is for"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Planned feature list the client approved"
+    },
+    "conversationSummary": {
+      "type": "string",
+      "description": "Full transcript / summary of the Deal Maker conversation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "started",
+        "in_progress",
+        "done"
+      ],
+      "default": "new",
+      "description": "Project delivery status the owner updates and pushes to the client"
+    },
+    "statusNote": {
+      "type": "string",
+      "description": "Latest note the owner sent to the client with a status update"
+    },
+    "lastStatusEmailAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the last status update email was pushed to the client"
+    }
+  },
+  "required": [
+    "marketplaceId"
+  ]
+}
