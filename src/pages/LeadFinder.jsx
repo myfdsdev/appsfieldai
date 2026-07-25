@@ -77,7 +77,7 @@ export default function LeadFinder() {
         {tab === "find" && <FindLeadsTab ownerId={user.id} />}
         {tab === "shortlist" && <ShortlistTab ownerId={user.id} />}
         {tab === "history" && <EmailHistoryTab ownerId={user.id} />}
-        {tab === "templates" && <LeadTemplatesTab ownerId={user.id} stores={stores} />}
+        {tab === "templates" && <LeadTemplatesTab ownerId={user.id} stores={stores} isAdmin={isAdmin} />}
       </motion.div>
     </div>
   );

@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 
 // Owner's email templates + an AI generator that pulls context from a chosen store.
-export default function LeadTemplatesTab({ ownerId, stores = [] }) {
+export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(null);
@@ -94,9 +94,14 @@ export default function LeadTemplatesTab({ ownerId, stores = [] }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-card border-border/40 max-w-lg rounded-2xl max-h-[88vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="font-display text-lg">{edit ? "Edit Template" : "New Template"}</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 space-y-2">
-              <p className="text-xs font-medium flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-orange-400" /> AI Email Generator</p>
+          <div className="space-y-4">
+            {/* AI generator — visually distinct block */}
+            <div className="rounded-xl border border-orange-500/30 bg-orange-500/[0.07] p-4 space-y-2.5">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-orange-400" />
+                <p className="text-sm font-semibold">AI Email Generator</p>
+                <span className="text-[11px] text-muted-foreground ml-auto">Optional — fills subject & message</span>
+              </div>
               <div className="flex gap-2">
                 <select value={genStore} onChange={(e) => setGenStore(e.target.value)} className="flex-1 bg-secondary/50 border border-border/30 rounded-xl px-3 py-2 text-sm">
                   <option value="">Select store for context…</option>
@@ -106,7 +111,18 @@ export default function LeadTemplatesTab({ ownerId, stores = [] }) {
                   {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Generate
                 </Button>
               </div>
+              {stores.length === 0 && (
+                <p className="text-[11px] text-muted-foreground">{isAdmin ? "No stores found on your account." : "Create a store first to use AI context, or write your template manually below."}</p>
+              )}
             </div>
+
+            {/* Divider between AI and manual fields */}
+            <div className="flex items-center gap-3 py-0.5">
+              <div className="h-px flex-1 bg-border/50" />
+              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Template Details</span>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+
             <div><Label className="text-xs">Template Name</Label><Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="mt-1" placeholder="e.g. Store invite" /></div>
             <div><Label className="text-xs">Subject</Label><Input value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} className="mt-1" placeholder="Subject line" /></div>
             <div><Label className="text-xs">Message</Label><Textarea value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} className="mt-1 h-48 resize-none" placeholder="Hi {{first_name}}, ..." /></div>
