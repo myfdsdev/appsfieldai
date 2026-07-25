@@ -7,7 +7,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { marketplaceId, token, items, paymentMethod, phone, notes, refCode } = await req.json();
+    const { marketplaceId, token, items, paymentMethod, fullName, phone, notes, refCode } = await req.json();
 
     if (!marketplaceId || !token || !Array.isArray(items) || items.length === 0) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -97,10 +97,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid items to checkout' }, { status: 400 });
     }
 
+    // Use the name supplied at checkout; fall back to the account's stored name.
+    const buyerName = (fullName || '').trim() || customer.fullName || '';
+    // Backfill the customer's account name if it was blank.
+    if (buyerName && !customer.fullName) {
+      try { await base44.asServiceRole.entities.StoreCustomer.update(customer.id, { fullName: buyerName }); } catch (_) { /* non-fatal */ }
+    }
+
     const order = await base44.asServiceRole.entities.StoreOrder.create({
       marketplaceId,
       storeCustomerId: customer.id,
-      customerName: customer.fullName || '',
+      customerName: buyerName,
       customerEmail: customer.email || '',
       phone: phone || customer.phone || '',
       items: lineItems,
@@ -180,7 +187,7 @@ Deno.serve(async (req) => {
           order,
           dashboardUrl,
           vars: {
-            customer_name: customer.fullName || 'there',
+            customer_name: buyerName || 'there',
             order_id: order.id,
             order_total: `${marketplace.currency || 'USD'} ${total.toLocaleString()}`,
           },

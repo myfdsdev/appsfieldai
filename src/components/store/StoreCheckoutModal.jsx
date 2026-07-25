@@ -14,6 +14,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
   if (payment.codEnabled) methods.push({ id: "cod", label: "Pay Your Own Way", desc: "Bank transfer / manual payment", icon: Banknote });
 
   const [method, setMethod] = useState(methods[0]?.id || "");
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
   useEffect(() => {
     if (open) {
       setMethod(methods[0]?.id || "");
+      setFullName(customer?.fullName || "");
       setPhone(customer?.phone || "");
       setNotes("");
       setDone(null);
@@ -32,12 +34,14 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
 
   const place = async () => {
     if (!method) { toast.error("This store has no payment method enabled yet."); return; }
+    if (!fullName.trim()) { toast.error("Please enter your name."); return; }
     setLoading(true);
     try {
       const res = await checkoutStoreOrder({
         marketplaceId: marketplace.id,
         items: items.map((i) => ({ listingId: i.listingId, quantity: i.quantity })),
         paymentMethod: method,
+        fullName: fullName.trim(),
         phone,
         notes,
         refCode: getAffiliateRef(marketplace.id) || undefined,
@@ -116,6 +120,11 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
               ))}
             </div>
 
+            <div className="mb-3">
+              <label className="text-xs text-muted-foreground mb-1.5 block">Name</label>
+              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name"
+                className="w-full px-3 py-2.5 rounded-xl bg-secondary/60 border border-border/40 text-sm focus:outline-none" />
+            </div>
             <div className="mb-3">
               <label className="text-xs text-muted-foreground mb-1.5 block">Phone (optional)</label>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number"
