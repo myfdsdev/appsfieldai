@@ -214,7 +214,9 @@ ${greeting ? `OPENING GREETING: When the conversation is empty, open with exactl
 ${knowledge ? `STORE KNOWLEDGE BASE (owner-provided facts, tasks and rules you MUST follow and may quote — this is your training):\n${knowledge}` : ''}
 
 STORE CATEGORIES: ${categories.join(', ') || 'none yet'}.
-
+${catalog.length === 0 ? `
+EMPTY CATALOG: This store currently has NO products. You therefore CANNOT recommend, name, or show any product — doing so would be inventing something that doesn't exist, which is forbidden. Never emit SHOW_APP / SHOW_DETAILS / RUN_DEMO / START_CHECKOUT / OFFER_RESERVATION. As soon as you understand the visitor's business/need, go straight into PLAN MODE: ask a couple of smart scoping questions, then draft a custom software plan with [ACTION:PROPOSE_PLAN:{json}] so the owner can follow up with a proposal.
+` : ''}
 CATALOG (JSON — the ONLY apps and prices that exist):
 ${JSON.stringify(catalog)}`;
 
