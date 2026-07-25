@@ -92,7 +92,15 @@ export default function MarketplaceDashboard() {
       setDeleteTarget(null);
       queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
     } catch (err) {
-      toast({ title: "Delete failed", description: err.message || "Could not delete marketplace.", variant: "destructive" });
+      // If the record was already deleted (stale card), treat it as success —
+      // just remove it from the list instead of showing a scary error.
+      if ((err.message || "").toLowerCase().includes("not found")) {
+        toast({ title: "Marketplace removed", description: `"${deleteTarget.name}" was already deleted.` });
+        setDeleteTarget(null);
+        queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
+      } else {
+        toast({ title: "Delete failed", description: err.message || "Could not delete marketplace.", variant: "destructive" });
+      }
     } finally {
       setDeleting(false);
     }
