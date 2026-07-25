@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Save, Server, Mail } from "lucide-react";
+import { Save, Server, Mail, Info } from "lucide-react";
 import { toast } from "sonner";
 
 // Template-mail definitions, one tab per transactional action.
@@ -22,12 +22,6 @@ export default function EmailSettingsManager({ marketplace }) {
 
   const es = marketplace?.emailSettings || {};
   const [form, setForm] = useState({
-    smtpEnabled: es.smtpEnabled ?? false,
-    smtpHost: es.smtpHost || "",
-    smtpPort: es.smtpPort ?? 587,
-    smtpUsername: es.smtpUsername || "",
-    smtpPassword: es.smtpPassword || "",
-    smtpSecure: es.smtpSecure ?? true,
     fromName: es.fromName || "",
     fromEmail: es.fromEmail || "",
     templates: {
@@ -41,9 +35,23 @@ export default function EmailSettingsManager({ marketplace }) {
   const setTpl = (key, field, value) =>
     setForm(f => ({ ...f, templates: { ...f.templates, [key]: { ...f.templates[key], [field]: value } } }));
 
+  const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || "").trim());
+  const isBlockedEmail = (e) => {
+    const v = (e || "").trim().toLowerCase();
+    return v.endsWith("@appsfieldai.com") || v.endsWith("@gmail.com");
+  };
+
   const handleSave = async () => {
+    const fe = form.fromEmail.trim();
+    if (fe) {
+      if (!isValidEmail(fe)) { toast.error("Please enter a valid From Email address."); return; }
+      if (isBlockedEmail(fe)) { toast.error("From Email must be a custom domain email — not an appsfieldai.com or gmail.com address."); return; }
+    }
     setSaving(true);
-    await base44.entities.Marketplace.update(marketplace.id, { emailSettings: form });
+    // Merge into existing emailSettings so templates & any legacy fields are preserved.
+    await base44.entities.Marketplace.update(marketplace.id, {
+      emailSettings: { ...es, ...form },
+    });
     queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
     toast.success("Email settings saved!");
     setSaving(false);
@@ -56,7 +64,7 @@ export default function EmailSettingsManager({ marketplace }) {
     <div className="space-y-4">
       {/* Section switch */}
       <div className="flex gap-1 p-1 rounded-xl bg-secondary/40 w-fit">
-        {[{ id: "smtp", label: "SMTP Server", icon: Server }, { id: "templates", label: "Email Templates", icon: Mail }].map(s => (
+        {[{ id: "smtp", label: "Sender", icon: Server }, { id: "templates", label: "Email Templates", icon: Mail }].map(s => (
           <button key={s.id} onClick={() => setSection(s.id)}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${section === s.id ? "bg-orange-500/20 text-orange-400" : "text-muted-foreground hover:text-foreground"}`}>
             <s.icon className="w-3.5 h-3.5" /> {s.label}
@@ -65,30 +73,30 @@ export default function EmailSettingsManager({ marketplace }) {
       </div>
 
       {section === "smtp" && (
-        <div className={`rounded-2xl border transition-all ${form.smtpEnabled ? "border-orange-500/20 bg-orange-500/5" : "border-border/30 bg-card/60"}`}>
-          <label className="flex items-center justify-between p-5 cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Server className="w-4.5 h-4.5 text-orange-400" /></div>
-              <div><p className="text-sm font-semibold">Custom SMTP</p><p className="text-[11px] text-muted-foreground">Send store emails from your own mail server</p></div>
+        <div className="rounded-2xl border border-border/30 bg-card/60 p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Server className="w-4.5 h-4.5 text-orange-400" /></div>
+            <div><p className="text-sm font-semibold">Sender Identity</p><p className="text-[11px] text-muted-foreground">This store's emails are sent through your account's SMTP server.</p></div>
+          </div>
+
+          {/* Inherited SMTP note */}
+          <div className="flex items-start gap-2 rounded-xl bg-orange-500/5 border border-orange-500/20 p-3">
+            <Info className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              SMTP server, username and password are configured once under <span className="font-medium text-foreground">My Account → Outreach Email</span> and shared across all your stores — no need to set it up per store. Here you only choose how the sender appears for this store.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="text-xs text-muted-foreground">From Name</label><Input value={form.fromName} onChange={e => set("fromName", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="My Store" /></div>
+            <div>
+              <label className="text-xs text-muted-foreground">From Email</label>
+              <Input value={form.fromEmail} onChange={e => set("fromEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="info@yourdomain.com" />
+              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                Must be a valid <span className="font-medium text-foreground">custom domain email</span> (e.g. info@yourdomain.com). It cannot be an <span className="font-medium">appsfieldai.com</span> or <span className="font-medium">gmail.com</span> address. Leave empty to use your account's default sender.
+              </p>
             </div>
-            <input type="checkbox" checked={form.smtpEnabled} onChange={e => set("smtpEnabled", e.target.checked)} className="accent-orange-500 w-4 h-4" />
-          </label>
-          {form.smtpEnabled && (
-            <div className="px-5 pb-5 space-y-4 border-t border-border/20 pt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="text-xs text-muted-foreground">SMTP Host</label><Input value={form.smtpHost} onChange={e => set("smtpHost", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="smtp.gmail.com" /></div>
-                <div><label className="text-xs text-muted-foreground">Port</label><Input type="number" value={form.smtpPort} onChange={e => set("smtpPort", parseInt(e.target.value) || 0)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="587" /></div>
-                <div><label className="text-xs text-muted-foreground">Username</label><Input value={form.smtpUsername} onChange={e => set("smtpUsername", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="you@store.com" /></div>
-                <div><label className="text-xs text-muted-foreground">Password</label><Input type="password" value={form.smtpPassword} onChange={e => set("smtpPassword", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="••••••••" /></div>
-                <div><label className="text-xs text-muted-foreground">From Name</label><Input value={form.fromName} onChange={e => set("fromName", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="My Store" /></div>
-                <div><label className="text-xs text-muted-foreground">From Email</label><Input value={form.fromEmail} onChange={e => set("fromEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="noreply@store.com" /></div>
-              </div>
-              <label className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50">
-                <input type="checkbox" checked={form.smtpSecure} onChange={e => set("smtpSecure", e.target.checked)} className="accent-orange-500 w-4 h-4" />
-                <div><p className="text-sm font-medium">Use TLS / SSL</p><p className="text-[11px] text-muted-foreground">Recommended — encrypt the connection to your mail server</p></div>
-              </label>
-            </div>
-          )}
+          </div>
         </div>
       )}
 

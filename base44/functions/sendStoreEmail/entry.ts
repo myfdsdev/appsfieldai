@@ -370,14 +370,33 @@ Deno.serve(async (req) => {
     const bodyTextForPlain = applyVars((tpl?.body || def.body), mergedVars);
     const fromName = es.fromName || storeName;
 
-    // ── Custom SMTP path ──
-    if (es.smtpEnabled && es.smtpHost && es.smtpUsername && es.smtpPassword) {
-      const fromEmail = es.fromEmail || es.smtpUsername;
+    // ── Resolve SMTP credentials ──
+    // The store no longer configures its own SMTP server. It inherits the
+    // owner's account-level SMTP (My Account → Outreach Email, stored on
+    // User.leadFinderSmtp). The store only supplies a From Name / From Email.
+    let acct: any = {};
+    if (marketplace.ownerId) {
+      try {
+        const owner = await base44.asServiceRole.entities.User.filter({ id: marketplace.ownerId });
+        acct = owner?.[0]?.leadFinderSmtp || {};
+      } catch (_) { acct = {}; }
+    }
+
+    const smtpHost = acct.host;
+    const smtpUsername = acct.username;
+    const smtpPassword = acct.password;
+    const smtpPort = acct.port || 587;
+    const smtpSecure = !!acct.secure;
+
+    // ── Custom SMTP path (owner account SMTP) ──
+    if (acct.enabled && smtpHost && smtpUsername && smtpPassword) {
+      // From Email precedence: store override → account from → account username.
+      const fromEmail = es.fromEmail || acct.fromEmail || smtpUsername;
       const transporter = nodemailer.createTransport({
-        host: es.smtpHost,
-        port: es.smtpPort || 587,
-        secure: !!es.smtpSecure && (es.smtpPort === 465),
-        auth: { user: es.smtpUsername, pass: es.smtpPassword },
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure && smtpPort === 465,
+        auth: { user: smtpUsername, pass: smtpPassword },
       });
       await transporter.sendMail({
         from: `"${fromName}" <${fromEmail}>`,
