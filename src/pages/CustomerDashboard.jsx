@@ -5,9 +5,11 @@ import { base44 } from "@/api/base44Client";
 import { ShoppingCart, Heart, Star, ExternalLink, Loader2, Video, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import UserAccountSettings from "@/components/dashboard/UserAccountSettings";
+import LeadSmtpSettings from "@/components/leadfinder/LeadSmtpSettings";
 
 export default function CustomerDashboard() {
-  const [tab, setTab] = useState("overview");
+  const urlTab = new URLSearchParams(window.location.search).get("tab");
+  const [tab, setTab] = useState(urlTab === "account" ? "account" : "overview");
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
@@ -69,7 +71,10 @@ export default function CustomerDashboard() {
       </div>
 
       {tab === "account" ? (
-        <UserAccountSettings user={currentUser} />
+        <div className="space-y-6">
+          <UserAccountSettings user={currentUser} />
+          <LeadSmtpSettings user={currentUser} />
+        </div>
       ) : (
         <>
           {/* Quick Stats */}

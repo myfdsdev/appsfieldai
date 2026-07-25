@@ -118,6 +118,11 @@
       "default": false,
       "description": "Access to Investments"
     },
+    "leadFinderAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to the Lead Finder tool"
+    },
     "premiumTemplatesAccess": {
       "type": "boolean",
       "default": false,

@@ -1,0 +1,73 @@
+{
+  "name": "FoundLead",
+  "type": "object",
+  "properties": {
+    "ownerId": {
+      "type": "string",
+      "description": "User ID of the store owner who found this lead"
+    },
+    "businessName": {
+      "type": "string",
+      "description": "Name of the business / lead"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description about the business"
+    },
+    "emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Contact email addresses (may be multiple)"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone / info"
+    },
+    "website": {
+      "type": "string",
+      "description": "Website address"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Instagram profile URL"
+    },
+    "facebook": {
+      "type": "string",
+      "description": "Facebook page URL"
+    },
+    "niche": {
+      "type": "string",
+      "description": "Niche / business type used in the search"
+    },
+    "area": {
+      "type": "string",
+      "description": "Area / city used in the search"
+    },
+    "shortlisted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the owner added this lead to their shortlist"
+    },
+    "contactStatus": {
+      "type": "string",
+      "enum": [
+        "new",
+        "emailed",
+        "replied"
+      ],
+      "default": "new",
+      "description": "Outreach status for this lead"
+    },
+    "lastEmailedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the last invite email was sent"
+    }
+  },
+  "required": [
+    "ownerId",
+    "businessName"
+  ]
+}

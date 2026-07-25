@@ -24,6 +24,7 @@ const FEATURE_TOGGLES = [
   { key: "vendorManagementAllowed", label: "Vendor Management", desc: "Access to vendor management" },
   { key: "myRequestsAllowed", label: "My Requests", desc: "Access to the My Requests section" },
   { key: "investmentsAllowed", label: "Investments", desc: "Access to the Investments section" },
+  { key: "leadFinderAllowed", label: "Lead Finder", desc: "Access to the AI Lead Finder tool" },
 ];
 
 const SwitchRow = ({ label, desc, checked, onChange }) => (
@@ -48,7 +49,7 @@ export default function PlanManager() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };

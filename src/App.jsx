@@ -46,6 +46,7 @@ import StoreAffiliatePage from '@/pages/StoreAffiliatePage';
 import { getStoreKeyFromHost, getCustomDomainFromHost } from '@/lib/storeHost';
 import { PageLoader } from '@/components/Loader';
 import Home from '@/pages/Home';
+import LeadFinder from '@/pages/LeadFinder';
 // Add page imports here
 
 // When the app is served from a customer store subdomain (wildcard DNS),
@@ -132,6 +133,7 @@ const AuthenticatedApp = () => {
           <Route path="/vendor/dashboard" element={<VendorDashboard />} />
           <Route path="/admin-hub/:marketplaceId" element={<AdminHub />} />
           <Route path="/my-account" element={<CustomerDashboard />} />
+          <Route path="/lead-finder" element={<LeadFinder />} />
           <Route path="/investments" element={<MyInvestments />} />
         </Route>
       </Route>

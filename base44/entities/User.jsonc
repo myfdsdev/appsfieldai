@@ -72,6 +72,46 @@
       ],
       "default": "active",
       "description": "Account status"
+    },
+    "leadFinderSmtp": {
+      "type": "object",
+      "description": "Personal SMTP settings used to send Lead Finder outreach emails",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "host": {
+          "type": "string",
+          "description": "SMTP server host"
+        },
+        "port": {
+          "type": "number",
+          "default": 587,
+          "description": "SMTP server port"
+        },
+        "username": {
+          "type": "string",
+          "description": "SMTP username"
+        },
+        "password": {
+          "type": "string",
+          "description": "SMTP password"
+        },
+        "secure": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use SSL (port 465)"
+        },
+        "fromName": {
+          "type": "string",
+          "description": "Sender display name"
+        },
+        "fromEmail": {
+          "type": "string",
+          "description": "Sender email address"
+        }
+      }
     }
   }
 }

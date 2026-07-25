@@ -1,0 +1,31 @@
+{
+  "name": "LeadEmailTemplate",
+  "type": "object",
+  "properties": {
+    "ownerId": {
+      "type": "string",
+      "description": "User ID of the store owner who owns this template"
+    },
+    "name": {
+      "type": "string",
+      "description": "Template name for the owner's reference"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line. Supports {{first_name}}, {{business_name}}, {{store_name}} variables"
+    },
+    "body": {
+      "type": "string",
+      "description": "Email body. Supports {{first_name}}, {{business_name}}, {{business_description}}, {{store_name}} variables"
+    },
+    "storeName": {
+      "type": "string",
+      "description": "Store this template was written for (context)"
+    }
+  },
+  "required": [
+    "ownerId",
+    "name",
+    "body"
+  ]
+}
