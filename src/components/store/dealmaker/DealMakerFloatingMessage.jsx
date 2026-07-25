@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import DealMakerProductCard from "./DealMakerProductCard";
 import DealMakerDetailsCard from "./DealMakerDetailsCard";
 import DealMakerCheckout from "./DealMakerCheckout";
@@ -41,11 +42,27 @@ export default function DealMakerFloatingMessage({ message, brandColor = "#6366f
       className="flex flex-col items-center gap-4"
       style={{ fontFamily: "'Outfit', sans-serif" }}
     >
-      {message.content && (
-        <ReactMarkdown className="prose prose-invert max-w-2xl text-center text-xl sm:text-2xl leading-relaxed font-light text-white/90 [&_p]:my-1 [&_strong]:text-white [&_strong]:font-semibold">
-          {message.content}
-        </ReactMarkdown>
-      )}
+      {message.content && (() => {
+        // Structured content (lists, tables, headings) reads far better
+        // left-aligned at a normal size than centered & large.
+        const structured = /(^|\n)\s*([-*+]\s|\d+\.\s|#{1,6}\s|\|)/.test(message.content);
+        const base =
+          "prose prose-invert prose-sm sm:prose-base max-w-2xl font-light text-white/90 " +
+          "[&_p]:my-1 [&_strong]:text-white [&_strong]:font-semibold " +
+          "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 " +
+          "[&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h1]:font-semibold [&_h2]:font-semibold [&_h3]:font-semibold " +
+          "[&_table]:my-2 [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm " +
+          "[&_th]:border [&_th]:border-white/20 [&_th]:bg-white/10 [&_th]:px-3 [&_th]:py-1.5 [&_th]:text-left [&_th]:text-white " +
+          "[&_td]:border [&_td]:border-white/15 [&_td]:px-3 [&_td]:py-1.5 [&_a]:text-white [&_a]:underline";
+        return (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            className={structured ? `${base} text-left w-full` : `${base} text-center text-xl sm:text-2xl leading-relaxed`}
+          >
+            {message.content}
+          </ReactMarkdown>
+        );
+      })()}
       {message.card?.listing && message.card.mode === "details" && (
         <DealMakerDetailsCard
           listing={message.card.listing}
