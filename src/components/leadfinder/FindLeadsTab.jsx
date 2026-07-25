@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import LeadCard from "./LeadCard";
+import LeadRow from "./LeadRow";
 import SendLeadEmailDialog from "./SendLeadEmailDialog";
 
 export default function FindLeadsTab({ ownerId }) {
@@ -62,9 +62,9 @@ export default function FindLeadsTab({ ownerId }) {
       ) : leads.length === 0 ? (
         <div className="text-center py-12 rounded-xl border border-dashed border-border/40 text-sm text-muted-foreground">No leads yet. Run a search above.</div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="space-y-2.5">
           {leads.map((l) => (
-            <LeadCard key={l.id} lead={l} onToggleShortlist={toggleShortlist} onSendEmail={setEmailLead} />
+            <LeadRow key={l.id} lead={l} onToggleShortlist={toggleShortlist} onSendEmail={setEmailLead} />
           ))}
         </div>
       )}
