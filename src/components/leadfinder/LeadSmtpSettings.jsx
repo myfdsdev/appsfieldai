@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
-import { Mail, Loader2, Save } from "lucide-react";
+import { Mail, Loader2, Save, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,8 +26,25 @@ export default function LeadSmtpSettings({ user }) {
     fromEmail: s.fromEmail || "",
   });
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleTest = async () => {
+    setTesting(true);
+    try {
+      const r = await base44.functions.invoke("leadFinder", {
+        action: "sendTest",
+        smtp: { ...form, port: parseInt(form.port) || 587 },
+      });
+      const data = r?.data || r;
+      if (data?.error) { toast.error(data.error); }
+      else { toast.success(`Test email sent to ${data?.to || "your inbox"}.`); }
+    } catch (e) {
+      toast.error(e.message || "Could not send test email.");
+    }
+    setTesting(false);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -93,10 +110,16 @@ export default function LeadSmtpSettings({ user }) {
         </div>
       </div>
 
-      <Button onClick={handleSave} disabled={saving} className="gap-2">
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-        Save SMTP settings
-      </Button>
+      <div className="flex flex-wrap gap-3">
+        <Button onClick={handleSave} disabled={saving} className="gap-2">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Save SMTP settings
+        </Button>
+        <Button onClick={handleTest} disabled={testing} variant="outline" className="gap-2">
+          {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          Send test email
+        </Button>
+      </div>
     </div>
   );
 }

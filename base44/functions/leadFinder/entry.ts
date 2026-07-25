@@ -124,6 +124,40 @@ Deno.serve(async (req) => {
       return Response.json({ ok });
     }
 
+    // ── Send a test email using the owner's SMTP settings ──
+    if (action === 'sendTest') {
+      // Prefer settings passed from the form (lets owner test before saving), else saved ones.
+      const s = body.smtp || user.leadFinderSmtp || {};
+      if (!(s.host && s.username && s.password)) {
+        return Response.json({ error: 'Please fill in SMTP host, username and password first.' }, { status: 400 });
+      }
+      const to = (body.toEmail || '').trim() || user.email;
+      if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+        return Response.json({ error: 'A valid recipient email is required' }, { status: 400 });
+      }
+      const fromEmail = s.fromEmail || s.username;
+      const fromName = s.fromName || user.full_name || 'Lead Finder';
+      const port = parseInt(s.port) || 587;
+      try {
+        const transporter = nodemailer.createTransport({
+          host: s.host,
+          port,
+          secure: !!s.secure && port === 465,
+          auth: { user: s.username, pass: s.password },
+        });
+        await transporter.sendMail({
+          from: `"${fromName}" <${fromEmail}>`,
+          to,
+          subject: 'Test email from Lead Finder',
+          html: `<div style="font-family:sans-serif;line-height:1.6;"><p>✅ Your SMTP settings are working!</p><p>This is a test email sent from your Lead Finder outreach configuration.</p></div>`,
+        });
+      } catch (e) {
+        console.error('leadFinder sendTest error:', e?.message || e);
+        return Response.json({ error: e?.message || 'Could not send test email — check your SMTP settings.' }, { status: 400 });
+      }
+      return Response.json({ success: true, to });
+    }
+
     // ── Send an invite email to one lead ──
     if (action === 'sendEmail') {
       const { leadId, subject, htmlBody, toEmail } = body;
