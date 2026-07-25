@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShoppingCart, Heart, Star, ExternalLink, Loader2, Video, User } from "lucide-react";
+import { ShoppingCart, Heart, Star, ExternalLink, Loader2, Video, User, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import UserAccountSettings from "@/components/dashboard/UserAccountSettings";
 import LeadSmtpSettings from "@/components/leadfinder/LeadSmtpSettings";
@@ -56,6 +56,7 @@ export default function CustomerDashboard() {
         {[
           { id: "overview", label: "Overview", icon: ShoppingCart },
           { id: "account", label: "Account", icon: User },
+          { id: "smtp", label: "Outreach Email", icon: Mail },
         ].map((t) => (
           <button
             key={t.id}
@@ -73,6 +74,9 @@ export default function CustomerDashboard() {
       {tab === "account" ? (
         <div className="space-y-6">
           <UserAccountSettings user={currentUser} />
+        </div>
+      ) : tab === "smtp" ? (
+        <div className="space-y-6">
           <LeadSmtpSettings user={currentUser} />
         </div>
       ) : (
