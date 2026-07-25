@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, Star, FileText, Radar, Lock } from "lucide-react";
+import { Search, Star, FileText, Radar, Lock, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
 import FindLeadsTab from "@/components/leadfinder/FindLeadsTab";
 import ShortlistTab from "@/components/leadfinder/ShortlistTab";
 import LeadTemplatesTab from "@/components/leadfinder/LeadTemplatesTab";
+import EmailHistoryTab from "@/components/leadfinder/EmailHistoryTab";
 
 export default function LeadFinder() {
   const { user } = useAuth();
@@ -47,6 +48,7 @@ export default function LeadFinder() {
   const tabs = [
     { id: "find", label: "Find Leads", icon: Search },
     { id: "shortlist", label: "Shortlist", icon: Star },
+    { id: "history", label: "Email History", icon: History },
     { id: "templates", label: "Email Templates", icon: FileText },
   ];
 
@@ -74,6 +76,7 @@ export default function LeadFinder() {
       <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         {tab === "find" && <FindLeadsTab ownerId={user.id} />}
         {tab === "shortlist" && <ShortlistTab ownerId={user.id} />}
+        {tab === "history" && <EmailHistoryTab ownerId={user.id} />}
         {tab === "templates" && <LeadTemplatesTab ownerId={user.id} stores={stores} />}
       </motion.div>
     </div>

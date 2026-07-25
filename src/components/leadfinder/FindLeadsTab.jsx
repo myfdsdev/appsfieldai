@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Loader2, Sparkles } from "lucide-react";
+import { Search, Loader2, Sparkles, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import LeadRow from "./LeadRow";
 import SendLeadEmailDialog from "./SendLeadEmailDialog";
+
+const GROUPS_PER_PAGE = 3;
 
 export default function FindLeadsTab({ ownerId }) {
   const queryClient = useQueryClient();
@@ -16,10 +18,12 @@ export default function FindLeadsTab({ ownerId }) {
   const [count, setCount] = useState(10);
   const [searching, setSearching] = useState(false);
   const [emailLead, setEmailLead] = useState(null);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["foundLeads", ownerId],
-    queryFn: () => base44.entities.FoundLead.filter({ ownerId }, "-created_date", 100),
+    queryFn: () => base44.entities.FoundLead.filter({ ownerId }, "-created_date", 500),
     enabled: !!ownerId,
   });
 
@@ -32,6 +36,7 @@ export default function FindLeadsTab({ ownerId }) {
       if (data?.error) throw new Error(data.error);
       queryClient.invalidateQueries({ queryKey: ["foundLeads", ownerId] });
       toast.success(`Found ${data.leads?.length || 0} leads`);
+      setPage(1);
     } catch (e) {
       toast.error(e.message || "Lead search failed");
     }
@@ -42,6 +47,31 @@ export default function FindLeadsTab({ ownerId }) {
     await base44.entities.FoundLead.update(lead.id, { shortlisted: !lead.shortlisted });
     queryClient.invalidateQueries({ queryKey: ["foundLeads", ownerId] });
   };
+
+  // Filter, then group leads by their search session (niche + area).
+  const groups = useMemo(() => {
+    const s = query.trim().toLowerCase();
+    const filtered = s
+      ? leads.filter((l) =>
+          (l.businessName || "").toLowerCase().includes(s) ||
+          (l.description || "").toLowerCase().includes(s) ||
+          (l.emails || []).join(" ").toLowerCase().includes(s) ||
+          (l.niche || "").toLowerCase().includes(s) ||
+          (l.area || "").toLowerCase().includes(s)
+        )
+      : leads;
+
+    const map = new Map();
+    for (const l of filtered) {
+      const key = `${l.niche || "Leads"}||${l.area || ""}`;
+      if (!map.has(key)) map.set(key, { niche: l.niche || "Leads", area: l.area || "", items: [] });
+      map.get(key).items.push(l);
+    }
+    return Array.from(map.values());
+  }, [leads, query]);
+
+  const totalPages = Math.max(1, Math.ceil(groups.length / GROUPS_PER_PAGE));
+  const pageGroups = groups.slice((page - 1) * GROUPS_PER_PAGE, page * GROUPS_PER_PAGE);
 
   return (
     <div className="space-y-5">
@@ -62,11 +92,39 @@ export default function FindLeadsTab({ ownerId }) {
       ) : leads.length === 0 ? (
         <div className="text-center py-12 rounded-xl border border-dashed border-border/40 text-sm text-muted-foreground">No leads yet. Run a search above.</div>
       ) : (
-        <div className="space-y-2.5">
-          {leads.map((l) => (
-            <LeadRow key={l.id} lead={l} onToggleShortlist={toggleShortlist} onSendEmail={setEmailLead} />
-          ))}
-        </div>
+        <>
+          <div className="relative max-w-sm">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} className="pl-9" placeholder="Search found leads" />
+          </div>
+
+          {groups.length === 0 ? (
+            <div className="text-center py-10 rounded-xl border border-dashed border-border/40 text-sm text-muted-foreground">No results match your search.</div>
+          ) : (
+            <div className="space-y-6">
+              {pageGroups.map((g) => (
+                <div key={`${g.niche}-${g.area}`} className="space-y-2.5">
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-border/40">
+                    <span className="text-sm font-display font-bold capitalize">{g.niche}</span>
+                    {g.area && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {g.area}</span>}
+                    <span className="ml-auto text-[11px] text-muted-foreground">{g.items.length} lead{g.items.length !== 1 ? "s" : ""}</span>
+                  </div>
+                  {g.items.map((l) => (
+                    <LeadRow key={l.id} lead={l} onToggleShortlist={toggleShortlist} onSendEmail={setEmailLead} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="gap-1"><ChevronLeft className="w-4 h-4" /> Prev</Button>
+              <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="gap-1">Next <ChevronRight className="w-4 h-4" /></Button>
+            </div>
+          )}
+        </>
       )}
 
       <SendLeadEmailDialog open={!!emailLead} onClose={() => setEmailLead(null)} lead={emailLead} ownerId={ownerId} />

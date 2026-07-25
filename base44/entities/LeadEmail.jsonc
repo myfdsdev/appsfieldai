@@ -1,0 +1,35 @@
+{
+  "name": "LeadEmail",
+  "type": "object",
+  "properties": {
+    "ownerId": {
+      "type": "string",
+      "description": "User ID of the store owner who sent this email"
+    },
+    "leadId": {
+      "type": "string",
+      "description": "ID of the FoundLead this email was sent to"
+    },
+    "businessName": {
+      "type": "string",
+      "description": "Name of the business the email was sent to"
+    },
+    "toEmail": {
+      "type": "string",
+      "description": "Recipient email address"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line"
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the email was sent"
+    }
+  },
+  "required": [
+    "ownerId",
+    "toEmail"
+  ]
+}

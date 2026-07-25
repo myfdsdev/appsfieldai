@@ -190,11 +190,21 @@ Deno.serve(async (req) => {
         subject: subject || 'Hello',
         html: htmlBody || '',
       });
+      const sentAt = new Date().toISOString();
       await base44.asServiceRole.entities.FoundLead.update(leadId, {
         emails: emailsUpdate,
         contactStatus: 'emailed',
-        lastEmailedAt: new Date().toISOString(),
+        lastEmailedAt: sentAt,
       });
+      // Log to email history
+      await base44.asServiceRole.entities.LeadEmail.create({
+        ownerId: user.id,
+        leadId,
+        businessName: lead.businessName || '',
+        toEmail: to,
+        subject: subject || '',
+        sentAt,
+      }).catch(() => {});
       return Response.json({ success: true });
     }
 
