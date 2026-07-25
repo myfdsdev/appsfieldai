@@ -172,28 +172,26 @@ Deno.serve(async (req) => {
     const categories = [...new Set(catalog.map((c) => c.category))];
 
     // ── Returning-visitor memory ──────────────────────────────────────────
-    // If the visitor has already told us their name in THIS chat, look up past
-    // conversations on this store under the same name so the agent can greet
-    // them as a returning visitor and offer to continue or start fresh.
-    // We only look at PAST sessions (different sessionId) so the current chat
-    // isn't matched against itself.
+    // Recognize the ACTUAL returning visitor via their persistent visitorKey
+    // (stored in the browser's localStorage), NOT by name — two different
+    // visitors named "John" must never inherit each other's memory. We only look
+    // at that visitor's OWN PAST sessions (same visitorKey, different sessionId),
+    // so the current chat isn't matched against itself.
     let memoryBlock = '';
     try {
       const currentSessionId = body?.sessionId || null;
-      // Pull the visitor's name from what they've said so far (cheap heuristic:
-      // the extractor already stores it, but mid-chat we scan their messages).
-      const visitorText = messages.filter((mm) => mm.role === 'user').map((mm) => mm.content).join(' ');
-      if (visitorText.trim()) {
+      const visitorKey = (body?.visitorKey || '').trim();
+      if (visitorKey) {
         const priors = await svc.entities.DealMakerConversation.filter(
-          { marketplaceId }, '-updated_date', 60
+          { marketplaceId, visitorKey }, '-updated_date', 60
         );
+        // Only past sessions that actually have some captured detail worth recalling.
         const named = priors.filter((c) =>
           c.sessionId !== currentSessionId &&
-          (c.visitorName || '').trim() &&
-          new RegExp(`\\b${(c.visitorName || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(visitorText)
+          Array.isArray(c.messages) && c.messages.length > 0
         );
         if (named.length) {
-          const best = named[0];
+          const best = named.find((c) => (c.visitorName || '').trim()) || named[0];
           const priorProducts = [...new Set(
             named.flatMap((c) => {
               const re = /\[ACTION:(?:SHOW_APP|SHOW_DETAILS|START_CHECKOUT):([^\]\n]+)\]/g;
@@ -210,13 +208,14 @@ Deno.serve(async (req) => {
               return found;
             })
           )].slice(0, 6);
-          memoryBlock = `\n\nRETURNING VISITOR MEMORY (a past visitor whose name matches what this visitor just gave — treat them as someone you've spoken with before):
-- Name: ${best.visitorName}
+          const knownName = (best.visitorName || '').trim();
+          memoryBlock = `\n\nRETURNING VISITOR MEMORY (this is the SAME visitor you've spoken with before on this store — identified reliably by their device, not by name — treat them as a returning visitor):
+- Name: ${knownName || 'unknown (they never told you last time)'}
 - Their business: ${best.businessType || best.visitorStore || 'unknown'}
 - Last time, in short: ${best.conclusion || 'you chatted but nothing was concluded.'}
 - Products you already showed them: ${priorProducts.length ? priorProducts.join(', ') : 'none'}.
 
-HANDLING A RETURNING VISITOR: Recognize them warmly by name and reference their business from memory so they DON'T have to repeat it (e.g. "Hey ${best.visitorName}, welcome back! Last time we were looking at tools for your ${best.businessType || 'business'} — do you want to pick up where we left off, or are you after something new today?"). Do NOT ask what business they run again — you already know it. If they want to continue, resume naturally. If they want something NEW, start fresh and do NOT re-show any product you already showed them (listed above) unless they specifically ask about it again.`;
+HANDLING A RETURNING VISITOR: Recognize them warmly as someone you've spoken with before and reference their business from memory so they DON'T have to repeat it${knownName ? ` (e.g. "Hey ${knownName}, welcome back! Last time we were looking at tools for your ${best.businessType || 'business'} — want to pick up where we left off, or are you after something new today?")` : ` (e.g. "Hey, welcome back! Last time we were looking at tools for your ${best.businessType || 'business'} — want to pick up where we left off, or something new today?")`}. ${knownName ? 'Do NOT ask their name again — you already know it. ' : ''}Do NOT ask what business they run again — you already know it. If they want to continue, resume naturally. If they want something NEW, start fresh and do NOT re-show any product you already showed them (listed above) unless they specifically ask about it again.`;
         }
       }
     } catch (e) { console.error('dealMakerChat memory lookup failed:', e); }

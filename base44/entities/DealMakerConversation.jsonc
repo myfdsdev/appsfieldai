@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Unique per-visitor session id used to keep updating the same conversation record"
     },
+    "visitorKey": {
+      "type": "string",
+      "description": "Persistent per-visitor identifier (stored in the browser's localStorage). Survives across sessions on the same device so the agent recognizes the ACTUAL returning visitor \u2014 not just anyone who happens to share the same first name."
+    },
     "title": {
       "type": "string",
       "description": "Conversation title \u2014 the visitor's first name once known, else a short label"

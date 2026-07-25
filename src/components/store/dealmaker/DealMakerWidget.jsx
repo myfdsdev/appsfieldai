@@ -31,6 +31,23 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
       sessionIdRef.current = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     }
   }
+  // Persistent per-visitor id (localStorage) — survives across sessions on this
+  // device, so returning-visitor memory recognizes the ACTUAL person rather than
+  // anyone who happens to share the same first name.
+  const visitorKeyRef = useRef(null);
+  if (!visitorKeyRef.current && marketplaceId) {
+    const vkey = `dm_visitor_${marketplaceId}`;
+    try {
+      let v = localStorage.getItem(vkey);
+      if (!v) {
+        v = `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+        localStorage.setItem(vkey, v);
+      }
+      visitorKeyRef.current = v;
+    } catch {
+      visitorKeyRef.current = `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    }
+  }
   // Restore any in-progress conversation for this visitor (survives page
   // navigation / remounts within the session).
   const restored = (() => {
@@ -82,6 +99,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
           action: "save",
           marketplaceId,
           sessionId: sessionIdRef.current,
+          visitorKey: visitorKeyRef.current,
           messages: plain,
         })
         .catch(() => {});
@@ -248,7 +266,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   // giving up — the AI turn can take a few seconds, so a single hiccup shouldn't
   // burn the visitor's message.
   const invokeChat = async (history) => {
-    const payload = { marketplaceId, messages: history, sessionId: sessionIdRef.current };
+    const payload = { marketplaceId, messages: history, sessionId: sessionIdRef.current, visitorKey: visitorKeyRef.current };
     try {
       return await base44.functions.invoke("dealMakerChat", payload);
     } catch (e) {

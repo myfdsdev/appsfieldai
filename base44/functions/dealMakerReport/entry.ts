@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
 
     // ── Public save/upsert from the store widget ──
     if (action === 'save') {
-      const { sessionId, messages = [] } = body || {};
+      const { sessionId, visitorKey, messages = [] } = body || {};
       if (!sessionId) return Response.json({ error: 'sessionId is required' }, { status: 400 });
       // Only log real conversations (at least one visitor message).
       const hasVisitor = messages.some((mm) => mm.role === 'user');
@@ -173,6 +173,7 @@ ${transcript}`;
       const patch = {
         marketplaceId,
         sessionId,
+        ...(visitorKey ? { visitorKey } : {}),
         title,
         messages: clean,
         messageCount: clean.length,
