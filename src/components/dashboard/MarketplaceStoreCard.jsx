@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Store, Zap, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail, Flame, DollarSign, Bell } from "lucide-react";
+import { Store, Zap, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail, Flame, DollarSign, Bell, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -115,6 +115,9 @@ export default function MarketplaceStoreCard({ m, i, plan, owner, isAdmin, platf
             <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{m.type === "multi_vendor" ? "Multi-Vendor" : "Single Vendor"}</span>
             {plan && <span className="flex items-center gap-1 text-violet-400"><Zap className="w-3 h-3" />{plan.name}</span>}
             {m.template && <span className="capitalize">{m.template}</span>}
+            {m.created_date && (
+              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(m.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+            )}
           </div>
 
           {m.categories?.length > 0 && (
