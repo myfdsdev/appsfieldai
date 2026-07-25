@@ -1,40 +1,52 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Tags, Plus, Trash2, Loader2, GripVertical } from "lucide-react";
+import { Tags, Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+// Categories are stored on the Marketplace's `categories` array — this is the
+// same list captured during store setup, so those categories show up here and
+// stay in sync with the store page.
 export default function CategoryManager({ marketplaceId }) {
   const queryClient = useQueryClient();
   const [newName, setNewName] = useState("");
-  const [newSlug, setNewSlug] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(null);
 
-  const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["softwareCategories", marketplaceId],
-    queryFn: () => base44.entities.SoftwareCategory.filter({ marketplaceId }),
+  const { data: marketplace, isLoading } = useQuery({
+    queryKey: ["marketplaceCategories", marketplaceId],
+    queryFn: async () => {
+      const rows = await base44.entities.Marketplace.filter({ id: marketplaceId });
+      return rows?.[0] || null;
+    },
     enabled: !!marketplaceId,
   });
 
+  const categories = marketplace?.categories || [];
+
+  const saveCategories = async (next) => {
+    await base44.entities.Marketplace.update(marketplaceId, { categories: next });
+    queryClient.invalidateQueries({ queryKey: ["marketplaceCategories", marketplaceId] });
+  };
+
   const handleAdd = async () => {
-    if (!newName.trim()) return toast.error("Category name required.");
+    const name = newName.trim();
+    if (!name) return toast.error("Category name required.");
+    if (categories.some((c) => c.toLowerCase() === name.toLowerCase())) {
+      return toast.error("That category already exists.");
+    }
     setAdding(true);
-    const slug = newSlug.trim() || newName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    await base44.entities.SoftwareCategory.create({ marketplaceId, name: newName.trim(), slug, sortOrder: categories.length });
-    queryClient.invalidateQueries({ queryKey: ["softwareCategories", marketplaceId] });
+    await saveCategories([...categories, name]);
     setNewName("");
-    setNewSlug("");
     setAdding(false);
     toast.success("Category added.");
   };
 
-  const handleDelete = async (cat) => {
-    setDeleting(cat.id);
-    await base44.entities.SoftwareCategory.delete(cat.id);
-    queryClient.invalidateQueries({ queryKey: ["softwareCategories", marketplaceId] });
+  const handleDelete = async (name) => {
+    setDeleting(name);
+    await saveCategories(categories.filter((c) => c !== name));
     setDeleting(null);
     toast.success("Category deleted.");
   };
@@ -46,8 +58,13 @@ export default function CategoryManager({ marketplaceId }) {
       </h3>
 
       <div className="flex gap-2">
-        <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Category name" className="h-8 text-xs flex-1" />
-        <Input value={newSlug} onChange={(e) => setNewSlug(e.target.value)} placeholder="slug (auto)" className="h-8 text-xs w-32" />
+        <Input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder="Category name"
+          className="h-8 text-xs flex-1"
+        />
         <Button size="sm" onClick={handleAdd} disabled={adding} className="bg-teal-600 hover:bg-teal-700 h-8 text-xs">
           {adding ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />}Add
         </Button>
@@ -60,13 +77,11 @@ export default function CategoryManager({ marketplaceId }) {
       ) : (
         <div className="space-y-1.5">
           {categories.map((c) => (
-            <div key={c.id} className="flex items-center justify-between bg-card/40 border border-border/40 rounded-xl px-3 py-2">
-              <div className="flex items-center gap-2">
-                <GripVertical className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs">{c.name}</span>
-                <span className="text-[10px] text-muted-foreground">/{c.slug}</span>
-              </div>
-              <Button size="sm" variant="ghost" onClick={() => handleDelete(c)} disabled={deleting === c.id} className="h-7 w-7 p-0 text-red-400"><Trash2 className="w-3.5 h-3.5" /></Button>
+            <div key={c} className="flex items-center justify-between bg-card/40 border border-border/40 rounded-xl px-3 py-2">
+              <span className="text-xs">{c}</span>
+              <Button size="sm" variant="ghost" onClick={() => handleDelete(c)} disabled={deleting === c} className="h-7 w-7 p-0 text-red-400">
+                {deleting === c ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              </Button>
             </div>
           ))}
         </div>
