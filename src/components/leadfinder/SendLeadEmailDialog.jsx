@@ -21,6 +21,7 @@ export default function SendLeadEmailDialog({ open, onClose, lead, ownerId }) {
   const [smtpOk, setSmtpOk] = useState(null);
   const [checking, setChecking] = useState(false);
   const [templateId, setTemplateId] = useState("");
+  const [toEmail, setToEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [bodyText, setBodyText] = useState("");
   const [sending, setSending] = useState(false);
@@ -30,6 +31,10 @@ export default function SendLeadEmailDialog({ open, onClose, lead, ownerId }) {
     queryFn: () => base44.entities.LeadEmailTemplate.filter({ ownerId }, "-created_date"),
     enabled: !!ownerId && open,
   });
+
+  useEffect(() => {
+    if (open) setToEmail((lead?.emails || [])[0] || "");
+  }, [open, lead]);
 
   useEffect(() => {
     if (!open) return;
@@ -57,11 +62,12 @@ export default function SendLeadEmailDialog({ open, onClose, lead, ownerId }) {
   };
 
   const handleSend = async () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail.trim())) { toast.error("Enter a valid recipient email"); return; }
     if (!subject.trim() || !bodyText.trim()) { toast.error("Subject and message are required"); return; }
     setSending(true);
     try {
       const html = `<div style="font-family:sans-serif;white-space:pre-wrap;line-height:1.6;">${bodyText.replace(/</g, "&lt;")}</div>`;
-      const r = await base44.functions.invoke("leadFinder", { action: "sendEmail", leadId: lead.id, subject, htmlBody: html });
+      const r = await base44.functions.invoke("leadFinder", { action: "sendEmail", leadId: lead.id, toEmail: toEmail.trim(), subject, htmlBody: html });
       if (r?.data?.error || r?.error) throw new Error(r?.data?.error || r?.error);
       toast.success(`Email sent to ${lead.businessName}`);
       queryClient.invalidateQueries({ queryKey: ["foundLeads"] });
@@ -90,6 +96,13 @@ export default function SendLeadEmailDialog({ open, onClose, lead, ownerId }) {
           </div>
         ) : (
           <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Recipient email</Label>
+              <Input value={toEmail} onChange={(e) => setToEmail(e.target.value)} className="mt-1" placeholder="name@business.com" />
+              {(lead?.emails || []).length === 0 && (
+                <p className="text-[11px] text-muted-foreground mt-1">No email was found for this lead — add one to send.</p>
+              )}
+            </div>
             <div>
               <Label className="text-xs">Template</Label>
               <select value={templateId} onChange={(e) => pickTemplate(e.target.value)} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">

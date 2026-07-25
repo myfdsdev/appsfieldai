@@ -126,15 +126,21 @@ Deno.serve(async (req) => {
 
     // ── Send an invite email to one lead ──
     if (action === 'sendEmail') {
-      const { leadId, subject, htmlBody } = body;
+      const { leadId, subject, htmlBody, toEmail } = body;
       const s = user.leadFinderSmtp || {};
       if (!(s.enabled && s.host && s.username && s.password)) {
         return Response.json({ error: 'SMTP not configured' }, { status: 400 });
       }
       const lead = await base44.asServiceRole.entities.FoundLead.get(leadId).catch(() => null);
       if (!lead || lead.ownerId !== user.id) return Response.json({ error: 'Lead not found' }, { status: 404 });
-      const to = (lead.emails || [])[0];
-      if (!to) return Response.json({ error: 'This lead has no email address' }, { status: 400 });
+      // Recipient: prefer the address the owner entered/confirmed, else the first found email.
+      const to = (toEmail || '').trim() || (lead.emails || [])[0];
+      if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+        return Response.json({ error: 'A valid recipient email is required' }, { status: 400 });
+      }
+      // Persist a manually-entered email back onto the lead so it shows next time.
+      const existing = lead.emails || [];
+      const emailsUpdate = existing.includes(to) ? existing : [to, ...existing];
 
       const fromEmail = s.fromEmail || s.username;
       const fromName = s.fromName || user.full_name || 'Lead Finder';
@@ -151,6 +157,7 @@ Deno.serve(async (req) => {
         html: htmlBody || '',
       });
       await base44.asServiceRole.entities.FoundLead.update(leadId, {
+        emails: emailsUpdate,
         contactStatus: 'emailed',
         lastEmailedAt: new Date().toISOString(),
       });

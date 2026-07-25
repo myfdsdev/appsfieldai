@@ -47,10 +47,9 @@ export default function LeadCard({ lead, onToggleShortlist, onSendEmail }) {
       <Button
         size="sm"
         onClick={() => onSendEmail(lead)}
-        disabled={emails.length === 0}
         className="w-full gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0"
       >
-        <Send className="w-3.5 h-3.5" /> {emails.length === 0 ? "No email available" : "Send Email"}
+        <Send className="w-3.5 h-3.5" /> {emails.length === 0 ? "Add Email & Send" : "Send Email"}
       </Button>
     </div>
   );
