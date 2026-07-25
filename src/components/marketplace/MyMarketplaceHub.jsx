@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -98,8 +98,20 @@ const NAV_GROUPS = [
   }
 ];
 
-export default function MyMarketplaceHub({ marketplace, onBack }) {
+export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack }) {
   const queryClient = useQueryClient();
+
+  // The store may have just been auto-built, so the marketplace passed in can be
+  // stale (missing the AI-generated hero/FAQ/footer content). Always re-fetch the
+  // latest record on mount and use it — the settings forms seed from this.
+  const { data: freshMarketplace } = useQuery({
+    queryKey: ["hubMarketplace", marketplaceProp?.id],
+    queryFn: () => base44.entities.Marketplace.get(marketplaceProp.id),
+    enabled: !!marketplaceProp?.id,
+    initialData: marketplaceProp,
+  });
+  const marketplace = freshMarketplace || marketplaceProp;
+
   const [activeTab, setActiveTab] = useState("page_settings");
   const [dealMakerSubTab, setDealMakerSubTab] = useState("settings");
   const [saving, setSaving] = useState(false);
@@ -182,6 +194,29 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     taxCountry: marketplace?.taxInfo?.taxCountry || "",
     includeTaxInPrice: marketplace?.taxInfo?.includeTaxInPrice ?? false,
   });
+
+  // If the marketplace was just auto-built, the fresh record arrives after mount
+  // with the real AI-generated content. Re-seed the forms ONCE from it so the
+  // Page Settings fields aren't left showing empty placeholders.
+  const reseededRef = useRef(false);
+  useEffect(() => {
+    if (reseededRef.current) return;
+    const ps = freshMarketplace?.pageSections;
+    if (!ps) return;
+    reseededRef.current = true;
+    setPageForm(f => ({ ...f, ...ps }));
+    setStoreForm(f => ({
+      ...f,
+      name: freshMarketplace.name || f.name,
+      slug: freshMarketplace.slug || f.slug,
+      storeLink: freshMarketplace.storeLink || f.storeLink,
+      subdomain: freshMarketplace.subdomain || f.subdomain,
+      customDomain: freshMarketplace.customDomain || f.customDomain,
+      language: freshMarketplace.language || f.language,
+      branding: { ...f.branding, ...(freshMarketplace.branding || {}) },
+    }));
+    if (freshMarketplace.taxInfo) setTaxForm(f => ({ ...f, ...freshMarketplace.taxInfo }));
+  }, [freshMarketplace]);
 
   const { data: allListings = [] } = useQuery({
     queryKey: ["hubListings", marketplace?.id],
