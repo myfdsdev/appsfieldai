@@ -65,8 +65,11 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
             <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${accountOpen ? "rotate-180" : ""}`} />
           </button>
           {accountOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-card border border-border/40 rounded-xl shadow-2xl shadow-black/40 py-2 z-50">
-              <div className="px-3 py-2 border-b border-border/30 mb-1 flex items-center gap-2.5">
+            <div
+              className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl shadow-black/40 py-2 z-50 border"
+              style={pal ? { background: pal.surface, borderColor: pal.cardBorder, color: pal.text } : undefined}
+            >
+              <div className="px-3 py-2 border-b border-border/30 mb-1 flex items-center gap-2.5" style={pal ? { borderColor: pal.cardBorder } : undefined}>
                 {customer.avatarUrl ? (
                   <img src={customer.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                 ) : (
@@ -76,27 +79,29 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
                 )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{customer.fullName || "Customer"}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
+                  <p className="text-[11px] truncate opacity-70">{customer.email}</p>
                 </div>
               </div>
               <button
                 onClick={() => { setAccountOpen(false); goToDashboard(); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-white/10 transition-colors"
               >
-                <User className="w-4 h-4 text-muted-foreground" /> My Dashboard
+                <User className="w-4 h-4 opacity-70" /> My Dashboard
               </button>
               <button
                 onClick={() => { setAccountOpen(false); goToAccount(); }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors ${affiliateEnabled ? "" : "border-b border-border/30 mb-1"}`}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-white/10 transition-colors ${affiliateEnabled ? "" : "border-b border-border/30 mb-1"}`}
+                style={!affiliateEnabled && pal ? { borderColor: pal.cardBorder } : undefined}
               >
-                <User className="w-4 h-4 text-muted-foreground" /> My Account
+                <User className="w-4 h-4 opacity-70" /> My Account
               </button>
               {affiliateEnabled && (
                 <button
                   onClick={() => { setAccountOpen(false); goToAffiliate(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors border-b border-border/30 mb-1"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-white/10 transition-colors border-b border-border/30 mb-1"
+                  style={pal ? { borderColor: pal.cardBorder } : undefined}
                 >
-                  <Share2 className="w-4 h-4 text-muted-foreground" /> Affiliate Program
+                  <Share2 className="w-4 h-4 opacity-70" /> Affiliate Program
                 </button>
               )}
               <button
