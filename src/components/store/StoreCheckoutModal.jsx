@@ -125,6 +125,13 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
               <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name"
                 className="w-full px-3 py-2.5 rounded-xl bg-secondary/60 border border-border/40 text-sm focus:outline-none" />
             </div>
+            {customer?.email && (
+              <div className="mb-3">
+                <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
+                <input value={customer.email} readOnly
+                  className="w-full px-3 py-2.5 rounded-xl bg-secondary/40 border border-border/40 text-sm text-muted-foreground focus:outline-none cursor-not-allowed" />
+              </div>
+            )}
             <div className="mb-3">
               <label className="text-xs text-muted-foreground mb-1.5 block">Phone (optional)</label>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number"
