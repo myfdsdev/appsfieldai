@@ -248,11 +248,12 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   // giving up — the AI turn can take a few seconds, so a single hiccup shouldn't
   // burn the visitor's message.
   const invokeChat = async (history) => {
+    const payload = { marketplaceId, messages: history, sessionId: sessionIdRef.current };
     try {
-      return await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
+      return await base44.functions.invoke("dealMakerChat", payload);
     } catch (e) {
       await new Promise((r) => setTimeout(r, 800));
-      return await base44.functions.invoke("dealMakerChat", { marketplaceId, messages: history });
+      return await base44.functions.invoke("dealMakerChat", payload);
     }
   };
 

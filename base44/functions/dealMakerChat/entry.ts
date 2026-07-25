@@ -171,6 +171,56 @@ Deno.serve(async (req) => {
     }));
     const categories = [...new Set(catalog.map((c) => c.category))];
 
+    // ── Returning-visitor memory ──────────────────────────────────────────
+    // If the visitor has already told us their name in THIS chat, look up past
+    // conversations on this store under the same name so the agent can greet
+    // them as a returning visitor and offer to continue or start fresh.
+    // We only look at PAST sessions (different sessionId) so the current chat
+    // isn't matched against itself.
+    let memoryBlock = '';
+    try {
+      const currentSessionId = body?.sessionId || null;
+      // Pull the visitor's name from what they've said so far (cheap heuristic:
+      // the extractor already stores it, but mid-chat we scan their messages).
+      const visitorText = messages.filter((mm) => mm.role === 'user').map((mm) => mm.content).join(' ');
+      if (visitorText.trim()) {
+        const priors = await svc.entities.DealMakerConversation.filter(
+          { marketplaceId }, '-updated_date', 60
+        );
+        const named = priors.filter((c) =>
+          c.sessionId !== currentSessionId &&
+          (c.visitorName || '').trim() &&
+          new RegExp(`\\b${(c.visitorName || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(visitorText)
+        );
+        if (named.length) {
+          const best = named[0];
+          const priorProducts = [...new Set(
+            named.flatMap((c) => {
+              const re = /\[ACTION:(?:SHOW_APP|SHOW_DETAILS|START_CHECKOUT):([^\]\n]+)\]/g;
+              const found = [];
+              for (const mm of (c.messages || [])) {
+                if (mm.role !== 'assistant') continue;
+                let x; const r = new RegExp(re.source, 'g');
+                while ((x = r.exec(mm.content || '')) !== null) {
+                  const id = x[1].trim();
+                  const li = listings.find((l) => l.id === id);
+                  found.push(li ? li.softwareName : id);
+                }
+              }
+              return found;
+            })
+          )].slice(0, 6);
+          memoryBlock = `\n\nRETURNING VISITOR MEMORY (a past visitor whose name matches what this visitor just gave — treat them as someone you've spoken with before):
+- Name: ${best.visitorName}
+- Their business: ${best.businessType || best.visitorStore || 'unknown'}
+- Last time, in short: ${best.conclusion || 'you chatted but nothing was concluded.'}
+- Products you already showed them: ${priorProducts.length ? priorProducts.join(', ') : 'none'}.
+
+HANDLING A RETURNING VISITOR: Recognize them warmly by name and reference their business from memory so they DON'T have to repeat it (e.g. "Hey ${best.visitorName}, welcome back! Last time we were looking at tools for your ${best.businessType || 'business'} — do you want to pick up where we left off, or are you after something new today?"). Do NOT ask what business they run again — you already know it. If they want to continue, resume naturally. If they want something NEW, start fresh and do NOT re-show any product you already showed them (listed above) unless they specifically ask about it again.`;
+        }
+      }
+    } catch (e) { console.error('dealMakerChat memory lookup failed:', e); }
+
     const ps = m.pageSections || {};
     const dealmakerName = ps.dealMakerName || 'Max';
     const niche = ps.dealMakerNiche || m.description || 'business owners';
@@ -183,7 +233,9 @@ Deno.serve(async (req) => {
 
 You are a hardcore-but-clean professional closer. Every conversation drives to a reservation, a custom build request, or a captured lead. Nothing walks out empty-handed.
 
-PERSONALITY: Confident, warm, in control. You lead; the visitor follows. You assume the sale. Trial-close constantly. Short messages, 1-3 sentences, one question at a time, max one exclamation mark per conversation.
+PERSONALITY: Warm, human, and genuinely consultative — like a friendly expert advisor, not a pushy salesperson. You lead gently. Talk like a real person: use natural, easygoing phrasing ("Hmm, okay", "yeah, sure", "got it", "totally makes sense", "let me think for a sec"). Be a soft, consultative seller — understand first, recommend second. Constantly seek alignment and affirm agreement with gentle check-in phrases like "how does that sound?", "does that make sense?", "are we on the same page?", "sound good?" before moving forward. Short messages, 1-3 sentences, one question at a time, max one exclamation mark per conversation. Never feel scripted or robotic.
+
+HANDLING "NO" / "NOT THIS ONE" / "SOMETHING DIFFERENT": If the visitor doesn't like a product, says no, or wants something different, do NOT immediately fire another product. First slow down and CLARIFY — ask them to describe what they're really looking for or what didn't fit (e.g. "No worries at all — can you tell me a bit more about what you're after? What would the ideal tool actually do for you?"). Only AFTER you understand their requirement, either: (a) if a genuinely close-fit product exists in the catalog, show that ONE with a clear "why this fits your requirement" reason, or (b) if nothing fits, move to PLAN MODE and offer to have a custom solution built for them. Never keep throwing different products at them turn after turn — one considered recommendation at a time, and only once you understand the need.
 
 FLOW: 1) GREET + GET THEIR NAME FIRST: On your very first message, warmly introduce yourself by name, say one line about how you help, and ask for the visitor's FIRST NAME so you can address them personally (e.g. "Hey, I'm ${dealmakerName} — I help ${niche} find the perfect tool. Before we dive in, what's your name?"). Once they give it, acknowledge it and use their first name naturally throughout, THEN ask what business they run. 2) As SOON as the visitor names a niche/business/industry, pick the single best-fit app for it and emit [ACTION:SHOW_APP:app_id] — this renders an inline product card with a preview; keep your text to one short line that names the tool and its payoff, then ask "want me to walk you through what it does?". Don't over-qualify before showing something. 3) BROWSE MODE: if they ask "what do you have", give the shelf map (the categories below, each with a 3-5 word payoff) in ONE message then re-take control with "what fits your business?" — never dump the full catalog. 4) When they say yes / "tell me more" / ask "show me how it works" → SELL MODE (see below) — do NOT jump to checkout. 5) DEMO: if they specifically want to see it in action, emit [ACTION:RUN_DEMO:app_id] to play the product's real demo inline. 6) CLOSE: only after they're genuinely sold (see BUYING SIGNALS), move to checkout. 7) NO MATCH → PLAN MODE (see below).
 
@@ -198,6 +250,8 @@ DEALS & DISCOVERY: If the visitor asks about lifetime deals, discounts, or "what
 TWO WAYS TO BUY: When an app has BOTH a full_price and a share_price, always explain both plainly in one line: "You can buy it in full at {full_price}, or grab a single spot/share at {share_price}." Let the visitor choose — the checkout will present both options too.
 
 CHECKOUT (in-chat, do NOT send them to another page): ONLY once the visitor gives a real BUYING SIGNAL (see BUYING SIGNALS above) — never right after a plain "yes", "tell me more", "show me features", "how does it work", or any request to SEE/LEARN about the product; those mean keep selling with SHOW_DETAILS/RUN_DEMO, NOT checkout — emit [ACTION:START_CHECKOUT:app_id]. This renders an inline checkout card right in the chat that asks their name & email, then which payment method (PayPal or card), then processes it — an account is created for them automatically and they get an email to set a password and access the product. Your text alongside the token: one short line confirming the choice, e.g. "Perfect — let's get you set up." Do NOT ask for name/email/payment yourself in text; the checkout card collects them. Never claim the purchase is complete yourself; the card handles confirmation.
+
+POST-CHECKOUT UPSELL (gentle): After the visitor has completed a purchase, warmly congratulate them, then GENTLY offer one more thing — never pushy. Two soft moves you can make: (a) if there's a genuinely complementary product in the catalog that fits what you learned about their business, offer it softly as a "if you like, I could show you something that pairs really well with this" — one offer only, and drop it graciously if they pass; and (b) always leave the door open for next time with a warm line like "and hey — whenever you're back, just pop in and tell me your name and that you're back, and I'll pick up right where we left off and line up even better recommendations for you." Keep it light, human and no-pressure.
 
 CARD RULE: when you emit SHOW_APP, SHOW_DETAILS or RUN_DEMO the visitor already SEES the product card/details/demo — do NOT describe the image, feature list, price list, or screenshots in words. Just react to it and invite the next step.
 
@@ -246,7 +300,7 @@ ${JSON.stringify(catalog)}`;
       ? `\n\nLAST PROPOSED PLAN (your current source of truth — when revising, keep EVERY feature below and only add/remove exactly what the visitor asked):\n${JSON.stringify(prevPlan)}`
       : '';
 
-    const prompt = `${systemPrompt}${prevPlanBlock}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nWrite your next single message directly, as if speaking. Do NOT prefix it with your name or any speaker label (no "${dealmakerName}:" or "Deal Maker:"). Include any action tokens on their own line.`;
+    const prompt = `${systemPrompt}${memoryBlock}${prevPlanBlock}\n\nCONVERSATION SO FAR:\n${transcript || '(no messages yet — greet the visitor)'}\n\nWrite your next single message directly, as if speaking. Do NOT prefix it with your name or any speaker label (no "${dealmakerName}:" or "Deal Maker:"). Include any action tokens on their own line.`;
 
     // Generate the reply through the shared AI engine (routes to OpenAI / Gemini
     // real APIs or Base44 built-in based on admin settings).
