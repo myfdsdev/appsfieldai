@@ -26,6 +26,10 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: 'Reset your {{store_name}} password',
     body: 'Hi {{customer_name}},\n\nUse this code to reset your password at {{store_name}}:\n\n{{reset_code}}\n\nThis code expires in 15 minutes. If you didn\'t request this, you can ignore this email.\n\n— {{store_name}}',
   },
+  magicLink: {
+    subject: 'Your login link for {{store_name}}',
+    body: 'Hi {{customer_name}},\n\nClick the link below to log in to {{store_name}}:\n\n{{login_url}}\n\nThis link expires in 15 minutes. If you didn\'t request this, you can ignore this email.\n\n— {{store_name}}',
+  },
   commissionEarned: {
     subject: 'You earned a commission at {{store_name}}',
     body: 'Hi {{affiliate_name}},\n\nGood news — your referral for "{{product_name}}" converted and earned you {{commission_amount}} in commission.\n\nThanks for helping spread the word.\n\n— {{store_name}}',
@@ -294,6 +298,20 @@ Deno.serve(async (req) => {
           painPoint: mergedVars.pain_point || '',
         },
       });
+      html = shell({ brand, logo, storeName, inner, footer });
+    } else if (templateKey === 'magicLink') {
+      const loginUrl = mergedVars.login_url || '';
+      const btn = loginUrl
+        ? `<div style="margin:24px 0 8px;">
+            <a href="${esc(loginUrl)}" style="display:inline-block;background:${esc(brand)};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 30px;border-radius:10px;">Log in to ${esc(storeName)}</a>
+          </div>
+          <p style="margin:12px 0 0;color:#999;font-size:12px;">Or paste this link into your browser:<br/><a href="${esc(loginUrl)}" style="color:${esc(brand)};word-break:break-all;">${esc(loginUrl)}</a></p>`
+        : '';
+      const inner = `
+        <h1 style="margin:0 0 6px;font-size:22px;color:#111;">Your login link</h1>
+        <p style="margin:0 0 12px;color:#555;">Hi ${esc(mergedVars.customer_name || 'there')}, click below to log in to <strong>${esc(storeName)}</strong>. No password needed.</p>
+        ${btn}
+        <p style="margin:20px 0 0;color:#999;font-size:12px;">This link expires in 15 minutes. If you didn't request it, you can safely ignore this email.</p>`;
       html = shell({ brand, logo, storeName, inner, footer });
     } else if (templateKey === 'commissionEarned') {
       const inner = commissionEarnedHtml({

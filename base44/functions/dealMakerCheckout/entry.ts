@@ -116,11 +116,24 @@ Deno.serve(async (req) => {
       notes: `Purchased via Deal Maker chat (${mode} price)`,
     });
 
-    // ── Access email: set your password & find your product inside ──
+    // ── Access email: order confirmation + a passwordless login link ──
+    // The dashboard link carries a one-time login token so the buyer lands
+    // signed in — no password to set up front. A separate magic-link email is
+    // also fired so they have a clean "log in" link on hand.
     const storeBase = marketplace.customDomain
       ? `https://${marketplace.customDomain}`
       : (marketplace.storeLink ? marketplace.storeLink.replace(/\/$/, '') : '');
-    const accessUrl = storeBase ? `${storeBase}/dashboard` : returnUrl || '';
+    const plainBase = storeBase || (returnUrl ? String(returnUrl).replace(/\/$/, '') : '');
+    // One-time login token stashed on the account for the confirmation link.
+    let loginToken = '';
+    try {
+      loginToken = makeToken();
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      await svc.entities.StoreCustomer.update(customer.id, { resetCode: loginToken, resetExpires: expires });
+    } catch (_) { loginToken = ''; }
+    const accessUrl = plainBase
+      ? `${plainBase}/dashboard${loginToken ? `?loginToken=${loginToken}` : ''}`
+      : returnUrl || '';
     try {
       await svc.functions.invoke('sendStoreEmail', {
         marketplaceId,

@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Store, User, Mail, Phone, Package, ShoppingBag, CalendarCheck, Loader2, ArrowLeft, LogOut, CheckCircle2, Clock, CircleDollarSign, KeyRound, ExternalLink, Share2, TrendingUp } from "lucide-react";
 import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
-import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDashboard } from "@/lib/storeCustomerAuth";
+import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDashboard, verifyStoreCustomerMagicLink } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
 import BecomeAffiliateModal from "@/components/store/BecomeAffiliateModal";
 import StoreAccountSettings from "@/components/store/StoreAccountSettings";
@@ -76,7 +76,37 @@ export default function StoreDashboard() {
   const [storeLoading, setStoreLoading] = useState(true);
 
   const marketplaceId = marketplace?.id;
-  const { customer, loading: customerLoading, logout, setCustomer } = useStoreCustomer(marketplaceId);
+  const { customer, loading: customerLoading, logout, setCustomer, refresh } = useStoreCustomer(marketplaceId);
+
+  // Magic-link login: a ?loginToken=... in the URL means the customer arrived
+  // from an emailed login link — verify it into a real session, then clean the
+  // token out of the URL.
+  const [magicVerifying, setMagicVerifying] = useState(
+    typeof window !== "undefined" && !!new URLSearchParams(window.location.search).get("loginToken")
+  );
+  useEffect(() => {
+    if (!marketplaceId) return;
+    const params = new URLSearchParams(window.location.search);
+    const loginToken = params.get("loginToken");
+    if (!loginToken) { setMagicVerifying(false); return; }
+    let active = true;
+    (async () => {
+      try {
+        const c = await verifyStoreCustomerMagicLink({ marketplaceId, loginToken });
+        if (active && c) setCustomer(c);
+      } catch (_) {
+        if (active) await refresh();
+      } finally {
+        // Strip the token from the URL so it can't be reused / bookmarked.
+        params.delete("loginToken");
+        const qs = params.toString();
+        window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+        if (active) setMagicVerifying(false);
+      }
+    })();
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marketplaceId]);
   const initialTab = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "account" ? "account" : "overview";
   const [tab, setTab] = useState(initialTab);
 
@@ -131,7 +161,7 @@ export default function StoreDashboard() {
 
   const brandColor = marketplace?.branding?.primaryColor || "#f97316";
 
-  if (storeLoading || customerLoading) {
+  if (storeLoading || customerLoading || magicVerifying) {
     return (
       <div className="min-h-screen flex justify-center pt-32 bg-background">
         <Loader2 className="w-7 h-7 animate-spin text-muted-foreground" />

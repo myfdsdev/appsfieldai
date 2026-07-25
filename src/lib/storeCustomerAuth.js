@@ -45,6 +45,23 @@ export async function confirmStoreCustomerPasswordReset({ marketplaceId, email, 
   return res.data;
 }
 
+// Request a passwordless login link emailed to the customer (always resolves,
+// even for unknown emails, so we don't reveal which accounts exist).
+export async function requestStoreCustomerMagicLink({ marketplaceId, email }) {
+  const returnUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const res = await base44.functions.invoke("storeCustomerMagicLink", { step: "request", marketplaceId, email, returnUrl });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
+// Verify a login token from a magic link and start a session.
+export async function verifyStoreCustomerMagicLink({ marketplaceId, loginToken }) {
+  const res = await base44.functions.invoke("storeCustomerMagicLink", { step: "verify", marketplaceId, loginToken });
+  if (res.data?.error) throw new Error(res.data.error);
+  setStoredToken(marketplaceId, res.data.token);
+  return res.data.customer;
+}
+
 export async function fetchStoreCustomer(marketplaceId) {
   const token = getStoredToken(marketplaceId);
   if (!token) return null;
