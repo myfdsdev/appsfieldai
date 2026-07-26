@@ -28,7 +28,6 @@ const steps = [
   { id: "style", label: "Style", icon: Sparkles },
   { id: "branding", label: "Branding", icon: Type },
   { id: "categories", label: "Categories", icon: Tag },
-  { id: "settings", label: "Settings", icon: Settings },
   { id: "review", label: "Review", icon: Check },
 ];
 
@@ -337,77 +336,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             </div>
           )}
 
-          {/* Step 5: Settings */}
+          {/* Step 5: Review */}
           {step === 5 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Settings className="w-5 h-5 text-violet-400" />Marketplace Settings</h3>
-              <div className="space-y-3">
-                {[
-                  { key: "requireListingApproval", label: "Require listing approval", desc: "Review SaaS listings before they go live" },
-                  { key: "requireSoftwareApproval", label: "Require software approval", desc: "Verify software before it can be listed" },
-                ].map(opt => (
-                  <label key={opt.key} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
-                    <input type="checkbox" checked={!!data.settings[opt.key]} onChange={e => updateSettings(opt.key, e.target.checked)} className="mt-0.5 accent-violet-500" />
-                    <div><p className="text-sm font-medium">{opt.label}</p><p className="text-[11px] text-muted-foreground">{opt.desc}</p></div>
-                  </label>
-                ))}
-              </div>
-
-              {/* Vendor settings — only relevant for multi-vendor marketplaces */}
-              <AnimatePresence initial={false}>
-                {data.type === "multi_vendor" && (
-                  <motion.div
-                    key="vendor-settings"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-violet-400" />
-                        <p className="text-sm font-semibold">Vendor Settings</p>
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300">Vendor</span>
-                      </div>
-                      <label className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
-                        <input type="checkbox" checked={!!data.settings.requireVendorApproval} onChange={e => updateSettings("requireVendorApproval", e.target.checked)} className="mt-0.5 accent-violet-500" />
-                        <div><p className="text-sm font-medium">Require vendor approval</p><p className="text-[11px] text-muted-foreground">Approve vendors before they can list products</p></div>
-                      </label>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Store Payment Settings */}
-              <div className="rounded-xl border border-border/30 bg-secondary/20 p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-violet-400" />
-                  <p className="text-sm font-semibold">Store Payment Settings</p>
-                </div>
-                <label className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
-                  <input type="checkbox" checked={!!data.payment.paypalEnabled} onChange={e => updatePayment("paypalEnabled", e.target.checked)} className="mt-0.5 accent-violet-500" />
-                  <div><p className="text-sm font-medium">Enable PayPal</p><p className="text-[11px] text-muted-foreground">Accept payments from customers via PayPal</p></div>
-                </label>
-                {data.payment.paypalEnabled && (
-                  <div>
-                    <label className="text-xs text-muted-foreground">PayPal Email</label>
-                    <Input value={data.payment.paypalEmail} onChange={e => updatePayment("paypalEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="payments@yourstore.com" />
-                  </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs text-muted-foreground">Support Email</label><Input value={data.supportEmail} onChange={e => update("supportEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="support@example.com" /></div>
-                <div><label className="text-xs text-muted-foreground">Currency</label>
-                  <select value={data.currency} onChange={e => update("currency", e.target.value)} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
-                    <option value="USD">USD ($)</option><option value="INR">INR (₹)</option><option value="EUR">EUR (€)</option><option value="GBP">GBP (£)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 6: Review */}
-          {step === 6 && (
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Check className="w-5 h-5 text-emerald-400" />Review & Launch</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
