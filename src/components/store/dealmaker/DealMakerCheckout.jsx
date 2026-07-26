@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, CheckCircle2, CreditCard, ArrowRight, User, Mail, Lock } from "lucide-react";
+import { Loader2, CheckCircle2, CreditCard, ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
-import { signupStoreCustomer, loginStoreCustomer } from "@/lib/storeCustomerAuth";
 
 // In-chat guided checkout. Renders right inside the Deal Maker conversation.
 // Steps: 0) sign up / log in on the store  →  1) name + email  →
@@ -11,20 +10,14 @@ import { signupStoreCustomer, loginStoreCustomer } from "@/lib/storeCustomerAuth
 // processes via dealMakerCheckout backend fn.
 // Never navigates the page; PayPal/Stripe open in a new tab.
 export default function DealMakerCheckout({ listing, marketplaceId, marketplace, brandColor = "#f97316", currency = "USD" }) {
-  const { customer, loading: customerLoading, setCustomer } = useStoreCustomer(marketplaceId);
-  const [step, setStep] = useState("info"); // auth | info | price | pay | processing | done
+  const { customer, loading: customerLoading } = useStoreCustomer(marketplaceId);
+  const [step, setStep] = useState("info"); // info | price | pay | processing | done
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [priceMode, setPriceMode] = useState(null);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-
-  // Store signup/login gate (shown before checkout when not logged in).
-  const [authMode, setAuthMode] = useState("signup"); // signup | login
-  const [authForm, setAuthForm] = useState({ fullName: "", email: "", password: "", phone: "" });
-  const [authError, setAuthError] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
 
   const fmt = (n) =>
     n == null ? null : new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
@@ -59,30 +52,6 @@ export default function DealMakerCheckout({ listing, marketplaceId, marketplace,
     if (!name.trim()) return setError("Please enter your name.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError("Please enter a valid email.");
     proceedAfterInfo();
-  };
-
-  const setA = (k) => (e) => setAuthForm((f) => ({ ...f, [k]: e.target.value }));
-
-  const submitAuth = async (e) => {
-    e?.preventDefault?.();
-    setAuthError("");
-    if (authMode === "signup" && !authForm.fullName.trim()) return setAuthError("Please enter your name.");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authForm.email.trim())) return setAuthError("Please enter a valid email.");
-    if (authForm.password.length < 6) return setAuthError("Password must be at least 6 characters.");
-    setAuthLoading(true);
-    try {
-      const c = authMode === "signup"
-        ? await signupStoreCustomer({ marketplaceId, fullName: authForm.fullName.trim(), email: authForm.email.trim(), password: authForm.password, phone: authForm.phone.trim() })
-        : await loginStoreCustomer({ marketplaceId, email: authForm.email.trim(), password: authForm.password });
-      setCustomer(c);
-      setName(c.fullName || "");
-      setEmail(c.email || "");
-      setPhone(c.phone || "");
-      proceedAfterInfo();
-    } catch (err) {
-      setAuthError(err.message || "Something went wrong — try again.");
-    }
-    setAuthLoading(false);
   };
 
   const process = async (method) => {
@@ -128,53 +97,15 @@ export default function DealMakerCheckout({ listing, marketplaceId, marketplace,
           <p className="text-sm font-semibold text-white">Checkout</p>
         </div>
 
-        {/* Sign up / log in gate — required before checkout when not logged in */}
-        {step === "info" && !customerLoading && !customer && (
-          <div className="space-y-4">
-            <div className="rounded-xl p-3 border border-white/10 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
-              <p className="text-sm font-semibold text-white">{authMode === "signup" ? "Create your account" : "Welcome back"}</p>
-              <p className="text-xs text-white/55 mt-0.5">{authMode === "signup" ? `Sign up to ${marketplace?.name || "the store"} to continue to checkout.` : "Log in to continue to checkout."}</p>
-            </div>
-            <form onSubmit={submitAuth} className="space-y-3">
-              {authMode === "signup" && (
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input className={inputCls + " pl-10"} style={inputStyle} placeholder="Full name" value={authForm.fullName} onChange={setA("fullName")} />
-                </div>
-              )}
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input className={inputCls + " pl-10"} style={inputStyle} type="email" placeholder="Email address" value={authForm.email} onChange={setA("email")} />
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input className={inputCls + " pl-10"} style={inputStyle} type="password" placeholder="Password" value={authForm.password} onChange={setA("password")} />
-              </div>
-              {authMode === "signup" && (
-                <input className={inputCls} style={inputStyle} placeholder="Phone (optional)" value={authForm.phone} onChange={setA("phone")} />
-              )}
-              {authError && <p className="text-xs text-red-400">{authError}</p>}
-              <button type="submit" disabled={authLoading} className="w-full h-11 rounded-xl flex items-center justify-center gap-1.5 text-sm font-semibold text-white disabled:opacity-60" style={{ background: `linear-gradient(135deg, ${brandColor}, #22d3ee)` }}>
-                {authLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {authMode === "signup" ? "Sign Up & Continue" : "Log In & Continue"}
-              </button>
-            </form>
-            <p className="text-center text-xs text-white/55">
-              {authMode === "signup" ? "Already have an account?" : "New here?"}{" "}
-              <button onClick={() => { setAuthMode(authMode === "signup" ? "login" : "signup"); setAuthError(""); }} className="font-semibold" style={{ color: brandColor }}>
-                {authMode === "signup" ? "Log in" : "Create one"}
-              </button>
-            </p>
-          </div>
-        )}
-
         {step === "info" && customerLoading && (
           <div className="py-6 flex flex-col items-center gap-3 text-white/70">
             <Loader2 className="w-6 h-6 animate-spin" style={{ color: brandColor }} />
           </div>
         )}
 
-        {step === "info" && !customerLoading && customer && (
+        {/* Guest checkout — just name + email, no account required.
+            The backend silently creates/reuses an account and emails a login link. */}
+        {step === "info" && !customerLoading && (
           <div className="space-y-4">
             {/* Product summary — name, description & price */}
             <div className="rounded-xl p-4 border border-white/10" style={{ background: "rgba(255,255,255,0.04)" }}>
