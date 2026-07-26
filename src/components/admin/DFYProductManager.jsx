@@ -24,6 +24,7 @@ const emptyForm = {
   totalShares: "", monthlyRevenue: "", growthRate: "", rating: 5,
   dealType: "single_purchase", pricingType: "lifetime_deal",
   imageGradient: GRADIENTS[0], isActive: true,
+  adminAccessType: "none", adminAccessUrl: "", adminAccessInfo: "",
 };
 
 export default function DFYProductManager() {
@@ -48,6 +49,7 @@ export default function DFYProductManager() {
       growthRate: p.growthRate ?? "", rating: p.rating ?? 5, dealType: p.dealType || "single_purchase",
       pricingType: p.pricingType || "lifetime_deal", imageGradient: p.imageGradient || GRADIENTS[0],
       isActive: p.isActive ?? true,
+      adminAccessType: p.adminAccessType || "none", adminAccessUrl: p.adminAccessUrl || "", adminAccessInfo: p.adminAccessInfo || "",
     });
     setEditingId(p.id);
     setShowForm(true);
@@ -65,6 +67,9 @@ export default function DFYProductManager() {
       monthlyRevenue: parseFloat(form.monthlyRevenue) || 0, growthRate: parseFloat(form.growthRate) || 0,
       rating: parseFloat(form.rating) || 5, dealType: form.dealType, pricingType: form.pricingType,
       imageGradient: form.imageGradient, isActive: form.isActive,
+      adminAccessType: form.adminAccessType,
+      adminAccessUrl: form.adminAccessType === "url" ? form.adminAccessUrl : "",
+      adminAccessInfo: form.adminAccessType === "info" ? form.adminAccessInfo : "",
     };
     if (editingId) await base44.entities.DFYProduct.update(editingId, payload);
     else await base44.entities.DFYProduct.create(payload);
@@ -125,6 +130,27 @@ export default function DFYProductManager() {
                   {GRADIENTS.map(g => <option key={g} value={g}>{g.replace("from-", "").replace(" to-", " → ")}</option>)}
                 </select>
               </div>
+            </div>
+            {/* Admin access — delivered to store owners so they can manage user access */}
+            <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-foreground">Get Admin Access delivery</p>
+                <p className="text-[10px] text-muted-foreground">Store owners who import this product get a "Get Admin Access" button. Choose how it's delivered.</p>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Access type</label>
+                <select value={form.adminAccessType} onChange={e => setForm(f => ({ ...f, adminAccessType: e.target.value }))} className="w-full bg-[#252525] border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
+                  <option value="none">None (hide button)</option>
+                  <option value="url">Link — opens in a new tab</option>
+                  <option value="info">Info — revealed on the owner's side</option>
+                </select>
+              </div>
+              {form.adminAccessType === "url" && (
+                <div><label className="text-xs text-muted-foreground">Admin Access URL</label><Input value={form.adminAccessUrl} onChange={e => setForm(f => ({ ...f, adminAccessUrl: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://admin.yoursoftware.com/login" /></div>
+              )}
+              {form.adminAccessType === "info" && (
+                <div><label className="text-xs text-muted-foreground">Admin Access Info</label><Textarea value={form.adminAccessInfo} onChange={e => setForm(f => ({ ...f, adminAccessInfo: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1 h-24 resize-none" placeholder="Admin panel: https://...&#10;Username: ...&#10;Password: ...&#10;Notes on managing user access" /></div>
+              )}
             </div>
             <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
               <Save className="w-4 h-4" /> {editingId ? "Update" : "Add"} Product

@@ -274,6 +274,30 @@
         }
       }
     },
+    "adminAccess": {
+      "type": "object",
+      "description": "Admin access delivered to the store owner for imported DFY products, so they can manage user access on the underlying software",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "none",
+            "url",
+            "info"
+          ],
+          "default": "none",
+          "description": "'url' opens a link in a new tab, 'info' reveals text instructions inline, 'none' hides the Get Admin Access button"
+        },
+        "url": {
+          "type": "string",
+          "description": "Admin access URL opened in a new tab when type is 'url'"
+        },
+        "info": {
+          "type": "string",
+          "description": "Admin access instructions/credentials revealed inline when type is 'info'"
+        }
+      }
+    },
     "revenueProofFiles": {
       "type": "array",
       "items": {

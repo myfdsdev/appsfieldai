@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play } from "lucide-react";
+import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play, KeyRound, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import AddProductForm from "@/components/marketplace/AddProductForm";
+import ImportDFYDialog from "@/components/marketplace/ImportDFYDialog";
 
 const statusBadge = (status) => {
   const map = {
@@ -39,6 +40,8 @@ export default function SoftwareManager({ marketplaceId }) {
   const [editing, setEditing] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [revealedAccess, setRevealedAccess] = useState(null); // listing id whose admin info is shown
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["softwareListings", marketplaceId],
@@ -76,25 +79,11 @@ export default function SoftwareManager({ marketplaceId }) {
     toast.success(`Sales ${paused ? "paused" : "resumed"} for ${listing.softwareName}.`);
   };
 
-  const handleImportDFY = async () => {
-    if (!marketplaceId) return;
+  const handleImportDFY = async (chosen) => {
+    if (!marketplaceId || !chosen?.length) return;
     setImporting(true);
     try {
-      const presets = await base44.entities.DFYProduct.filter({ isActive: true });
-      if (!presets.length) {
-        toast.error("No DFY products available to import yet.");
-        setImporting(false);
-        return;
-      }
-      // Skip presets already imported into this store (match by name).
-      const existingNames = new Set(listings.map(l => (l.softwareName || "").trim().toLowerCase()));
-      const toImport = presets.filter(p => !existingNames.has((p.softwareName || "").trim().toLowerCase()));
-      if (!toImport.length) {
-        toast.info("All DFY products are already in your store.");
-        setImporting(false);
-        return;
-      }
-      await base44.entities.SaaSListing.bulkCreate(toImport.map(p => ({
+      await base44.entities.SaaSListing.bulkCreate(chosen.map(p => ({
         marketplaceId,
         softwareName: p.softwareName,
         logo: p.logo,
@@ -116,9 +105,15 @@ export default function SoftwareManager({ marketplaceId }) {
         imageGradient: p.imageGradient,
         status: "active",
         dealStatus: "live",
+        adminAccess: {
+          type: p.adminAccessType || "none",
+          url: p.adminAccessUrl || "",
+          info: p.adminAccessInfo || "",
+        },
       })));
       queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
-      toast.success(`${toImport.length} DFY product${toImport.length === 1 ? "" : "s"} imported into your store.`);
+      toast.success(`${chosen.length} DFY product${chosen.length === 1 ? "" : "s"} imported into your store.`);
+      setImportOpen(false);
     } catch (e) {
       toast.error("Could not import DFY products.");
     }
@@ -152,8 +147,8 @@ export default function SoftwareManager({ marketplaceId }) {
           <Package className="w-5 h-5 text-orange-400" /> Software Listings
         </h3>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={handleImportDFY} disabled={importing} className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-xl text-xs h-8">
-            {importing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Download className="w-3 h-3 mr-1" />} Import DFY Products
+          <Button size="sm" variant="outline" onClick={() => setImportOpen(true)} className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-xl text-xs h-8">
+            <Download className="w-3 h-3 mr-1" /> Import DFY Products
           </Button>
           <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }} className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl text-xs h-8 text-white border-0">
             <Plus className="w-3 h-3 mr-1" /> Add Product
@@ -237,12 +232,38 @@ export default function SoftwareManager({ marketplaceId }) {
                   <Button size="sm" variant="ghost" onClick={() => handleFeatureToggle(item)} className={`h-7 text-[10px] ${item.featured ? "text-amber-400" : ""}`}><Star className="w-3 h-3 mr-1" />{item.featured ? "Unfeature" : "Feature"}</Button>
                   <Link to={`/saas/${item.id}`} target="_blank"><Button size="sm" variant="ghost" className="h-7 text-[10px]"><ExternalLink className="w-3 h-3 mr-1" />View</Button></Link>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(item)} disabled={actionLoading === item.id} className="h-7 text-[10px] text-red-400"><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
+                  {item.adminAccess?.type === "url" && item.adminAccess?.url && (
+                    <a href={item.adminAccess.url} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm" variant="ghost" className="h-7 text-[10px] text-orange-400"><KeyRound className="w-3 h-3 mr-1" />Get Admin Access</Button>
+                    </a>
+                  )}
+                  {item.adminAccess?.type === "info" && item.adminAccess?.info && (
+                    <Button size="sm" variant="ghost" onClick={() => setRevealedAccess(revealedAccess === item.id ? null : item.id)} className="h-7 text-[10px] text-orange-400">
+                      <KeyRound className="w-3 h-3 mr-1" />Get Admin Access {revealedAccess === item.id ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                    </Button>
+                  )}
                 </div>
+
+                {/* Revealed admin access info */}
+                {item.adminAccess?.type === "info" && item.adminAccess?.info && revealedAccess === item.id && (
+                  <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3">
+                    <p className="text-[10px] font-semibold text-orange-400 mb-1.5 flex items-center gap-1"><KeyRound className="w-3 h-3" /> Admin Access</p>
+                    <pre className="text-[11px] text-muted-foreground whitespace-pre-wrap font-body leading-relaxed">{item.adminAccess.info}</pre>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       )}
+
+      <ImportDFYDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        existingNames={listings.map(l => l.softwareName)}
+        importing={importing}
+        onImport={handleImportDFY}
+      />
     </div>
   );
 }

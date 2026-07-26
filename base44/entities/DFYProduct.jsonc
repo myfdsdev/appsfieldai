@@ -92,6 +92,24 @@
       "type": "string",
       "description": "CSS gradient for card header"
     },
+    "adminAccessType": {
+      "type": "string",
+      "enum": [
+        "none",
+        "url",
+        "info"
+      ],
+      "default": "none",
+      "description": "How admin access is delivered to store owners who import this product: 'url' opens a link in a new tab, 'info' reveals text instructions inline, 'none' hides the Get Admin Access button"
+    },
+    "adminAccessUrl": {
+      "type": "string",
+      "description": "Admin access URL opened in a new tab when adminAccessType is 'url'"
+    },
+    "adminAccessInfo": {
+      "type": "string",
+      "description": "Admin access instructions/credentials revealed inline when adminAccessType is 'info'"
+    },
     "isActive": {
       "type": "boolean",
       "default": true,
