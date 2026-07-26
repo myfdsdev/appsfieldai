@@ -72,6 +72,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     payment: {
       paypalEnabled: marketplace?.payment?.paypalEnabled ?? false,
       paypalEmail: marketplace?.payment?.paypalEmail || "",
+      codEnabled: marketplace?.payment?.codEnabled ?? true,
+      codInstructions: marketplace?.payment?.codInstructions || "Pay via bank transfer. After placing your order, our team will email you the bank transfer details to complete your purchase.",
     },
   });
 

@@ -212,47 +212,11 @@ Generate compelling, professional, conversion-focused content for this store's l
       }
     }
 
-    // 4b. Import DFY products matching the store's categories. Skip categories with no matches.
-    let importedCount = 0;
-    if (categories.length) {
-      const dfyProducts = await base44.asServiceRole.entities.DFYProduct.filter({ isActive: true });
-      const wanted = categories.map(c => c.toLowerCase());
-      const matches = dfyProducts.filter(p => p.category && wanted.includes(p.category.toLowerCase()));
-      if (matches.length) {
-        const listings = matches.map(p => ({
-          marketplaceId,
-          ownerId: marketplace.ownerId,
-          softwareName: p.softwareName,
-          logo: p.logo,
-          shortDescription: p.shortDescription,
-          fullDescription: p.fullDescription,
-          category: p.category,
-          features: p.features || [],
-          pricingType: p.pricingType || 'lifetime_deal',
-          price: p.price,
-          discountPrice: p.discountPrice,
-          dealType: p.dealType || 'single_purchase',
-          sharePrice: p.sharePrice,
-          totalShares: p.totalShares,
-          monthlyRevenue: p.monthlyRevenue,
-          growthRate: p.growthRate || 0,
-          rating: p.rating || 5,
-          tags: p.tags || [],
-          imageGradient: p.imageGradient,
-          status: 'active',
-          dealStatus: 'live',
-        }));
-        await base44.entities.SaaSListing.bulkCreate(listings);
-        importedCount = listings.length;
-      }
-    }
-
     return Response.json({
       success: true,
       faqCount: updatedPageSections.faqs.length,
       testimonialCount,
       dummyCount,
-      importedCount,
       agentTrained: !!(agent.greeting || agent.knowledge),
     });
   } catch (error) {
