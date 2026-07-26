@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Search, Download, Loader2, Package, CheckCheck, Play } from "lucide-react";
+import { Check, Search, Download, Loader2, Package, CheckCheck, Play, Video, KeyRound } from "lucide-react";
 
 // Convert a YouTube URL to an embeddable preview URL (returns null for non-YouTube).
 function youtubeEmbed(url = "") {
@@ -33,6 +33,8 @@ function ProductMedia({ p }) {
     );
   }
 
+  const hasAdmin = p.adminAccessType && p.adminAccessType !== "none";
+
   return (
     <div className={`relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br ${p.imageGradient || "from-orange-500 to-amber-500"}`}>
       {p.thumbnail ? (
@@ -44,10 +46,26 @@ function ProductMedia({ p }) {
           <span className="text-white font-bold text-2xl">{(p.softwareName || "?")[0]}</span>
         </div>
       )}
+      <div className="absolute inset-0 bg-black/15" />
+
+      {/* Corner badges */}
+      <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
+        {hasVideo && (
+          <span className="flex items-center gap-0.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-medium px-1.5 py-0.5 rounded-full">
+            <Video className="w-2.5 h-2.5" /> Demo
+          </span>
+        )}
+        {hasAdmin && (
+          <span className="flex items-center gap-0.5 bg-orange-500/90 text-white text-[9px] font-medium px-1.5 py-0.5 rounded-full">
+            <KeyRound className="w-2.5 h-2.5" /> Admin
+          </span>
+        )}
+      </div>
+
       {hasVideo && (
         <button
           onClick={(e) => { e.stopPropagation(); setPlaying(true); }}
-          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+          className="absolute inset-0 flex items-center justify-center hover:bg-black/25 transition-colors"
         >
           <span className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
             <Play className="w-4 h-4 text-black fill-black ml-0.5" />
