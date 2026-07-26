@@ -8,13 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { buildStoreLink } from "@/lib/storeLink";
 
 // Owner's email templates + an AI generator that pulls context from a chosen store.
 export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(null);
-  const [form, setForm] = useState({ name: "", subject: "", body: "", storeName: "" });
+  const [form, setForm] = useState({ name: "", subject: "", body: "", storeName: "", storeId: "", storeLink: "" });
   const [genStore, setGenStore] = useState("");
   const [generating, setGenerating] = useState(false);
 
@@ -24,8 +25,8 @@ export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false
     enabled: !!ownerId,
   });
 
-  const openCreate = () => { setForm({ name: "", subject: "", body: "", storeName: stores[0]?.name || "" }); setEdit(null); setGenStore(stores[0]?.id || ""); setOpen(true); };
-  const openEdit = (t) => { setForm({ name: t.name, subject: t.subject || "", body: t.body || "", storeName: t.storeName || "" }); setEdit(t); setOpen(true); };
+  const openCreate = () => { setForm({ name: "", subject: "", body: "", storeName: stores[0]?.name || "", storeId: stores[0]?.id || "", storeLink: stores[0] ? buildStoreLink(stores[0]) : "" }); setEdit(null); setGenStore(stores[0]?.id || ""); setOpen(true); };
+  const openEdit = (t) => { setForm({ name: t.name, subject: t.subject || "", body: t.body || "", storeName: t.storeName || "", storeId: t.storeId || "", storeLink: t.storeLink || "" }); setEdit(t); setGenStore(t.storeId || ""); setOpen(true); };
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.body.trim()) { toast.error("Name and message are required"); return; }
@@ -48,10 +49,24 @@ export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false
     setGenerating(true);
     try {
       const offering = store.description || `products and software sold on ${store.name}`;
-      const r = await base44.functions.invoke("leadFinder", { action: "generateEmail", storeName: store.name, offering, purpose: "invite them to explore and buy software from the store" });
+      const storeLink = buildStoreLink(store);
+      // Pull a few products from this store to reference in the email.
+      let products = [];
+      try {
+        const listings = await base44.entities.SaaSListing.filter({ marketplaceId: store.id }, "-created_date", 6);
+        products = (listings || []).map((p) => ({ name: p.softwareName, short: p.shortDescription || "" })).filter((p) => p.name);
+      } catch { /* store may have no products yet */ }
+      const r = await base44.functions.invoke("leadFinder", {
+        action: "generateEmail",
+        storeName: store.name,
+        offering,
+        storeLink,
+        products,
+        purpose: "invite them to explore and buy software from the store",
+      });
       const data = r?.data || r;
       if (data?.error) throw new Error(data.error);
-      setForm((f) => ({ ...f, storeName: store.name, subject: data.subject || f.subject, body: data.body || f.body }));
+      setForm((f) => ({ ...f, storeName: store.name, storeId: store.id, storeLink, subject: data.subject || f.subject, body: data.body || f.body }));
       toast.success("Email generated — review and save.");
     } catch (e) {
       toast.error(e.message || "Generation failed");
@@ -62,7 +77,7 @@ export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Reusable email templates. Use <code className="text-orange-400">{"{{first_name}}"}</code>, <code className="text-orange-400">{"{{business_name}}"}</code>, <code className="text-orange-400">{"{{business_description}}"}</code>, <code className="text-orange-400">{"{{store_name}}"}</code>.</p>
+        <p className="text-sm text-muted-foreground">Reusable email templates. Use <code className="text-orange-400">{"{{first_name}}"}</code>, <code className="text-orange-400">{"{{business_name}}"}</code>, <code className="text-orange-400">{"{{business_description}}"}</code>, <code className="text-orange-400">{"{{store_name}}"}</code>, <code className="text-orange-400">{"{{store_link}}"}</code>.</p>
         <Button onClick={openCreate} className="gap-1.5 shrink-0"><Plus className="w-4 h-4" /> New Template</Button>
       </div>
 
@@ -103,7 +118,12 @@ export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false
                 <span className="text-[11px] text-muted-foreground ml-auto">Optional — fills subject & message</span>
               </div>
               <div className="flex gap-2">
-                <select value={genStore} onChange={(e) => setGenStore(e.target.value)} className="flex-1 bg-secondary/50 border border-border/30 rounded-xl px-3 py-2 text-sm">
+                <select value={genStore} onChange={(e) => {
+                  const id = e.target.value;
+                  setGenStore(id);
+                  const s = stores.find((x) => x.id === id);
+                  if (s) setForm((f) => ({ ...f, storeName: s.name, storeId: s.id, storeLink: buildStoreLink(s) }));
+                }} className="flex-1 bg-secondary/50 border border-border/30 rounded-xl px-3 py-2 text-sm">
                   <option value="">Select store for context…</option>
                   {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
@@ -111,6 +131,9 @@ export default function LeadTemplatesTab({ ownerId, stores = [], isAdmin = false
                   {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Generate
                 </Button>
               </div>
+              {form.storeLink && (
+                <p className="text-[11px] text-muted-foreground truncate">Store link inserted via <code className="text-orange-400">{"{{store_link}}"}</code>: {form.storeLink}</p>
+              )}
               {stores.length === 0 && (
                 <p className="text-[11px] text-muted-foreground">{isAdmin ? "No stores found on your account." : "Create a store first to use AI context, or write your template manually below."}</p>
               )}

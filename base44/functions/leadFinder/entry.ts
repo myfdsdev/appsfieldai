@@ -131,12 +131,21 @@ Deno.serve(async (req) => {
 
     // ── Generate a personalized email (for the template generator) ──
     if (action === 'generateEmail') {
-      const { storeName, offering, tone, purpose } = body;
+      const { storeName, offering, tone, purpose, storeLink, products } = body;
+      const productLines = Array.isArray(products) && products.length
+        ? `The store sells these products/software/services the owner can mention as helpful for the recipient's business:\n` +
+          products.map((p: any) => `- ${p.name}${p.short ? `: ${p.short}` : ''}`).join('\n') + `\n`
+        : '';
       const prompt = `Write a short, warm B2B cold outreach email inviting a business owner to check out "${storeName}", ` +
         `a store that offers: ${offering || 'software products'}. Goal: ${purpose || 'invite them to explore and buy software from the store'}. ` +
         `Tone: ${tone || 'friendly and professional'}. ` +
-        `Keep it under 120 words. Use these placeholders literally so they can be personalized later: ` +
-        `{{first_name}} for the recipient's first name, {{business_name}} for their business, and {{store_name}} for the store. ` +
+        productLines +
+        `Structure the email so the FIRST paragraph is personalized to the recipient — greet them by {{first_name}} and reference their business {{business_name}}, ` +
+        `and explain how a product/software/service from the store can specifically help their business. ` +
+        `Then invite them to visit the store to find the software their business needs at the best affordable price, ` +
+        `and include the store link exactly as the placeholder {{store_link}} (write it as a clickable-looking URL line). ` +
+        `Keep it under 140 words. Use these placeholders literally so they can be personalized later: ` +
+        `{{first_name}} for the recipient's first name, {{business_name}} for their business, {{store_name}} for the store, and {{store_link}} for the store URL. ` +
         `Return a subject line and a body.`;
       const jsonSchema = {
         type: 'object',

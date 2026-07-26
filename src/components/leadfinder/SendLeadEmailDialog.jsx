@@ -56,8 +56,9 @@ export default function SendLeadEmailDialog({ open, onClose, lead, ownerId }) {
     setTemplateId(id);
     const t = templates.find((x) => x.id === id);
     if (t) {
-      setSubject(applyVars(t.subject, { ...vars, store_name: t.storeName || "" }));
-      setBodyText(applyVars(t.body, { ...vars, store_name: t.storeName || "" }));
+      const tvars = { ...vars, store_name: t.storeName || "", store_link: t.storeLink || "" };
+      setSubject(applyVars(t.subject, tvars));
+      setBodyText(applyVars(t.body, tvars));
     }
   };
 
