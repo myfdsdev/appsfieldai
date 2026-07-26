@@ -48,6 +48,16 @@
       "default": 10,
       "description": "Max products the user can add per store"
     },
+    "dfyAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether users on this plan can import Done-For-You (DFY) products"
+    },
+    "dfyProductLimit": {
+      "type": "number",
+      "default": 0,
+      "description": "Max number of DFY products the user can import on this plan"
+    },
     "marketplaceLimit": {
       "type": "number",
       "default": 1,

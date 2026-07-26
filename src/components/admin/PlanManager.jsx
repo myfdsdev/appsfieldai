@@ -49,7 +49,7 @@ export default function PlanManager() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };
@@ -57,7 +57,7 @@ export default function PlanManager() {
 
   const handleSave = async () => {
     if (!form.name?.trim()) { toast.error("Plan name is required"); return; }
-    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0 };
+    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed };
     if (editPlan) {
       await base44.entities.SubscriptionPlan.update(editPlan.id, data);
       toast.success(`Plan "${data.name}" updated`);
@@ -111,6 +111,7 @@ export default function PlanManager() {
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Yearly</span><span className="font-bold text-amber-400">${p.yearlyPrice}/yr</span></div>
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Stores</span><span className="font-medium">{p.storeLimit ?? 0}</span></div>
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Products/store</span><span className="font-medium">{p.productLimit ?? 0}</span></div>
+                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">DFY Products</span><span className="font-medium">{p.dfyAllowed ? (p.dfyProductLimit ?? 0) : "—"}</span></div>
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {p.customDomainAllowed && <Badge className="text-[9px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Domain</Badge>}
@@ -162,6 +163,10 @@ export default function PlanManager() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div><label className="text-xs font-medium">Store Creation Limit <span className="text-red-400">*</span></label><Input type="number" value={form.storeLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, storeLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Max stores the user can create</p></div>
                 <div><label className="text-xs font-medium">Product Limit (per store) <span className="text-red-400">*</span></label><Input type="number" value={form.productLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, productLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Max products per store</p></div>
+                <div><label className="text-xs font-medium">DFY Product Limit</label><Input type="number" value={form.dfyProductLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, dfyProductLimit: e.target.value }))} disabled={!form.dfyAllowed} className="bg-secondary/50 border-border/30 rounded-xl mt-1 disabled:opacity-50" /><p className="text-[10px] text-muted-foreground mt-1">Max Done-For-You products the user can import</p></div>
+              </div>
+              <div className="rounded-xl border border-border/30 bg-secondary/20 px-4 mt-4">
+                <SwitchRow label="Allow DFY Products" desc="Users on this plan can import Done-For-You products" checked={form.dfyAllowed} onChange={(v) => setForm((f) => ({ ...f, dfyAllowed: v }))} />
               </div>
             </div>
 
