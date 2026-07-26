@@ -4,41 +4,52 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Search, Download, Loader2, Package, CheckCheck, Play, Video, KeyRound } from "lucide-react";
+import { Check, Search, Download, Loader2, Package, CheckCheck, Play, Video, KeyRound, X } from "lucide-react";
 
-// Convert a YouTube URL to an embeddable preview URL (returns null for non-YouTube).
-function youtubeEmbed(url = "") {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+// Extract the 11-char YouTube video ID (or null for non-YouTube URLs).
+function youtubeId(url = "") {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([\w-]{11})/);
+  return m ? m[1] : null;
 }
 const isVideoFile = (url = "") => /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
 
-// Small media preview: thumbnail image, inline demo video, or gradient fallback.
-function ProductMedia({ p }) {
-  const [playing, setPlaying] = useState(false);
-  const yt = youtubeEmbed(p.demoVideoUrl);
-  const hasVideo = !!p.demoVideoUrl;
-
-  if (playing && hasVideo) {
-    return (
-      <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
-        {yt ? (
-          <iframe src={`${yt}?autoplay=1`} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen title={p.softwareName} />
-        ) : isVideoFile(p.demoVideoUrl) ? (
-          <video src={p.demoVideoUrl} className="w-full h-full object-cover" controls autoPlay />
+// Fullscreen lightbox that plays the demo video over the whole dialog.
+function VideoLightbox({ url, title, onClose }) {
+  const id = youtubeId(url);
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
+      <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+        <X className="w-5 h-5" />
+      </button>
+      <div className="w-full max-w-3xl aspect-video bg-black rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        {id ? (
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`}
+            className="w-full h-full"
+            allow="autoplay; encrypted-media; fullscreen"
+            allowFullScreen
+            title={title}
+          />
         ) : (
-          <iframe src={p.demoVideoUrl} className="w-full h-full" allowFullScreen title={p.softwareName} />
+          <video src={url} className="w-full h-full object-contain bg-black" controls autoPlay />
         )}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
+// Small media preview: thumbnail image, YouTube poster, or gradient fallback.
+function ProductMedia({ p, onPlay }) {
+  const ytId = youtubeId(p.demoVideoUrl);
+  const hasVideo = !!p.demoVideoUrl;
   const hasAdmin = p.adminAccessType && p.adminAccessType !== "none";
+  // Prefer the explicit thumbnail; else the YouTube poster; else the logo.
+  const poster = p.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null);
 
   return (
     <div className={`relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br ${p.imageGradient || "from-orange-500 to-amber-500"}`}>
-      {p.thumbnail ? (
-        <img src={p.thumbnail} alt={p.softwareName} className="w-full h-full object-cover" />
+      {poster ? (
+        <img src={poster} alt={p.softwareName} className="w-full h-full object-cover" />
       ) : p.logo ? (
         <img src={p.logo} alt={p.softwareName} className="w-full h-full object-contain p-4 bg-black/20" />
       ) : (
@@ -64,7 +75,7 @@ function ProductMedia({ p }) {
 
       {hasVideo && (
         <button
-          onClick={(e) => { e.stopPropagation(); setPlaying(true); }}
+          onClick={(e) => { e.stopPropagation(); onPlay(p.demoVideoUrl); }}
           className="absolute inset-0 flex items-center justify-center hover:bg-black/25 transition-colors"
         >
           <span className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
@@ -80,6 +91,7 @@ function ProductMedia({ p }) {
 export default function ImportDFYDialog({ open, onClose, existingNames = [], importing, onImport }) {
   const [selected, setSelected] = useState(new Set());
   const [query, setQuery] = useState("");
+  const [videoUrl, setVideoUrl] = useState(null); // demo video playing in the lightbox
 
   const { data: presets = [], isLoading } = useQuery({
     queryKey: ["dfyProductsActive"],
@@ -166,7 +178,7 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
                     }`}
                   >
                     <div className="p-2 pb-0">
-                      <ProductMedia p={p} />
+                      <ProductMedia p={p} onPlay={setVideoUrl} />
                     </div>
                     <button
                       disabled={already}
@@ -214,6 +226,8 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
           </div>
         </div>
       </DialogContent>
+
+      {videoUrl && <VideoLightbox url={videoUrl} title="Demo video" onClose={() => setVideoUrl(null)} />}
     </Dialog>
   );
 }
