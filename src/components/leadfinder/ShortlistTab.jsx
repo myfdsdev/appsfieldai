@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Star, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Star, Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LeadRow from "./LeadRow";
 import SendLeadEmailDialog from "./SendLeadEmailDialog";
 import AddLeadDialog from "./AddLeadDialog";
+import { exportLeadsCsv } from "./exportLeadsCsv";
 
 const PER_PAGE = 12;
 
@@ -52,9 +53,14 @@ export default function ShortlistTab({ ownerId }) {
         <p className="text-sm text-muted-foreground">
           {shortlisted.length} shortlisted lead{shortlisted.length !== 1 ? "s" : ""} ready to contact.
         </p>
-        <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5">
-          <Plus className="w-4 h-4" /> Add lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" disabled={shortlisted.length === 0} onClick={() => exportLeadsCsv(shortlisted, "shortlisted-leads")} className="gap-1.5 border-border/40">
+            <Download className="w-4 h-4" /> Export
+          </Button>
+          <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5">
+            <Plus className="w-4 h-4" /> Add lead
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">

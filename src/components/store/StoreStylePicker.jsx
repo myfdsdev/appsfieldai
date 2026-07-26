@@ -1,25 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Check, Eye, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { STORE_STYLES } from "./storeStyles";
 
-// Visual picker for the exclusive store styles. Each tile renders a tiny live
+// Visual picker for the exclusive store themes. Each tile renders a tiny live
 // mock (font + header + product blocks) plus a "Preview" button that opens a
 // full-width, scrollable popup of the theme's full-page screenshot (managed by
 // the admin under Marketplace Preset → Marketplace Templates).
 export default function StoreStylePicker({ value, onChange }) {
-  const [thumbnails, setThumbnails] = useState({});
-  const [names, setNames] = useState({});
   const [preview, setPreview] = useState(null); // { name, url }
 
-  useEffect(() => {
-    base44.entities.StorePageDefault.filter({ key: "default" })
-      .then(rows => {
-        if (rows?.[0]?.themeThumbnails) setThumbnails(rows[0].themeThumbnails);
-        if (rows?.[0]?.themeNames) setNames(rows[0].themeNames);
-      })
-      .catch(() => {});
-  }, []);
+  // Cached app-wide so theme thumbnails are fetched once and reused across
+  // navigations — no flash/reload each time the Store Theme tab is opened.
+  const { data: defaultRows, isLoading } = useQuery({
+    queryKey: ["storeThemeDefaults"],
+    queryFn: () => base44.entities.StorePageDefault.filter({ key: "default" }),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+  const thumbnails = defaultRows?.[0]?.themeThumbnails || {};
+  const names = defaultRows?.[0]?.themeNames || {};
+
+  // While the cached thumbnails load for the first time, show skeleton tiles
+  // instead of flashing the fallback mini-mocks.
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {STORE_STYLES.map((s) => (
+          <div key={s.slug} className="rounded-2xl border-2 border-border/40 overflow-hidden">
+            <div className="w-full aspect-[16/9] bg-secondary/40 animate-pulse" />
+            <div className="p-3 bg-card">
+              <div className="h-4 w-24 bg-secondary/60 rounded animate-pulse" />
+              <div className="h-3 w-40 bg-secondary/40 rounded animate-pulse mt-2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <>

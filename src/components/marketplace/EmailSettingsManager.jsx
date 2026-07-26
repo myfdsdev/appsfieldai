@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Save, Server, Mail, Info, Send, Loader2 } from "lucide-react";
+import { Save, Server, Mail, Info, Send, Loader2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Template-mail definitions, one tab per transactional action.
@@ -105,11 +106,16 @@ export default function EmailSettingsManager({ marketplace }) {
           </div>
 
           {/* Inherited SMTP note */}
-          <div className="flex items-start gap-2 rounded-xl bg-orange-500/5 border border-orange-500/20 p-3">
-            <Info className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              SMTP server, username and password are configured once under <span className="font-medium text-foreground">My Account → Outreach Email</span> and shared across all your stores — no need to set it up per store. Here you only choose how the sender appears for this store.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-xl bg-orange-500/5 border border-orange-500/20 p-3">
+            <div className="flex items-start gap-2 flex-1">
+              <Info className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                SMTP server, username and password are configured once under <span className="font-medium text-foreground">My Account → Outreach Email</span> and shared across all your stores — no need to set it up per store. Here you only choose how the sender appears for this store.
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="rounded-lg gap-1.5 shrink-0 border-orange-500/30 text-orange-400 hover:bg-orange-500/10">
+              <Link to="/my-account?tab=smtp"><Settings2 className="w-3.5 h-3.5" /> SMTP Settings</Link>
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

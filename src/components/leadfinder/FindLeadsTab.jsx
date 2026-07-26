@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Loader2, Sparkles, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Loader2, Sparkles, MapPin, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import LeadRow from "./LeadRow";
 import SendLeadEmailDialog from "./SendLeadEmailDialog";
+import { exportLeadsCsv } from "./exportLeadsCsv";
 
 const GROUPS_PER_PAGE = 3;
 
@@ -93,9 +94,20 @@ export default function FindLeadsTab({ ownerId }) {
         <div className="text-center py-12 rounded-xl border border-dashed border-border/40 text-sm text-muted-foreground">No leads yet. Run a search above.</div>
       ) : (
         <>
-          <div className="relative max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} className="pl-9" placeholder="Search found leads" />
+          <div className="flex items-center gap-2">
+            <div className="relative max-w-sm flex-1">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} className="pl-9" placeholder="Search found leads" />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={leads.length === 0}
+              onClick={() => exportLeadsCsv(groups.flatMap((g) => g.items), "found-leads")}
+              className="gap-1.5 border-border/40 shrink-0"
+            >
+              <Download className="w-4 h-4" /> Export
+            </Button>
           </div>
 
           {groups.length === 0 ? (

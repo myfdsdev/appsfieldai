@@ -7,7 +7,9 @@ import UserAccountSettings from "@/components/dashboard/UserAccountSettings";
 import LeadSmtpSettings from "@/components/leadfinder/LeadSmtpSettings";
 
 export default function CustomerDashboard() {
-  const [tab, setTab] = useState("account");
+  // Deep-link support: /my-account?tab=smtp opens the Outreach Email tab directly.
+  const initialTab = new URLSearchParams(window.location.search).get("tab") === "smtp" ? "smtp" : "account";
+  const [tab, setTab] = useState(initialTab);
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
