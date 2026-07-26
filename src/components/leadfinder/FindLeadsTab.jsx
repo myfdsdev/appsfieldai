@@ -61,18 +61,25 @@ export default function FindLeadsTab({ ownerId }) {
     queryClient.invalidateQueries({ queryKey: ["foundLeads", ownerId] });
   };
 
-  // Filter, then group leads by their search session (niche + area).
+  const hasField = (l, f) => {
+    if (f === "email") return (l.emails || []).some(Boolean);
+    return !!(l[f] && String(l[f]).trim());
+  };
+
+  // Filter by selected "must have" fields + search, then group by search session (niche + area).
   const groups = useMemo(() => {
     const s = query.trim().toLowerCase();
-    const filtered = s
-      ? leads.filter((l) =>
-          (l.businessName || "").toLowerCase().includes(s) ||
-          (l.description || "").toLowerCase().includes(s) ||
-          (l.emails || []).join(" ").toLowerCase().includes(s) ||
-          (l.niche || "").toLowerCase().includes(s) ||
-          (l.area || "").toLowerCase().includes(s)
-        )
-      : leads;
+    const activeReq = Object.keys(require).filter((k) => require[k]);
+    let filtered = leads.filter((l) => activeReq.every((f) => hasField(l, f)));
+    if (s) {
+      filtered = filtered.filter((l) =>
+        (l.businessName || "").toLowerCase().includes(s) ||
+        (l.description || "").toLowerCase().includes(s) ||
+        (l.emails || []).join(" ").toLowerCase().includes(s) ||
+        (l.niche || "").toLowerCase().includes(s) ||
+        (l.area || "").toLowerCase().includes(s)
+      );
+    }
 
     const map = new Map();
     for (const l of filtered) {
@@ -81,7 +88,7 @@ export default function FindLeadsTab({ ownerId }) {
       map.get(key).items.push(l);
     }
     return Array.from(map.values());
-  }, [leads, query]);
+  }, [leads, query, require]);
 
   const totalPages = Math.max(1, Math.ceil(groups.length / GROUPS_PER_PAGE));
   const pageGroups = groups.slice((page - 1) * GROUPS_PER_PAGE, page * GROUPS_PER_PAGE);
@@ -106,7 +113,7 @@ export default function FindLeadsTab({ ownerId }) {
                 <button
                   key={f.id}
                   type="button"
-                  onClick={() => toggleRequire(f.id)}
+                  onClick={() => { toggleRequire(f.id); setPage(1); }}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${active ? "bg-orange-500/15 border-orange-500/50 text-orange-400" : "border-border/50 text-muted-foreground hover:border-border"}`}
                 >
                   <f.icon className="w-3.5 h-3.5" /> {f.label}
