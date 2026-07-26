@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 
-const MASCOT_IMAGE = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/137122e9e_ai.png";
+const MASCOT_IMAGE = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/9f58417c6_image__3_.png";
 
 function MessageBubble({ message }) {
   const isUser = message.role === "user";
