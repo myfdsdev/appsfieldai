@@ -234,7 +234,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
           {/* Step 1: Template */}
           {step === 1 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Palette className="w-5 h-5 text-violet-400" />Choose Template</h3>
+              <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Palette className="w-5 h-5 text-violet-400" />Choose Store Color Theme</h3>
               <div className="grid grid-cols-2 gap-4">
                 {TEMPLATES.map(t => (
                   <button key={t.id} onClick={() => selectTemplate(t)} className={`p-4 rounded-xl border-2 text-left transition-all ${data.template === t.id ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"}`}>
