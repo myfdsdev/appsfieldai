@@ -105,6 +105,12 @@ const NAV_GROUPS = [
 export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack }) {
   const queryClient = useQueryClient();
 
+  // When the hub opens (via Manage), always start from the top instead of
+  // inheriting the previous scroll position.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // The store may have just been auto-built, so the marketplace passed in can be
   // stale (missing the AI-generated hero/FAQ/footer content). Always re-fetch the
   // latest record on mount and use it — the settings forms seed from this.
