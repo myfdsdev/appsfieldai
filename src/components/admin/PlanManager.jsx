@@ -48,8 +48,18 @@ export default function PlanManager() {
     queryFn: () => base44.entities.SubscriptionPlan.list(),
   });
 
+  const { data: dfyProducts = [] } = useQuery({
+    queryKey: ["dfyProductsForPlans"],
+    queryFn: () => base44.entities.DFYProduct.list(),
+  });
+
+  const toggleDfyProduct = (id) => setForm((f) => {
+    const current = f.allowedDfyProductIds || [];
+    return { ...f, allowedDfyProductIds: current.includes(id) ? current.filter((x) => x !== id) : [...current, id] };
+  });
+
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };
@@ -57,7 +67,7 @@ export default function PlanManager() {
 
   const handleSave = async () => {
     if (!form.name?.trim()) { toast.error("Plan name is required"); return; }
-    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed };
+    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed, allowedDfyProductIds: form.allowedDfyProductIds || [] };
     if (editPlan) {
       await base44.entities.SubscriptionPlan.update(editPlan.id, data);
       toast.success(`Plan "${data.name}" updated`);
@@ -168,6 +178,32 @@ export default function PlanManager() {
               <div className="rounded-xl border border-border/30 bg-secondary/20 px-4 mt-4">
                 <SwitchRow label="Allow DFY Products" desc="Users on this plan can import Done-For-You products" checked={form.dfyAllowed} onChange={(v) => setForm((f) => ({ ...f, dfyAllowed: v }))} />
               </div>
+              {form.dfyAllowed && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-medium">Allowed DFY Products</label>
+                    <span className="text-[10px] text-muted-foreground">{(form.allowedDfyProductIds || []).length === 0 ? "All products allowed" : `${(form.allowedDfyProductIds || []).length} selected`}</span>
+                  </div>
+                  <div className="rounded-xl border border-border/30 bg-secondary/20 max-h-56 overflow-y-auto divide-y divide-border/20">
+                    {dfyProducts.length === 0 ? (
+                      <p className="text-[11px] text-muted-foreground p-3">No DFY products found. Add them in the DFY Products section first.</p>
+                    ) : dfyProducts.map((d) => {
+                      const checked = (form.allowedDfyProductIds || []).includes(d.id);
+                      return (
+                        <label key={d.id} className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-secondary/40 transition-colors">
+                          <input type="checkbox" checked={checked} onChange={() => toggleDfyProduct(d.id)} className="accent-orange-500 w-4 h-4" />
+                          {d.thumbnail && <img src={d.thumbnail} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{d.softwareName}</p>
+                            {d.category && <p className="text-[11px] text-muted-foreground truncate">{d.category}</p>}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Leave all unchecked to allow every DFY product on this plan.</p>
+                </div>
+              )}
             </div>
 
             {/* Enabled Features */}
