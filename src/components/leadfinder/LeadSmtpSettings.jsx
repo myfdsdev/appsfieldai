@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
-import { Mail, Loader2, Save, Send } from "lucide-react";
+import { Mail, Loader2, Save, Send, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,14 @@ export default function LeadSmtpSettings({ user }) {
   const [testing, setTesting] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Quick links to get SMTP credentials from popular providers.
+  const providers = [
+    { name: "Resend", url: "https://resend.com/api-keys" },
+    { name: "Brevo", url: "https://app.brevo.com/settings/keys/smtp" },
+    { name: "Gmail", url: "https://myaccount.google.com/apppasswords" },
+    { name: "SendPulse", url: "https://login.sendpulse.com/settings/#smtp" },
+  ];
 
   const handleTest = async () => {
     setTesting(true);
@@ -77,6 +85,24 @@ export default function LeadSmtpSettings({ user }) {
           <p className="text-[11px] text-muted-foreground">Turn on to send Lead Finder emails</p>
         </div>
         <Switch checked={form.enabled} onCheckedChange={(v) => set("enabled", v)} />
+      </div>
+
+      <div className="rounded-xl bg-secondary/20 px-4 py-3">
+        <p className="text-[11px] text-muted-foreground mb-2">Get your SMTP credentials from a provider:</p>
+        <div className="flex flex-wrap gap-2">
+          {providers.map((p) => (
+            <a
+              key={p.name}
+              href={p.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/50 px-3 py-1.5 text-xs font-medium hover:border-orange-500/50 hover:text-orange-400 transition-colors"
+            >
+              {p.name}
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          ))}
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3">
