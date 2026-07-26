@@ -29,10 +29,14 @@ Deno.serve(async (req) => {
       const n = Math.min(Math.max(parseInt(count) || 10, 1), 30);
 
       const prompt = `You are a B2B lead researcher. Find ${n} real ${niche} businesses located in ${area}. ` +
-        `Use your knowledge and any available web context to return genuine, existing businesses (not invented ones). ` +
+        `Use your knowledge and available web context to return genuine, existing businesses (not invented ones). ` +
+        `For each business, work hard to find a real contact email address: check the business's own website ` +
+        `(look at its home, contact, about and footer pages), its Google Business listing, and its Instagram/Facebook ` +
+        `profiles for a publicly listed email. Prioritise returning businesses that have a findable contact email. ` +
         `For each, provide the business name, a one-sentence description, any publicly listed contact emails (can be multiple), ` +
         `a contact phone number, website URL, Instagram profile URL, and Facebook page URL. ` +
-        `Leave a field as an empty string if you don't have it. Do NOT fabricate emails or phone numbers you are unsure of.`;
+        `Leave a field as an empty string if you genuinely cannot find it. Do NOT fabricate or guess emails or phone numbers — ` +
+        `only return a contact email you actually found in a public source.`;
 
       const jsonSchema = {
         type: 'object',
