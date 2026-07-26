@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { toast } from "sonner";
 
 const GRADIENTS = [
@@ -100,14 +101,12 @@ export default function DFYProductManager() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div><label className="text-xs text-muted-foreground">Product Name *</label><Input value={form.softwareName} onChange={e => setForm(f => ({ ...f, softwareName: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Category</label><Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="CRM, AI & ML..." /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Category</label><Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="CRM, AI & ML..." /></div>
-              <div><label className="text-xs text-muted-foreground">Logo URL</label><Input value={form.logo} onChange={e => setForm(f => ({ ...f, logo: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://..." /></div>
+              <div><label className="text-xs text-muted-foreground">Logo</label><div className="mt-1"><R2ImageUpload value={form.logo} onChange={url => setForm(f => ({ ...f, logo: url }))} placeholder="https://... or upload logo" /></div></div>
+              <div><label className="text-xs text-muted-foreground">Thumbnail (cover image)</label><div className="mt-1"><R2ImageUpload value={form.thumbnail} onChange={url => setForm(f => ({ ...f, thumbnail: url }))} placeholder="https://... or upload cover" /></div></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Thumbnail URL</label><Input value={form.thumbnail} onChange={e => setForm(f => ({ ...f, thumbnail: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://... cover image" /></div>
-              <div><label className="text-xs text-muted-foreground">Demo Video URL</label><Input value={form.demoVideoUrl} onChange={e => setForm(f => ({ ...f, demoVideoUrl: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://...mp4 or YouTube" /></div>
-            </div>
+            <div><label className="text-xs text-muted-foreground">Demo Video</label><div className="mt-1"><R2ImageUpload value={form.demoVideoUrl} onChange={url => setForm(f => ({ ...f, demoVideoUrl: url }))} placeholder="https://...mp4, YouTube or upload video" /></div></div>
             <div><label className="text-xs text-muted-foreground">Short Description</label><Input value={form.shortDescription} onChange={e => setForm(f => ({ ...f, shortDescription: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             <div><label className="text-xs text-muted-foreground">Full Description</label><Textarea value={form.fullDescription} onChange={e => setForm(f => ({ ...f, fullDescription: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1 h-20 resize-none" /></div>
             <div><label className="text-xs text-muted-foreground">Features (comma-separated)</label><Input value={form.featuresText} onChange={e => setForm(f => ({ ...f, featuresText: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="Feature A, Feature B" /></div>
