@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Search, Download, Loader2, Package, CheckCheck, Play, Video, KeyRound, X } from "lucide-react";
+import { Check, Search, Download, Loader2, Package, CheckCheck, Play, Video, KeyRound, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Extract the 11-char YouTube video ID (or null for non-YouTube URLs).
 function youtubeId(url = "") {
@@ -38,29 +38,66 @@ function VideoLightbox({ url, title, onClose }) {
   );
 }
 
-// Small media preview: thumbnail image, YouTube poster, or gradient fallback.
+// Media slider: steps through cover image, logo, and the video demo slide.
 function ProductMedia({ p, onPlay }) {
   const ytId = youtubeId(p.demoVideoUrl);
   const hasVideo = !!p.demoVideoUrl;
   const hasAdmin = p.adminAccessType && p.adminAccessType !== "none";
-  // Prefer the explicit thumbnail; else the YouTube poster; else the logo.
-  const poster = p.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null);
+  const videoPoster = p.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null);
+
+  // Build the ordered slide list from whatever media exists.
+  const slides = useMemo(() => {
+    const list = [];
+    if (p.thumbnail) list.push({ type: "image", src: p.thumbnail, fit: "cover" });
+    if (p.logo) list.push({ type: "image", src: p.logo, fit: "contain" });
+    if (hasVideo) list.push({ type: "video", poster: videoPoster });
+    return list;
+  }, [p.thumbnail, p.logo, hasVideo, videoPoster]);
+
+  const [idx, setIdx] = useState(0);
+  const current = slides[idx];
+  const go = (e, dir) => {
+    e.stopPropagation();
+    setIdx((i) => (i + dir + slides.length) % slides.length);
+  };
 
   return (
     <div className={`relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br ${p.imageGradient || "from-orange-500 to-amber-500"}`}>
-      {poster ? (
-        <img src={poster} alt={p.softwareName} className="w-full h-full object-cover" />
-      ) : p.logo ? (
-        <img src={p.logo} alt={p.softwareName} className="w-full h-full object-contain p-4 bg-black/20" />
-      ) : (
+      {!current ? (
         <div className="w-full h-full flex items-center justify-center">
           <span className="text-white font-bold text-2xl">{(p.softwareName || "?")[0]}</span>
         </div>
+      ) : current.type === "video" ? (
+        <>
+          {current.poster ? (
+            <img src={current.poster} alt={p.softwareName} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-black/30">
+              <span className="text-white font-bold text-2xl">{(p.softwareName || "?")[0]}</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black/25" />
+          <button
+            onClick={(e) => { e.stopPropagation(); onPlay(p.demoVideoUrl); }}
+            className="absolute inset-0 flex items-center justify-center hover:bg-black/25 transition-colors"
+          >
+            <span className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+              <Play className="w-4 h-4 text-black fill-black ml-0.5" />
+            </span>
+          </button>
+        </>
+      ) : (
+        <img
+          src={current.src}
+          alt={p.softwareName}
+          className={`w-full h-full ${current.fit === "contain" ? "object-contain p-4 bg-black/20" : "object-cover"}`}
+        />
       )}
-      <div className="absolute inset-0 bg-black/15" />
+
+      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
       {/* Corner badges */}
-      <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
+      <div className="absolute top-1.5 left-1.5 flex items-center gap-1 pointer-events-none">
         {hasVideo && (
           <span className="flex items-center gap-0.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-medium px-1.5 py-0.5 rounded-full">
             <Video className="w-2.5 h-2.5" /> Demo
@@ -73,15 +110,31 @@ function ProductMedia({ p, onPlay }) {
         )}
       </div>
 
-      {hasVideo && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onPlay(p.demoVideoUrl); }}
-          className="absolute inset-0 flex items-center justify-center hover:bg-black/25 transition-colors"
-        >
-          <span className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-            <Play className="w-4 h-4 text-black fill-black ml-0.5" />
-          </span>
-        </button>
+      {/* Slider arrows + dots (only when there's more than one slide) */}
+      {slides.length > 1 && (
+        <>
+          <button
+            onClick={(e) => go(e, -1)}
+            className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => go(e, 1)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${i === idx ? "bg-white" : "bg-white/40"}`}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
