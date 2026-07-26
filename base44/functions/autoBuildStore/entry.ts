@@ -103,33 +103,41 @@ Generate compelling, professional, conversion-focused content for this store's l
     const agent = g.agent || {};
     // Default Deal Maker avatar — also used as the default hero side image.
     const DEFAULT_DEAL_MAKER_AVATAR = 'http://cdn.appsfieldai.com/uploads/6a2402b3a9b98ed1e7bf2a17/deal-maker-avatar_1784889432609.png';
+    // Coerce any value to a safe string — the AI sometimes returns null/undefined
+    // for optional fields, which would fail the entity's string validation.
+    const str = (v, fallback = '') => (typeof v === 'string' ? v : (v == null ? fallback : String(v)));
     const updatedPageSections = {
       ...existing,
       // Deal Maker sales agent — trained from the store description & catalog.
       dealMakerEnabled: true,
-      dealMakerName: agent.name || existing.dealMakerName || 'Max',
-      dealMakerTagline: agent.tagline || existing.dealMakerTagline || 'AI Deal Strategist',
-      dealMakerImageUrl: existing.dealMakerImageUrl || DEFAULT_DEAL_MAKER_AVATAR,
-      dealMakerNiche: agent.niche || existing.dealMakerNiche || '',
-      dealMakerGuarantee: agent.guarantee || existing.dealMakerGuarantee || '',
-      dealMakerGreeting: agent.greeting || existing.dealMakerGreeting || '',
-      dealMakerKnowledge: agent.knowledge || existing.dealMakerKnowledge || '',
+      dealMakerName: str(agent.name || existing.dealMakerName, 'Max'),
+      dealMakerTagline: str(agent.tagline || existing.dealMakerTagline, 'AI Deal Strategist'),
+      dealMakerImageUrl: str(existing.dealMakerImageUrl || DEFAULT_DEAL_MAKER_AVATAR),
+      dealMakerNiche: str(agent.niche || existing.dealMakerNiche),
+      dealMakerGuarantee: str(agent.guarantee || existing.dealMakerGuarantee),
+      dealMakerGreeting: str(agent.greeting || existing.dealMakerGreeting),
+      dealMakerKnowledge: str(agent.knowledge || existing.dealMakerKnowledge),
       headerEnabled: true,
-      heroBadgeText: g.badge || existing.heroBadgeText || '',
-      headerTitle: g.headline || existing.headerTitle || storeName,
-      headerSubtitle: g.subheadline || existing.headerSubtitle || '',
-      heroSideImageUrl: existing.heroSideImageUrl || DEFAULT_DEAL_MAKER_AVATAR,
-      heroCtaText: g.ctaText || existing.heroCtaText || 'Browse Deals',
+      heroBadgeText: str(g.badge || existing.heroBadgeText),
+      headerTitle: str(g.headline || existing.headerTitle || storeName),
+      headerSubtitle: str(g.subheadline || existing.headerSubtitle),
+      heroSideImageUrl: str(existing.heroSideImageUrl || DEFAULT_DEAL_MAKER_AVATAR),
+      heroCtaText: str(g.ctaText || existing.heroCtaText, 'Browse Deals'),
       testimonialsEnabled: true,
-      testimonialsTitle: existing.testimonialsTitle || 'What our customers say',
+      testimonialsTitle: str(existing.testimonialsTitle, 'What our customers say'),
       faqEnabled: true,
-      faqTitle: existing.faqTitle || 'Frequently Asked Questions',
+      faqTitle: str(existing.faqTitle, 'Frequently Asked Questions'),
       faqs: Array.isArray(g.faqs) ? g.faqs.filter(f => f.question && f.answer) : (existing.faqs || []),
       footerEnabled: true,
-      footerText: g.footerTagline || existing.footerText || `${storeName} — your destination for the best SaaS deals.`,
+      footerText: str(g.footerTagline || existing.footerText, `${storeName} — your destination for the best SaaS deals.`),
     };
 
-    await base44.entities.Marketplace.update(marketplaceId, { pageSections: updatedPageSections });
+    // Don't let a pageSections validation error block product/testimonial creation.
+    try {
+      await base44.entities.Marketplace.update(marketplaceId, { pageSections: updatedPageSections });
+    } catch (e) {
+      console.error('pageSections update failed, continuing with product creation:', e.message);
+    }
 
     // 3. Create testimonial records for this marketplace.
     let testimonialCount = 0;
