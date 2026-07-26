@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, Star, FileText, Radar, Lock, History } from "lucide-react";
+import { Search, Star, FileText, Radar, Lock, History, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
@@ -58,10 +58,13 @@ export default function LeadFinder() {
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
           <Radar className="w-5 h-5 text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-display font-bold">Lead Finder</h1>
           <p className="text-sm text-muted-foreground">Find potential clients and invite them to your store.</p>
         </div>
+        <Button asChild variant="outline" size="sm" className="gap-1.5 rounded-xl shrink-0">
+          <Link to="/dashboard"><ArrowLeft className="w-4 h-4" /> Back to Dashboard</Link>
+        </Button>
       </motion.div>
 
       <div className="flex gap-2 border-b border-border/40">
