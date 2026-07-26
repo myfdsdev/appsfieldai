@@ -10,6 +10,14 @@
       "type": "string",
       "description": "Logo image URL"
     },
+    "thumbnail": {
+      "type": "string",
+      "description": "Product thumbnail/cover image URL shown in the import grid"
+    },
+    "demoVideoUrl": {
+      "type": "string",
+      "description": "Demo video URL (mp4 or YouTube link) previewed in the import grid"
+    },
     "shortDescription": {
       "type": "string",
       "description": "Short description / tagline"

@@ -4,9 +4,61 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Search, Download, Loader2, Package, CheckCheck } from "lucide-react";
+import { Check, Search, Download, Loader2, Package, CheckCheck, Play } from "lucide-react";
 
-// Popup that lets a store owner pick which DFY products to import (multi-select).
+// Convert a YouTube URL to an embeddable preview URL (returns null for non-YouTube).
+function youtubeEmbed(url = "") {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
+const isVideoFile = (url = "") => /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+
+// Small media preview: thumbnail image, inline demo video, or gradient fallback.
+function ProductMedia({ p }) {
+  const [playing, setPlaying] = useState(false);
+  const yt = youtubeEmbed(p.demoVideoUrl);
+  const hasVideo = !!p.demoVideoUrl;
+
+  if (playing && hasVideo) {
+    return (
+      <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
+        {yt ? (
+          <iframe src={`${yt}?autoplay=1`} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen title={p.softwareName} />
+        ) : isVideoFile(p.demoVideoUrl) ? (
+          <video src={p.demoVideoUrl} className="w-full h-full object-cover" controls autoPlay />
+        ) : (
+          <iframe src={p.demoVideoUrl} className="w-full h-full" allowFullScreen title={p.softwareName} />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br ${p.imageGradient || "from-orange-500 to-amber-500"}`}>
+      {p.thumbnail ? (
+        <img src={p.thumbnail} alt={p.softwareName} className="w-full h-full object-cover" />
+      ) : p.logo ? (
+        <img src={p.logo} alt={p.softwareName} className="w-full h-full object-contain p-4 bg-black/20" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <span className="text-white font-bold text-2xl">{(p.softwareName || "?")[0]}</span>
+        </div>
+      )}
+      {hasVideo && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setPlaying(true); }}
+          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+        >
+          <span className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+            <Play className="w-4 h-4 text-black fill-black ml-0.5" />
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Popup that lets a store owner pick which DFY products to import (multi-select grid).
 export default function ImportDFYDialog({ open, onClose, existingNames = [], importing, onImport }) {
   const [selected, setSelected] = useState(new Set());
   const [query, setQuery] = useState("");
@@ -46,85 +98,85 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
     .map((p) => p.id);
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
 
-  const toggleAll = () => {
-    setSelected((prev) => {
-      if (allSelected) return new Set();
-      return new Set(selectableIds);
-    });
-  };
+  const toggleAll = () => setSelected(() => (allSelected ? new Set() : new Set(selectableIds)));
 
-  const handleImport = () => {
-    const chosen = presets.filter((p) => selected.has(p.id));
-    onImport(chosen);
-  };
+  const handleImport = () => onImport(presets.filter((p) => selected.has(p.id)));
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="sm:max-w-4xl max-h-[88vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-5 pb-3 border-b border-border/40">
           <DialogTitle className="flex items-center gap-2 text-base">
             <Download className="w-4 h-4 text-orange-400" /> Import DFY Products
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-4 pb-2 space-y-2">
-          <div className="relative">
+        <div className="p-4 pb-2 flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input value={query} onChange={(e) => setQuery(e.target.value)} className="pl-9 rounded-xl" placeholder="Search products" />
           </div>
           {selectableIds.length > 0 && (
-            <button onClick={toggleAll} className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300">
+            <button onClick={toggleAll} className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 shrink-0 sm:px-2">
               <CheckCheck className="w-3.5 h-3.5" /> {allSelected ? "Clear selection" : "Select all"}
             </button>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-2">
+        <div className="flex-1 overflow-y-auto px-4 pb-2">
           {isLoading ? (
-            <div className="text-center py-10 text-sm text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />Loading products…</div>
+            <div className="text-center py-16 text-sm text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />Loading products…</div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-10">
+            <div className="text-center py-16">
               <Package className="w-8 h-8 mx-auto mb-2 text-orange-400/40" />
               <p className="text-sm text-muted-foreground">No DFY products available.</p>
             </div>
           ) : (
-            filtered.map((p) => {
-              const already = existing.has((p.softwareName || "").trim().toLowerCase());
-              const isSel = selected.has(p.id);
-              return (
-                <button
-                  key={p.id}
-                  disabled={already}
-                  onClick={() => toggle(p.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
-                    already
-                      ? "border-border/20 bg-secondary/20 opacity-60 cursor-not-allowed"
-                      : isSel
-                      ? "border-orange-500/50 bg-orange-500/10"
-                      : "border-border/40 bg-card/40 hover:border-orange-500/30"
-                  }`}
-                >
-                  <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${p.imageGradient || "from-orange-500 to-amber-500"} flex items-center justify-center shrink-0`}>
-                    <span className="text-white font-bold text-xs">{(p.softwareName || "?")[0]}</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{p.softwareName}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">
-                      {p.category}
-                      {p.discountPrice > 0 && ` · $${p.discountPrice}`}
-                      {p.adminAccessType && p.adminAccessType !== "none" && " · Admin access included"}
-                    </p>
-                  </div>
-                  {already ? (
-                    <span className="text-[10px] text-muted-foreground shrink-0">Imported</span>
-                  ) : (
-                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${isSel ? "bg-orange-500 border-orange-500" : "border-border/60"}`}>
-                      {isSel && <Check className="w-3.5 h-3.5 text-white" />}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {filtered.map((p) => {
+                const already = existing.has((p.softwareName || "").trim().toLowerCase());
+                const isSel = selected.has(p.id);
+                return (
+                  <div
+                    key={p.id}
+                    className={`rounded-xl border overflow-hidden transition-all ${
+                      already
+                        ? "border-border/20 bg-secondary/20 opacity-60"
+                        : isSel
+                        ? "border-orange-500/60 bg-orange-500/5 ring-1 ring-orange-500/40"
+                        : "border-border/40 bg-card/40 hover:border-orange-500/30"
+                    }`}
+                  >
+                    <div className="p-2 pb-0">
+                      <ProductMedia p={p} />
                     </div>
-                  )}
-                </button>
-              );
-            })
+                    <button
+                      disabled={already}
+                      onClick={() => toggle(p.id)}
+                      className={`w-full text-left p-3 flex items-start gap-2 ${already ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{p.softwareName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {p.category}
+                          {p.discountPrice > 0 && ` · $${p.discountPrice}`}
+                        </p>
+                        {p.adminAccessType && p.adminAccessType !== "none" && (
+                          <p className="text-[10px] text-orange-400 mt-0.5">Admin access included</p>
+                        )}
+                      </div>
+                      {already ? (
+                        <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">Imported</span>
+                      ) : (
+                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 ${isSel ? "bg-orange-500 border-orange-500" : "border-border/60"}`}>
+                          {isSel && <Check className="w-3.5 h-3.5 text-white" />}
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 

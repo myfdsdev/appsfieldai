@@ -19,7 +19,7 @@ const GRADIENTS = [
 ];
 
 const emptyForm = {
-  softwareName: "", logo: "", shortDescription: "", fullDescription: "",
+  softwareName: "", logo: "", thumbnail: "", demoVideoUrl: "", shortDescription: "", fullDescription: "",
   category: "", featuresText: "", price: "", discountPrice: "", sharePrice: "",
   totalShares: "", monthlyRevenue: "", growthRate: "", rating: 5,
   dealType: "single_purchase", pricingType: "lifetime_deal",
@@ -42,7 +42,7 @@ export default function DFYProductManager() {
   const openCreate = () => { setForm(emptyForm); setEditingId(null); setShowForm(true); };
   const openEdit = (p) => {
     setForm({
-      softwareName: p.softwareName || "", logo: p.logo || "", shortDescription: p.shortDescription || "",
+      softwareName: p.softwareName || "", logo: p.logo || "", thumbnail: p.thumbnail || "", demoVideoUrl: p.demoVideoUrl || "", shortDescription: p.shortDescription || "",
       fullDescription: p.fullDescription || "", category: p.category || "",
       featuresText: (p.features || []).join(", "), price: p.price ?? "", discountPrice: p.discountPrice ?? "",
       sharePrice: p.sharePrice ?? "", totalShares: p.totalShares ?? "", monthlyRevenue: p.monthlyRevenue ?? "",
@@ -59,7 +59,7 @@ export default function DFYProductManager() {
     if (!form.softwareName.trim()) return toast.error("Product name is required");
     setSaving(true);
     const payload = {
-      softwareName: form.softwareName, logo: form.logo, shortDescription: form.shortDescription,
+      softwareName: form.softwareName, logo: form.logo, thumbnail: form.thumbnail, demoVideoUrl: form.demoVideoUrl, shortDescription: form.shortDescription,
       fullDescription: form.fullDescription, category: form.category,
       features: form.featuresText.split(",").map(f => f.trim()).filter(Boolean),
       price: parseFloat(form.price) || 0, discountPrice: parseFloat(form.discountPrice) || 0,
@@ -103,6 +103,10 @@ export default function DFYProductManager() {
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-xs text-muted-foreground">Category</label><Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="CRM, AI & ML..." /></div>
               <div><label className="text-xs text-muted-foreground">Logo URL</label><Input value={form.logo} onChange={e => setForm(f => ({ ...f, logo: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://..." /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="text-xs text-muted-foreground">Thumbnail URL</label><Input value={form.thumbnail} onChange={e => setForm(f => ({ ...f, thumbnail: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://... cover image" /></div>
+              <div><label className="text-xs text-muted-foreground">Demo Video URL</label><Input value={form.demoVideoUrl} onChange={e => setForm(f => ({ ...f, demoVideoUrl: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://...mp4 or YouTube" /></div>
             </div>
             <div><label className="text-xs text-muted-foreground">Short Description</label><Input value={form.shortDescription} onChange={e => setForm(f => ({ ...f, shortDescription: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             <div><label className="text-xs text-muted-foreground">Full Description</label><Textarea value={form.fullDescription} onChange={e => setForm(f => ({ ...f, fullDescription: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1 h-20 resize-none" /></div>

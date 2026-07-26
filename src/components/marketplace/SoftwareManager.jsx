@@ -87,6 +87,7 @@ export default function SoftwareManager({ marketplaceId }) {
         marketplaceId,
         softwareName: p.softwareName,
         logo: p.logo,
+        demoVideoUrl: p.demoVideoUrl || "",
         shortDescription: p.shortDescription,
         fullDescription: p.fullDescription,
         category: p.category,
