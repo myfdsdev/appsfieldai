@@ -1,10 +1,18 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Loader2, Sparkles, MapPin, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Search, Loader2, Sparkles, MapPin, ChevronLeft, ChevronRight, Download, Mail, Phone, Globe, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const REQUIRE_FIELDS = [
+  { id: "email", label: "Email", icon: Mail },
+  { id: "phone", label: "Contact number", icon: Phone },
+  { id: "website", label: "Website", icon: Globe },
+  { id: "instagram", label: "Instagram", icon: Instagram },
+  { id: "facebook", label: "Facebook", icon: Facebook },
+];
 import { toast } from "sonner";
 import LeadRow from "./LeadRow";
 import SendLeadEmailDialog from "./SendLeadEmailDialog";
@@ -17,7 +25,10 @@ export default function FindLeadsTab({ ownerId }) {
   const [niche, setNiche] = useState("");
   const [area, setArea] = useState("");
   const [count, setCount] = useState(10);
+  const [require, setRequire] = useState({ email: true });
   const [searching, setSearching] = useState(false);
+
+  const toggleRequire = (id) => setRequire((r) => ({ ...r, [id]: !r[id] }));
   const [emailLead, setEmailLead] = useState(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -32,7 +43,8 @@ export default function FindLeadsTab({ ownerId }) {
     if (!niche.trim() || !area.trim()) { toast.error("Enter a niche and an area/city"); return; }
     setSearching(true);
     try {
-      const r = await base44.functions.invoke("leadFinder", { action: "findLeads", niche, area, count: parseInt(count) || 10 });
+      const requireFields = Object.keys(require).filter((k) => require[k]);
+      const r = await base44.functions.invoke("leadFinder", { action: "findLeads", niche, area, count: parseInt(count) || 10, requireFields });
       const data = r?.data || r;
       if (data?.error) throw new Error(data.error);
       queryClient.invalidateQueries({ queryKey: ["foundLeads", ownerId] });
@@ -84,6 +96,25 @@ export default function FindLeadsTab({ ownerId }) {
           <Button onClick={handleSearch} disabled={searching} className="gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0">
             {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Find Leads
           </Button>
+        </div>
+        <div className="mt-4">
+          <Label className="text-xs">Leads must have</Label>
+          <div className="flex flex-wrap gap-2 mt-1.5">
+            {REQUIRE_FIELDS.map((f) => {
+              const active = !!require[f.id];
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => toggleRequire(f.id)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${active ? "bg-orange-500/15 border-orange-500/50 text-orange-400" : "border-border/50 text-muted-foreground hover:border-border"}`}
+                >
+                  <f.icon className="w-3.5 h-3.5" /> {f.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">Only returns leads that have every selected field. Select all to force fully-contactable leads.</p>
         </div>
         <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-orange-400" /> AI-researched leads with web context — best available, but verify details before contacting.</p>
       </div>
