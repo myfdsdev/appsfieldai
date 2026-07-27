@@ -48,8 +48,15 @@ export async function confirmStoreCustomerPasswordReset({ marketplaceId, email, 
 // Request a passwordless login link emailed to the customer (always resolves,
 // even for unknown emails, so we don't reveal which accounts exist).
 export async function requestStoreCustomerMagicLink({ marketplaceId, email }) {
-  const returnUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const res = await base44.functions.invoke("storeCustomerMagicLink", { step: "request", marketplaceId, email, returnUrl });
+  // Pass the exact store base the user is on (origin + the /store/:slug prefix,
+  // minus any trailing /dashboard) so the emailed link lands on THIS store's
+  // dashboard — works for slug routes, subdomains and custom domains alike.
+  let returnBase = "";
+  if (typeof window !== "undefined") {
+    const path = window.location.pathname.replace(/\/dashboard\/?$/, "");
+    returnBase = `${window.location.origin}${path}`.replace(/\/$/, "");
+  }
+  const res = await base44.functions.invoke("storeCustomerMagicLink", { step: "request", marketplaceId, email, returnUrl: returnBase });
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }

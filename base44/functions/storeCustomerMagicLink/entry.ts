@@ -2,8 +2,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 
 // Passwordless "magic link" login for store customers.
 //   step="request" → if an account exists for the email, generate a one-time
-//                    login token (15-min expiry, stored in resetCode/resetExpires),
-//                    email a login link, and always return generic success.
+//                    login token (24-hour expiry, stored in resetCode/resetExpires)
+//                    and email a login link to the store dashboard. If no account
+//                    exists, returns an explicit "not registered" error.
 //   step="verify"  → validate the token, issue a fresh sessionToken, clear the
 //                    one-time token, and return the customer + session.
 //
@@ -36,32 +37,45 @@ Deno.serve(async (req) => {
       const matches = await svc.entities.StoreCustomer.filter({ marketplaceId, email: cleanEmail });
       const customer = matches[0];
 
-      // Only actually send when the account exists — but always report success
-      // so we never reveal whether an email is registered.
-      if (customer && customer.status !== 'suspended') {
-        const token = makeToken();
-        const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-        await svc.entities.StoreCustomer.update(customer.id, { resetCode: token, resetExpires: expires });
-
-        // Build the store dashboard URL with the login token appended.
-        const storeBase = marketplace.customDomain
-          ? `https://${marketplace.customDomain}`
-          : (marketplace.storeLink ? marketplace.storeLink.replace(/\/$/, '') : '');
-        const base = storeBase || (returnUrl ? String(returnUrl).replace(/\/$/, '') : '');
-        const loginUrl = base ? `${base}/dashboard?loginToken=${token}` : '';
-
-        try {
-          await svc.functions.invoke('sendStoreEmail', {
-            marketplaceId,
-            templateKey: 'magicLink',
-            to: cleanEmail,
-            vars: {
-              customer_name: customer.fullName || 'there',
-              login_url: loginUrl,
-            },
-          });
-        } catch (e) { console.error('magic-link email failed:', e); }
+      // The store owner asked for an explicit "not registered" message rather than
+      // the generic privacy response, so tell the user plainly when no account exists.
+      if (!customer) {
+        return Response.json({ error: 'This email is not registered. Please create an account first.' });
       }
+      if (customer.status === 'suspended') {
+        return Response.json({ error: 'This account has been suspended.' });
+      }
+
+      // One-time login token, valid for 24 hours.
+      const token = makeToken();
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      await svc.entities.StoreCustomer.update(customer.id, { resetCode: token, resetExpires: expires });
+
+      // Build the correct store DASHBOARD URL with the login token appended so the
+      // link authenticates and lands on the account/access dashboard — not the
+      // public store home. returnUrl (the exact store base the user is on) wins;
+      // otherwise fall back to custom domain / storeLink.
+      const cleanReturn = returnUrl ? String(returnUrl).replace(/\/$/, '') : '';
+      const storeBase = cleanReturn
+        || (marketplace.customDomain ? `https://${marketplace.customDomain}`.replace(/\/$/, '') : '')
+        || (marketplace.storeLink ? marketplace.storeLink.replace(/\/$/, '') : '');
+      const loginUrl = storeBase ? `${storeBase}/dashboard?loginToken=${token}` : '';
+
+      try {
+        await svc.functions.invoke('sendStoreEmail', {
+          marketplaceId,
+          templateKey: 'magicLink',
+          to: cleanEmail,
+          vars: {
+            customer_name: customer.fullName || 'there',
+            login_url: loginUrl,
+          },
+        });
+      } catch (e) {
+        console.error('magic-link email failed:', e);
+        return Response.json({ error: 'We could not send the login email. Please try again.' });
+      }
+
       return Response.json({ success: true });
     }
 
