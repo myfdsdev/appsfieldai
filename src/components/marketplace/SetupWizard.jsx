@@ -195,7 +195,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   const CurrentIcon = steps[step].icon;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {building && <BuildingStoreOverlay storeName={data.name} />}
       {/* Step indicators */}
       <div className="flex items-center gap-1 mb-8">
