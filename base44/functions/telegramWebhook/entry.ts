@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendTelegramMessage, ensureBotCommands } from '../../shared/telegram.ts';
-import { handleTelegramCommand, handleTelegramCallback } from '../../shared/telegramCommands.ts';
+import { handleTelegramCommand, handleTelegramCallback, HELP_TEXT } from '../../shared/telegramCommands.ts';
 
 // Telegram webhook — Telegram calls this whenever the bot receives a message.
 // The only message we care about is the "/start <code>" the owner sends by
@@ -62,11 +62,11 @@ export default async function (req) {
       return Response.json({ ok: true });
     }
 
-    // Any other message — friendly hint.
+    // Bare /start — welcome + full command list.
     if (/^\/start$/.test(text)) {
       await sendTelegramMessage(
         chat.id,
-        `👋 To connect this chat to your store, open the <b>Telegram</b> tab in your account settings and scan the QR code / tap the connect button.`
+        `👋 To connect this chat to your store, open the <b>Telegram</b> tab in your account settings and scan the QR code / tap the connect button.\n\n${HELP_TEXT}`
       );
     }
 

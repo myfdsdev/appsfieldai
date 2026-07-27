@@ -37,7 +37,7 @@ async function ownerOrders(svc, marketplaces) {
   return all;
 }
 
-const HELP_TEXT =
+export const HELP_TEXT =
   `🤖 <b>Your store commands</b>\n\n` +
   `/sales — today & all-time sales\n` +
   `/revenue — revenue breakdown\n` +
