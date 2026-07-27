@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { getYouTubeId } from "@/lib/youtube";
+import MinimalYouTubePlayer from "@/components/MinimalYouTubePlayer";
 
 // Shows right after the user logs in. Login sets this flag; we clear it once shown.
 const AFTER_LOGIN_KEY = "popup_video_after_login";
@@ -28,8 +29,6 @@ export default function PopupVideo() {
 
   if (!open || !config) return null;
 
-  const videoId = getYouTubeId(config.popupVideoUrl);
-
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
@@ -52,15 +51,7 @@ export default function PopupVideo() {
           </div>
         )}
         <div className="p-5">
-          <div className="relative w-full rounded-xl overflow-hidden bg-black" style={{ paddingTop: "56.25%" }}>
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-              title={config.popupVideoTitle || "Welcome video"}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
+          <MinimalYouTubePlayer url={config.popupVideoUrl} autoplay />
         </div>
       </div>
     </div>
