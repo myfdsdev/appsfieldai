@@ -18,10 +18,11 @@
       "type": "string",
       "enum": [
         "single_vendor",
-        "multi_vendor"
+        "multi_vendor",
+        "workspace"
       ],
       "default": "single_vendor",
-      "description": "Marketplace type"
+      "description": "Marketplace type. single_vendor = you sell your own products. multi_vendor = other sellers can list. workspace = a service-offering store (sell services/agency offerings instead of software products)."
     },
     "description": {
       "type": "string",

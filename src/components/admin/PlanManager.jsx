@@ -17,6 +17,7 @@ const FEATURE_TOGGLES = [
   { key: "premiumTemplatesAccess", label: "Premium Templates Access", desc: "Allows access to premium templates" },
   { key: "customDomainAllowed", label: "Custom Domain", desc: "Users can connect their own domain" },
   { key: "multiVendorAllowed", label: "Multi-Vendor", desc: "Users can enable multi-vendor mode" },
+  { key: "workspaceAllowed", label: "Workspace Store", desc: "Users can create a Workspace (service-offering) store" },
   { key: "whiteLabelAllowed", label: "White-Label", desc: "Remove platform branding" },
   { key: "commissionModuleAllowed", label: "Commission Module", desc: "Users can set commission rates" },
   { key: "featuredListingsAllowed", label: "Featured Listings", desc: "Users can feature listings" },
@@ -59,7 +60,7 @@ export default function PlanManager() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };
@@ -126,6 +127,7 @@ export default function PlanManager() {
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {p.customDomainAllowed && <Badge className="text-[9px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Domain</Badge>}
                   {p.multiVendorAllowed && <Badge className="text-[9px] bg-violet-500/10 text-violet-400 border-violet-500/20">Multi-Vendor</Badge>}
+                  {p.workspaceAllowed && <Badge className="text-[9px] bg-teal-500/10 text-teal-400 border-teal-500/20">Workspace</Badge>}
                   {p.whiteLabelAllowed && <Badge className="text-[9px] bg-rose-500/10 text-rose-400 border-rose-500/20">White-Label</Badge>}
                   {p.commissionModuleAllowed && <Badge className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Commission</Badge>}
                 </div>

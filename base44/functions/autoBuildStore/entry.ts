@@ -18,9 +18,29 @@ Deno.serve(async (req) => {
     const description = (marketplace.description || '').trim();
     const categories = marketplace.categories || [];
     const storeName = marketplace.name || 'this marketplace';
+    const isWorkspace = marketplace.type === 'workspace';
 
     // 1. Generate hero copy, FAQs, and testimonials with the built-in LLM.
-    const prompt = `You are writing marketing content for a SaaS deals marketplace called "${storeName}".
+    // Workspace stores sell SERVICES (agency/service offerings) instead of software
+    // products, so the whole prompt — items, testimonials and agent training — is
+    // reframed around services for that store type.
+    const prompt = isWorkspace
+      ? `You are writing marketing content for a SERVICE-OFFERING store (a "Workspace") called "${storeName}".
+The owner describes the services they offer as: "${description || 'A studio offering professional services to clients.'}"
+Service categories: ${categories.length ? categories.join(', ') : 'general professional services'}.
+
+Generate compelling, professional, conversion-focused content for this service store's landing page:
+- A short badge/pill text (max 6 words)
+- A punchy hero headline (max 10 words)
+- A pre-headline that sits above (max 8 words)
+- A subheadline describing the value of the services (1-2 sentences)
+- A call-to-action button label (2-3 words, e.g. "Book a Call", "Get Started")
+- A short footer tagline describing the service store (max 12 words)
+- Exactly 4 realistic SERVICE PACKAGES this store offers. Each must have: a service name (title), a short one-line description, a fuller 2-3 sentence description of what's included and the outcome, a category (use one of the store's categories when possible), a full price (number between 79 and 2000), and a discounted price (lower than the full price)
+- Exactly 5 highly relevant FAQs about the services (question + helpful answer of 1-2 sentences)
+- Exactly 5 realistic, niche-specific client testimonials (author name, author role/company, rating 4-5, content of 1-2 sentences about the service results)
+- Sales agent training: a friendly human first name for the agent, a short professional tagline (max 4 words, e.g. "Client Success Lead"), the niche/audience this service store helps (short phrase), a reassuring guarantee line (short), a warm 1-2 sentence opening greeting the agent says to visitors (reference the store by name and that it offers services), and a detailed knowledge base (4-6 short paragraphs) the agent uses to sell the SERVICES — covering what services are offered, who they're for, the value/outcomes, how engagements/booking and delivery work, typical timelines, and how to handle common objections. Only use facts consistent with the description and categories.`
+      : `You are writing marketing content for a SaaS deals marketplace called "${storeName}".
 The owner describes it as: "${description || 'A marketplace for discovering and buying lifetime SaaS deals.'}"
 Product categories: ${categories.length ? categories.join(', ') : 'general SaaS tools'}.
 
@@ -122,14 +142,15 @@ Generate compelling, professional, conversion-focused content for this store's l
       headerTitle: str(g.headline || existing.headerTitle || storeName),
       headerSubtitle: str(g.subheadline || existing.headerSubtitle),
       heroSideImageUrl: str(existing.heroSideImageUrl || DEFAULT_DEAL_MAKER_AVATAR),
-      heroCtaText: str(g.ctaText || existing.heroCtaText, 'Browse Deals'),
+      heroCtaText: str(g.ctaText || existing.heroCtaText, isWorkspace ? 'Get Started' : 'Browse Deals'),
       testimonialsEnabled: true,
       testimonialsTitle: str(existing.testimonialsTitle, 'What our customers say'),
       faqEnabled: true,
       faqTitle: str(existing.faqTitle, 'Frequently Asked Questions'),
       faqs: Array.isArray(g.faqs) ? g.faqs.filter(f => f.question && f.answer) : (existing.faqs || []),
       footerEnabled: true,
-      footerText: str(g.footerTagline || existing.footerText, `${storeName} — your destination for the best SaaS deals.`),
+      footerText: str(g.footerTagline || existing.footerText, isWorkspace ? `${storeName} — professional services delivered with care.` : `${storeName} — your destination for the best SaaS deals.`),
+      productsSectionTitle: str(existing.productsSectionTitle, isWorkspace ? 'Our Services' : ''),
     };
 
     // Don't let a pageSections validation error block product/testimonial creation.
@@ -176,7 +197,9 @@ Generate compelling, professional, conversion-focused content for this store's l
         let coverUrl = '';
         try {
           const img = await base44.integrations.Core.GenerateImage({
-            prompt: `Clean modern SaaS product cover image for "${p.softwareName}" — ${p.shortDescription || p.category || 'software tool'}. Sleek app dashboard UI, vibrant gradient background, professional, no text.`,
+            prompt: isWorkspace
+              ? `Clean modern service cover image for the service "${p.softwareName}" — ${p.shortDescription || p.category || 'professional service'}. Professional, polished, vibrant gradient background, service/agency vibe, no text.`
+              : `Clean modern SaaS product cover image for "${p.softwareName}" — ${p.shortDescription || p.category || 'software tool'}. Sleek app dashboard UI, vibrant gradient background, professional, no text.`,
           });
           coverUrl = img?.url || '';
         } catch (e) {
@@ -190,16 +213,16 @@ Generate compelling, professional, conversion-focused content for this store's l
           screenshots: coverUrl ? [coverUrl] : [],
           shortDescription: p.shortDescription || '',
           fullDescription: p.fullDescription || p.shortDescription || '',
-          category: p.category || (categories[0] || 'SaaS'),
-          pricingType: 'lifetime_deal',
+          category: p.category || (categories[0] || (isWorkspace ? 'Services' : 'SaaS')),
+          pricingType: isWorkspace ? 'paid' : 'lifetime_deal',
           price: p.price || 199,
           discountPrice: p.discountPrice || Math.round((p.price || 199) * 0.6),
           dealType: 'single_purchase',
-          isLifetimeDeal: true,
-          noDayLimit: false,
-          dealDurationDays: 7,
+          isLifetimeDeal: !isWorkspace,
+          noDayLimit: isWorkspace,
+          dealDurationDays: isWorkspace ? undefined : 7,
           dealStartDate: new Date().toISOString(),
-          dealEndDate: dealEnd,
+          dealEndDate: isWorkspace ? undefined : dealEnd,
           dealStatus: 'live',
           rating: 5,
           imageGradient: GRADIENTS[i % GRADIENTS.length],

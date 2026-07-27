@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Store, Palette, Tag, Settings, Rocket, Check, Type, ChevronLeft, ChevronRight, Plus, X, Building2, Users, CreditCard, Sparkles } from "lucide-react";
+import { Store, Palette, Tag, Settings, Rocket, Check, Type, ChevronLeft, ChevronRight, Plus, X, Building2, Users, CreditCard, Sparkles, Briefcase, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,6 +46,24 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     },
     staleTime: Infinity,
   });
+
+  // The owner's plan gates which store types they can pick. Admins are unlimited.
+  const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
+  const { data: userPlan = null } = useQuery({
+    queryKey: ["userPlan", currentUser?.planId],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: currentUser.planId }).then(r => r[0] || null),
+    enabled: !!currentUser?.planId,
+  });
+  const canMultiVendor = isAdmin || !!userPlan?.multiVendorAllowed;
+  const canWorkspace = isAdmin || !!userPlan?.workspaceAllowed;
+
+  // Store type options — Multi-Vendor & Workspace are hidden when the plan doesn't allow them.
+  const TYPE_OPTIONS = [
+    { id: "single_vendor", icon: Store, label: "Single Vendor", desc: "You sell your own SaaS products directly", allowed: true },
+    { id: "multi_vendor", icon: Users, label: "Multi-Vendor", desc: "Allow other sellers to list SaaS products", allowed: canMultiVendor },
+    { id: "workspace", icon: Briefcase, label: "Workspace", desc: "A service-offering store — sell your services & agency offerings", allowed: canWorkspace },
+  ].filter(o => o.allowed);
   const [data, setData] = useState({
     type: marketplace?.type || "single_vendor",
     template: marketplace?.template || "default",
@@ -77,6 +95,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     },
   });
 
+  const isWorkspace = data.type === "workspace";
   const update = (field, value) => setData(d => ({ ...d, [field]: value }));
   const updateBranding = (field, value) => setData(d => ({ ...d, branding: { ...d.branding, [field]: value } }));
   const updateSettings = (field, value) => setData(d => ({ ...d, settings: { ...d.settings, [field]: value } }));
@@ -201,9 +220,9 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
           {/* Step 0: Type */}
           {step === 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Building2 className="w-5 h-5 text-violet-400" />Choose Marketplace Type</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {[{ id: "single_vendor", icon: Store, label: "Single Vendor", desc: "You sell your own SaaS products directly" }, { id: "multi_vendor", icon: Users, label: "Multi-Vendor", desc: "Allow other sellers to list SaaS products" }].map(opt => (
+              <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Building2 className="w-5 h-5 text-violet-400" />Choose Store Type</h3>
+              <div className={`grid gap-4 ${TYPE_OPTIONS.length >= 3 ? "sm:grid-cols-3 grid-cols-1" : "grid-cols-2"}`}>
+                {TYPE_OPTIONS.map(opt => (
                   <button key={opt.id} onClick={() => update("type", opt.id)} className={`p-4 rounded-xl border-2 text-left transition-all ${data.type === opt.id ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"}`}>
                     <opt.icon className={`w-8 h-8 mb-2 ${data.type === opt.id ? "text-violet-400" : "text-muted-foreground"}`} />
                     <p className="font-semibold text-sm">{opt.label}</p>
@@ -211,6 +230,9 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
                   </button>
                 ))}
               </div>
+              {(!canMultiVendor || !canWorkspace) && !marketplace?.id && (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5"><Lock className="w-3 h-3" />{!canWorkspace && !canMultiVendor ? "Multi-Vendor and Workspace store types are available on higher plans." : !canWorkspace ? "The Workspace store type is available on higher plans." : "The Multi-Vendor store type is available on higher plans."}</p>
+              )}
               {!marketplace?.id && (
                 <>
                   <div className="grid grid-cols-2 gap-3 mt-4">
@@ -221,12 +243,16 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
                     <div className="flex items-center gap-2">
                       <img src="https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/137122e9e_ai.png" alt="Marketplace Agent" className="w-7 h-7 object-contain shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-violet-400 leading-tight">Marketplace Agent</p>
-                        <p className="text-[11px] text-muted-foreground leading-tight">AI-powered store builder</p>
+                        <p className="text-sm font-semibold text-violet-400 leading-tight">{isWorkspace ? "Workspace Agent" : "Marketplace Agent"}</p>
+                        <p className="text-[11px] text-muted-foreground leading-tight">{isWorkspace ? "AI-powered service store builder" : "AI-powered store builder"}</p>
                       </div>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-2 mb-2">Describe your marketplace in a sentence or two and the Marketplace Agent will use it to auto-build your store — crafting a compelling headline, FAQs, testimonials, and matching the right products for you.</p>
-                    <Textarea value={data.description} onChange={e => update("description", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl h-20 resize-none" placeholder="e.g. A marketplace for AI & marketing SaaS lifetime deals aimed at indie founders and small agencies..." />
+                    <p className="text-[11px] text-muted-foreground mt-2 mb-2">{isWorkspace
+                      ? "Describe the services you offer in a sentence or two and the Workspace Agent will auto-build your store — crafting a compelling headline, FAQs, testimonials, sample service packages, and training your sales agent to pitch your services."
+                      : "Describe your marketplace in a sentence or two and the Marketplace Agent will use it to auto-build your store — crafting a compelling headline, FAQs, testimonials, and matching the right products for you."}</p>
+                    <Textarea value={data.description} onChange={e => update("description", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl h-20 resize-none" placeholder={isWorkspace
+                      ? "e.g. A web design & branding agency offering logo design, website builds and SEO for local businesses and coaches..."
+                      : "e.g. A marketplace for AI & marketing SaaS lifetime deals aimed at indie founders and small agencies..."} />
                   </div>
                 </>
               )}
@@ -343,7 +369,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Check className="w-5 h-5 text-emerald-400" />Review & Launch</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Type</p><p className="font-medium">{data.type === "multi_vendor" ? "Multi-Vendor" : "Single Vendor"}</p></div>
+                <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Type</p><p className="font-medium">{data.type === "multi_vendor" ? "Multi-Vendor" : data.type === "workspace" ? "Workspace" : "Single Vendor"}</p></div>
                 <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Colors</p><p className="font-medium capitalize">{data.template}</p></div>
                 <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Style</p><p className="font-medium capitalize">{data.storeStyle}</p></div>
                 <div className="p-3 rounded-xl bg-secondary/30"><p className="text-[10px] text-muted-foreground uppercase">Categories</p><p className="font-medium">{data.categories.length || "None"}</p></div>
