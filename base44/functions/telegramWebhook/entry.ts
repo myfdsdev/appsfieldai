@@ -45,7 +45,7 @@ export default async function (req) {
         await sendTelegramMessage(
           chat.id,
           `✅ <b>Connected!</b>\nYou'll now get instant alerts here whenever you get a new lead or a new sale. 🚀\n\n` +
-          `Try these commands:\n/sales · /revenue · /leads · /pending · /approve`
+          `Try these commands:\n/mystores · /myagents · /report · /orders · /sales · /revenue · /leads · /pending · /approve`
         );
       } else {
         await sendTelegramMessage(

@@ -57,6 +57,10 @@ export async function ensureBotCommands() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         commands: [
+          { command: 'mystores', description: 'Your running stores' },
+          { command: 'myagents', description: 'Your store sales agents' },
+          { command: 'report', description: "An agent's performance report" },
+          { command: 'orders', description: 'Order requests awaiting approval' },
           { command: 'sales', description: 'Today & all-time sales summary' },
           { command: 'revenue', description: 'Revenue breakdown' },
           { command: 'leads', description: 'Latest new leads' },

@@ -39,12 +39,102 @@ async function ownerOrders(svc, marketplaces) {
 
 export const HELP_TEXT =
   `🤖 <b>Your store commands</b>\n\n` +
+  `/mystores — your running stores\n` +
+  `/myagents — your store sales agents\n` +
+  `/report — an agent's performance report\n` +
+  `/orders — order requests awaiting approval\n` +
   `/sales — today & all-time sales\n` +
   `/revenue — revenue breakdown\n` +
   `/leads — your latest new leads\n` +
   `/pending — orders awaiting approval\n` +
   `/approve — approve a pending order\n` +
   `/help — show this menu`;
+
+// Deal Maker agent display name for a marketplace (falls back to a default).
+function agentName(mp) {
+  return mp?.pageSections?.dealMakerName || 'Deal Maker';
+}
+
+// ─── /mystores — running store names ──────────────────────
+async function cmdMyStores(svc, chatId, marketplaces) {
+  const active = marketplaces.filter((m) => m.status === 'active');
+  const others = marketplaces.filter((m) => m.status !== 'active');
+
+  let text = `🏪 <b>Your stores (${marketplaces.length})</b>\n`;
+  if (active.length) {
+    text += `\n<b>🟢 Running:</b>`;
+    for (const mp of active) text += `\n• ${mp.name}`;
+  }
+  if (others.length) {
+    text += `\n\n<b>⚪ Not live:</b>`;
+    for (const mp of others) text += `\n• ${mp.name} (${mp.status || 'draft'})`;
+  }
+  await sendTelegramMessage(chatId, text);
+}
+
+// ─── /myagents — store sales agents ───────────────────────
+async function cmdMyAgents(svc, chatId, marketplaces) {
+  let text = `🤝 <b>Your sales agents (${marketplaces.length})</b>\n`;
+  for (const mp of marketplaces) {
+    const enabled = mp?.pageSections?.dealMakerEnabled !== false;
+    text += `\n<b>${agentName(mp)}</b> ${enabled ? '🟢' : '⚪'}\n`;
+    text += `🏪 ${mp.name}\n`;
+    if (mp?.pageSections?.dealMakerTagline) text += `💬 ${mp.pageSections.dealMakerTagline}\n`;
+  }
+  text += `\n<i>Use /report Agent Name for a performance report.</i>`;
+  await sendTelegramMessage(chatId, text);
+}
+
+// ─── /report <agent name> — agent performance report ──────
+async function cmdReport(svc, chatId, marketplaces, arg) {
+  const query = (arg || '').trim().toLowerCase();
+
+  if (!query) {
+    let text = `📈 <b>Which agent?</b>\nSend <code>/report Agent Name</code>. Your agents:\n`;
+    for (const mp of marketplaces) text += `\n• ${agentName(mp)} — ${mp.name}`;
+    await sendTelegramMessage(chatId, text);
+    return;
+  }
+
+  // Match on agent name or store name.
+  const mp = marketplaces.find(
+    (m) => agentName(m).toLowerCase() === query || m.name.toLowerCase() === query
+  ) || marketplaces.find(
+    (m) => agentName(m).toLowerCase().includes(query) || m.name.toLowerCase().includes(query)
+  );
+
+  if (!mp) {
+    await sendTelegramMessage(chatId, `🤔 No agent named "<b>${arg.trim()}</b>". Try /myagents to see the list.`);
+    return;
+  }
+
+  const convos = await svc.entities.DealMakerConversation.filter({ marketplaceId: mp.id });
+  const leads = await svc.entities.DealMakerLead.filter({ marketplaceId: mp.id });
+  const orders = await svc.entities.StoreOrder.filter({ marketplaceId: mp.id });
+  const currency = mp.currency || 'USD';
+
+  const purchases = convos.filter((c) => c.outcome === 'purchase').length;
+  const customReqs = leads.filter((l) => l.type === 'custom_request').length;
+  const newLeads = leads.filter((l) => l.status === 'new').length;
+  const paid = orders.filter((o) => o.paymentStatus === 'paid');
+  const revenue = paid.reduce((s, o) => s + (o.total || 0), 0);
+
+  const text =
+    `📈 <b>${agentName(mp)} — report</b>\n` +
+    `🏪 ${mp.name}\n\n` +
+    `💬 <b>Conversations:</b> ${convos.length}\n` +
+    `🌱 <b>Leads captured:</b> ${leads.length} (${newLeads} new)\n` +
+    `🔥 <b>Custom requests:</b> ${customReqs}\n` +
+    `🛒 <b>Purchases closed:</b> ${purchases}\n` +
+    `💰 <b>Revenue (paid):</b> ${money(revenue, currency)}`;
+  await sendTelegramMessage(chatId, text);
+}
+
+// ─── /orders — order requests awaiting approval ───────────
+async function cmdOrders(svc, chatId, marketplaces) {
+  // Alias of /pending — shows tappable Approve buttons.
+  await cmdPending(svc, chatId, marketplaces);
+}
 
 // ─── /sales ───────────────────────────────────────────────
 async function cmdSales(svc, chatId, marketplaces) {
@@ -194,7 +284,7 @@ async function approveOrder(svc, chatId, marketplaces, orderId) {
 
 // Route a text command. Returns true if it was a recognized command.
 export async function handleTelegramCommand(svc, chatId, text) {
-  const m = text.match(/^\/(sales|revenue|leads|pending|approve|help)\b\s*(.*)$/i);
+  const m = text.match(/^\/(mystores|myagents|report|orders|sales|revenue|leads|pending|approve|help)\b\s*(.*)$/i);
   if (!m) return false;
   const cmd = m[1].toLowerCase();
   const arg = m[2] || '';
@@ -215,7 +305,11 @@ export async function handleTelegramCommand(svc, chatId, text) {
     return true;
   }
 
-  if (cmd === 'sales') await cmdSales(svc, chatId, marketplaces);
+  if (cmd === 'mystores') await cmdMyStores(svc, chatId, marketplaces);
+  else if (cmd === 'myagents') await cmdMyAgents(svc, chatId, marketplaces);
+  else if (cmd === 'report') await cmdReport(svc, chatId, marketplaces, arg);
+  else if (cmd === 'orders') await cmdOrders(svc, chatId, marketplaces);
+  else if (cmd === 'sales') await cmdSales(svc, chatId, marketplaces);
   else if (cmd === 'revenue') await cmdRevenue(svc, chatId, marketplaces);
   else if (cmd === 'leads') await cmdLeads(svc, chatId, marketplaces);
   else if (cmd === 'pending') await cmdPending(svc, chatId, marketplaces);
