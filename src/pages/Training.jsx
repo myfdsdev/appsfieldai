@@ -1,11 +1,15 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { GraduationCap, PlayCircle } from "lucide-react";
+import { GraduationCap, PlayCircle, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { getYouTubeId } from "@/lib/youtube";
+import MinimalYouTubePlayer from "@/components/MinimalYouTubePlayer";
 
 export default function Training() {
+  const navigate = useNavigate();
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ["trainingVideos"],
     queryFn: () => base44.entities.TrainingVideo.filter({ isActive: true }, "sortOrder"),
@@ -13,6 +17,10 @@ export default function Training() {
 
   return (
     <div className="space-y-6">
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 -ml-2">
+        <ArrowLeft className="w-4 h-4" /> Back
+      </Button>
+
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
           <GraduationCap className="w-5 h-5 text-orange-500" />
@@ -24,8 +32,8 @@ export default function Training() {
       </motion.div>
 
       {isLoading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[...Array(2)].map((_, i) => (
             <div key={i} className="rounded-2xl border border-border/30 bg-card overflow-hidden">
               <div className="aspect-video bg-secondary/40 animate-pulse" />
               <div className="p-4 space-y-2">
@@ -41,26 +49,18 @@ export default function Training() {
           <p className="text-sm text-muted-foreground">No training videos available yet. Check back soon.</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {videos.map((v) => {
             const id = getYouTubeId(v.videoUrl);
             return (
               <div key={v.id} className="rounded-2xl border border-border/30 bg-card overflow-hidden flex flex-col">
-                <div className="relative aspect-video bg-black">
-                  {id ? (
-                    <iframe
-                      className="absolute inset-0 w-full h-full"
-                      src={`https://www.youtube.com/embed/${id}?rel=0`}
-                      title={v.name}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/50">
-                      <PlayCircle className="w-10 h-10" />
-                    </div>
-                  )}
-                </div>
+                {id ? (
+                  <MinimalYouTubePlayer url={v.videoUrl} autoplay={false} />
+                ) : (
+                  <div className="relative aspect-video bg-black flex items-center justify-center text-muted-foreground/50">
+                    <PlayCircle className="w-10 h-10" />
+                  </div>
+                )}
                 <div className="p-4 flex-1">
                   <h3 className="font-semibold text-foreground">{v.name}</h3>
                   {v.description && <p className="text-sm text-muted-foreground mt-1">{v.description}</p>}
