@@ -8,7 +8,7 @@ import {
   Bot, Database, Sparkles, Workflow,
   MessageSquare, AtSign, FileStack, ContactRound,
   SlidersHorizontal, CreditCard, Link, Webhook,
-  ChevronDown, Plug, MailCheck, ShoppingBag, LayoutDashboard, Palette,
+  ChevronDown, Plug, MailCheck, ShoppingBag, LayoutDashboard, Palette, GraduationCap,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -54,6 +54,7 @@ const NAV_GROUPS = [
       { id: "hooks",          label: "Hook Management",      icon: Ticket },
       { id: "mktpl_templates",label: "Marketplace Templates",icon: Globe },
       { id: "mktpl_theme",    label: "Marketplace Theme",    icon: Palette },
+      { id: "training_videos",label: "Training Videos",      icon: GraduationCap },
       { id: "pricing_presets",label: "Pricing Presets",      icon: Star },
       { id: "email_templates",label: "Email Templates",      icon: FileCode },
     ],

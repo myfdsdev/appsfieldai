@@ -17,6 +17,7 @@ import JvzooManager from "@/components/admin/JvzooManager";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
 import MarketplaceThemeManager from "@/components/admin/MarketplaceThemeManager";
+import TrainingSettings from "@/components/admin/settings/TrainingSettings";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
@@ -616,6 +617,16 @@ export default function AdminPanel() {
         return <StorePageDefaultManager />;
       case "mktpl_theme":
         return <MarketplaceThemeManager />;
+      case "training_videos":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardContent className="pt-6">
+                <TrainingSettings />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
       case "pricing_presets":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
