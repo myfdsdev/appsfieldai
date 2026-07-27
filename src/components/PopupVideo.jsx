@@ -4,26 +4,30 @@ import { base44 } from "@/api/base44Client";
 import { getYouTubeId } from "@/lib/youtube";
 import MinimalYouTubePlayer from "@/components/MinimalYouTubePlayer";
 
-// Shows right after the user logs in. Login sets this flag; we clear it once shown.
-const AFTER_LOGIN_KEY = "popup_video_after_login";
+// Shows once per browser session — right after login AND on reload.
+const SEEN_KEY = "popup_video_seen";
 
 export default function PopupVideo() {
   const [config, setConfig] = useState(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // Already shown this session — skip.
+    if (sessionStorage.getItem(SEEN_KEY)) return;
     (async () => {
-      // Only show when the just-logged-in flag is present.
-      if (!sessionStorage.getItem(AFTER_LOGIN_KEY)) return;
       try {
-        const configs = await base44.entities.AppConfig.filter({ key: "main" });
-        const cfg = configs?.[0];
+        // AppConfig may live under key "main" or "config" — grab whichever has the popup fields.
+        const configs = await base44.entities.AppConfig.list();
+        const cfg =
+          configs.find((c) => c.popupVideoEnabled && getYouTubeId(c.popupVideoUrl)) ||
+          configs.find((c) => c.key === "main") ||
+          configs[0];
         if (cfg?.popupVideoEnabled && getYouTubeId(cfg.popupVideoUrl)) {
           setConfig(cfg);
           setOpen(true);
+          sessionStorage.setItem(SEEN_KEY, "1");
         }
       } catch { /* ignore */ }
-      sessionStorage.removeItem(AFTER_LOGIN_KEY);
     })();
   }, []);
 
@@ -35,7 +39,7 @@ export default function PopupVideo() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-2xl bg-card rounded-2xl border border-border/40 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-3xl bg-card rounded-2xl border border-border/40 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button
