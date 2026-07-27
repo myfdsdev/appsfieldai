@@ -38,29 +38,71 @@ export async function ensureTelegramWebhook(appId) {
     await fetch(`${API_BASE}/bot${token}/setWebhook`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message'] }),
+      body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'callback_query'] }),
     });
     webhookEnsured = true;
   } catch (_) { /* non-fatal */ }
 }
 
-// Send a Telegram message (HTML formatting) to a chat id. Best-effort — never throws.
-export async function sendTelegramMessage(chatId, text) {
+// Registers the bot's slash-command menu so owners see them in the "/" menu.
+// Idempotent + cached per isolate. Best-effort; never throws.
+let commandsEnsured = false;
+export async function ensureBotCommands() {
+  if (commandsEnsured) return;
   const token = botToken();
-  if (!token || !chatId || !text) return { ok: false };
+  if (!token) return;
   try {
-    const res = await fetch(`${API_BASE}/bot${token}/sendMessage`, {
+    await fetch(`${API_BASE}/bot${token}/setMyCommands`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
+        commands: [
+          { command: 'sales', description: 'Today & all-time sales summary' },
+          { command: 'revenue', description: 'Revenue breakdown' },
+          { command: 'leads', description: 'Latest new leads' },
+          { command: 'pending', description: 'Pending orders awaiting approval' },
+          { command: 'approve', description: 'Approve a pending order' },
+          { command: 'help', description: 'Show available commands' },
+        ],
       }),
+    });
+    commandsEnsured = true;
+  } catch (_) { /* non-fatal */ }
+}
+
+// Send a Telegram message (HTML formatting) to a chat id. Best-effort — never throws.
+// Pass replyMarkup to attach an inline keyboard (e.g. one-tap "Approve" buttons).
+export async function sendTelegramMessage(chatId, text, replyMarkup) {
+  const token = botToken();
+  if (!token || !chatId || !text) return { ok: false };
+  try {
+    const body = {
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    };
+    if (replyMarkup) body.reply_markup = replyMarkup;
+    const res = await fetch(`${API_BASE}/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
     return await res.json();
   } catch (_) {
     return { ok: false };
   }
+}
+
+// Acknowledge a callback_query (dismisses the button's loading spinner, shows a toast).
+export async function answerCallbackQuery(callbackQueryId, text) {
+  const token = botToken();
+  if (!token || !callbackQueryId) return;
+  try {
+    await fetch(`${API_BASE}/bot${token}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text: text || '', show_alert: false }),
+    });
+  } catch (_) { /* non-fatal */ }
 }
