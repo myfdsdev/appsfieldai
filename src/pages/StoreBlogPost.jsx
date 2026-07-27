@@ -49,18 +49,23 @@ export default function StoreBlogPost() {
   const pal = style.palette;
   const accent = pal?.accent || marketplace?.branding?.primaryColor || "#f97316";
 
+  // Body text colors driven by the store style palette (not the app's global
+  // `foreground` token) so they stay legible on any store surface (e.g. Astra's light bg).
+  const bodyText = pal ? pal.text : undefined;
+  const bodyStyle = bodyText ? { color: bodyText, opacity: 0.85 } : undefined;
+
   // Custom renderers so markdown headings/lists/bold render properly
   // (no Tailwind Typography plugin installed — style them explicitly).
   const mdComponents = {
-    h1: ({ ...p }) => <h2 className="text-2xl font-bold mt-10 mb-4 leading-snug" style={{ fontFamily: style.headingFont }} {...p} />,
-    h2: ({ ...p }) => <h2 className="text-2xl font-bold mt-10 mb-4 leading-snug" style={{ fontFamily: style.headingFont }} {...p} />,
-    h3: ({ ...p }) => <h3 className="text-xl font-semibold mt-8 mb-3" style={{ fontFamily: style.headingFont }} {...p} />,
-    h4: ({ ...p }) => <h4 className="text-lg font-semibold mt-6 mb-2" style={{ fontFamily: style.headingFont }} {...p} />,
-    p: ({ ...p }) => <p className="text-[15px] leading-7 text-foreground/85 mb-5" {...p} />,
-    ul: ({ ...p }) => <ul className="list-disc pl-6 space-y-2 mb-5 text-[15px] text-foreground/85" {...p} />,
-    ol: ({ ...p }) => <ol className="list-decimal pl-6 space-y-2 mb-5 text-[15px] text-foreground/85" {...p} />,
+    h1: ({ ...p }) => <h2 className="text-2xl font-bold mt-10 mb-4 leading-snug" style={{ fontFamily: style.headingFont, color: bodyText }} {...p} />,
+    h2: ({ ...p }) => <h2 className="text-2xl font-bold mt-10 mb-4 leading-snug" style={{ fontFamily: style.headingFont, color: bodyText }} {...p} />,
+    h3: ({ ...p }) => <h3 className="text-xl font-semibold mt-8 mb-3" style={{ fontFamily: style.headingFont, color: bodyText }} {...p} />,
+    h4: ({ ...p }) => <h4 className="text-lg font-semibold mt-6 mb-2" style={{ fontFamily: style.headingFont, color: bodyText }} {...p} />,
+    p: ({ ...p }) => <p className="text-[15px] leading-7 text-foreground/85 mb-5" style={bodyStyle} {...p} />,
+    ul: ({ ...p }) => <ul className="list-disc pl-6 space-y-2 mb-5 text-[15px] text-foreground/85" style={bodyStyle} {...p} />,
+    ol: ({ ...p }) => <ol className="list-decimal pl-6 space-y-2 mb-5 text-[15px] text-foreground/85" style={bodyStyle} {...p} />,
     li: ({ ...p }) => <li className="leading-7" {...p} />,
-    strong: ({ ...p }) => <strong className="font-semibold text-foreground" {...p} />,
+    strong: ({ ...p }) => <strong className="font-semibold text-foreground" style={bodyText ? { color: bodyText } : undefined} {...p} />,
     a: ({ ...p }) => <a className="underline underline-offset-2 hover:opacity-80" style={{ color: accent }} target="_blank" rel="noopener noreferrer" {...p} />,
     blockquote: ({ ...p }) => <blockquote className="border-l-4 pl-4 italic text-muted-foreground my-6" style={{ borderColor: accent }} {...p} />,
     img: ({ ...p }) => <img className="rounded-xl border border-border/40 my-6 w-full" {...p} />,
