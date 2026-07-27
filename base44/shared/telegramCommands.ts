@@ -74,15 +74,62 @@ async function cmdMyStores(svc, chatId, marketplaces) {
 
 // ─── /myagents — store sales agents ───────────────────────
 async function cmdMyAgents(svc, chatId, marketplaces) {
-  let text = `🤝 <b>Your sales agents (${marketplaces.length})</b>\n`;
+  await sendTelegramMessage(chatId, `🤝 <b>Your sales agents (${marketplaces.length})</b>\n<i>Tap Full report on any agent for its latest activity.</i>`);
+  // One message per agent with a "Full report" button.
   for (const mp of marketplaces) {
     const enabled = mp?.pageSections?.dealMakerEnabled !== false;
-    text += `\n<b>${agentName(mp)}</b> ${enabled ? '🟢' : '⚪'}\n`;
-    text += `🏪 ${mp.name}\n`;
-    if (mp?.pageSections?.dealMakerTagline) text += `💬 ${mp.pageSections.dealMakerTagline}\n`;
+    let text = `<b>${agentName(mp)}</b> ${enabled ? '🟢' : '⚪'}\n🏪 ${mp.name}`;
+    if (mp?.pageSections?.dealMakerTagline) text += `\n💬 ${mp.pageSections.dealMakerTagline}`;
+    await sendTelegramMessage(chatId, text, {
+      inline_keyboard: [[{ text: '📋 Full report', callback_data: `report:${mp.id}` }]],
+    });
   }
-  text += `\n<i>Use /report Agent Name for a performance report.</i>`;
-  await sendTelegramMessage(chatId, text);
+}
+
+// Build a detailed activity report for one agent/store: last 5 conversations,
+// recent orders, and recent project requests.
+async function buildAgentReport(svc, mp) {
+  const currency = mp.currency || 'USD';
+  const convos = await svc.entities.DealMakerConversation.filter({ marketplaceId: mp.id }, '-created_date', 5);
+  const orders = await svc.entities.StoreOrder.filter({ marketplaceId: mp.id }, '-created_date', 5);
+  const projects = await svc.entities.ProjectRequest.filter({ marketplaceId: mp.id }, '-created_date', 5);
+
+  let text = `📋 <b>${agentName(mp)} — full report</b>\n🏪 ${mp.name}\n`;
+
+  text += `\n<b>💬 Last conversations</b>`;
+  if (convos.length === 0) {
+    text += `\n— none yet`;
+  } else {
+    for (const c of convos) {
+      const who = c.visitorName || c.title || 'Anonymous';
+      const outcome = c.outcome && c.outcome !== 'ongoing' ? ` · ${c.outcome.replace('_', ' ')}` : '';
+      text += `\n• <b>${who}</b> (${c.messageCount || 0} msgs${outcome})`;
+      if (c.visitorEmail) text += `\n   ✉️ ${c.visitorEmail}`;
+      if (c.conclusion) text += `\n   📝 ${c.conclusion.slice(0, 120)}`;
+    }
+  }
+
+  text += `\n\n<b>🛒 Recent orders</b>`;
+  if (orders.length === 0) {
+    text += `\n— none yet`;
+  } else {
+    for (const o of orders) {
+      const items = (o.items || []).map((li) => `${li.quantity}× ${li.listingTitle}`).join(', ') || '—';
+      text += `\n• ${o.customerName || o.customerEmail || 'Customer'} — ${money(o.total, currency)} (${o.paymentStatus})\n   ${items}`;
+    }
+  }
+
+  text += `\n\n<b>🧩 Project requests</b>`;
+  if (projects.length === 0) {
+    text += `\n— none yet`;
+  } else {
+    for (const p of projects) {
+      text += `\n• ${p.projectTitle || 'Custom project'} — ${p.clientName || 'Client'} (${p.status || 'new'})`;
+      if (p.painPoint) text += `\n   💬 ${p.painPoint.slice(0, 100)}`;
+    }
+  }
+
+  return text;
 }
 
 // ─── /report <agent name> — agent performance report ──────
@@ -108,26 +155,7 @@ async function cmdReport(svc, chatId, marketplaces, arg) {
     return;
   }
 
-  const convos = await svc.entities.DealMakerConversation.filter({ marketplaceId: mp.id });
-  const leads = await svc.entities.DealMakerLead.filter({ marketplaceId: mp.id });
-  const orders = await svc.entities.StoreOrder.filter({ marketplaceId: mp.id });
-  const currency = mp.currency || 'USD';
-
-  const purchases = convos.filter((c) => c.outcome === 'purchase').length;
-  const customReqs = leads.filter((l) => l.type === 'custom_request').length;
-  const newLeads = leads.filter((l) => l.status === 'new').length;
-  const paid = orders.filter((o) => o.paymentStatus === 'paid');
-  const revenue = paid.reduce((s, o) => s + (o.total || 0), 0);
-
-  const text =
-    `📈 <b>${agentName(mp)} — report</b>\n` +
-    `🏪 ${mp.name}\n\n` +
-    `💬 <b>Conversations:</b> ${convos.length}\n` +
-    `🌱 <b>Leads captured:</b> ${leads.length} (${newLeads} new)\n` +
-    `🔥 <b>Custom requests:</b> ${customReqs}\n` +
-    `🛒 <b>Purchases closed:</b> ${purchases}\n` +
-    `💰 <b>Revenue (paid):</b> ${money(revenue, currency)}`;
-  await sendTelegramMessage(chatId, text);
+  await sendTelegramMessage(chatId, await buildAgentReport(svc, mp));
 }
 
 // ─── /orders — order requests awaiting approval ───────────
@@ -323,8 +351,7 @@ export async function handleTelegramCallback(svc, callback) {
   const data = callback?.data || '';
   const cbId = callback?.id;
 
-  const approveMatch = data.match(/^approve:(\S+)$/);
-  if (!approveMatch || !chatId) {
+  if (!chatId) {
     await answerCallbackQuery(cbId, '');
     return;
   }
@@ -335,6 +362,21 @@ export async function handleTelegramCallback(svc, callback) {
     return;
   }
   const marketplaces = await ownerMarketplaces(svc, owner.id);
+
+  // "Full report" button — show this agent's latest activity.
+  const reportMatch = data.match(/^report:(\S+)$/);
+  if (reportMatch) {
+    const mp = marketplaces.find((m) => m.id === reportMatch[1]);
+    await answerCallbackQuery(cbId, mp ? 'Loading report…' : 'Store not found.');
+    if (mp) await sendTelegramMessage(chatId, await buildAgentReport(svc, mp));
+    return;
+  }
+
+  const approveMatch = data.match(/^approve:(\S+)$/);
+  if (!approveMatch) {
+    await answerCallbackQuery(cbId, '');
+    return;
+  }
   const result = await approveOrder(svc, chatId, marketplaces, approveMatch[1]);
   await answerCallbackQuery(cbId, result.ok ? 'Approved ✅' : result.message);
   await sendTelegramMessage(chatId, result.message);
