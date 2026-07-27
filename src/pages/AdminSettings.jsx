@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Mail, CreditCard, Settings, Palette, Cpu } from "lucide-react";
+import { ArrowLeft, Mail, CreditCard, Settings, Palette, Cpu, GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
 import EmailSettings from "@/components/admin/settings/EmailSettings";
 import PaymentSettings from "@/components/admin/settings/PaymentSettings";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
+import TrainingSettings from "@/components/admin/settings/TrainingSettings";
 
 const TABS = [
   { id: "email", label: "Email Settings", icon: Mail },
   { id: "payment", label: "Payment Settings", icon: CreditCard },
   { id: "general", label: "General Settings", icon: Settings },
+  { id: "training", label: "Training", icon: GraduationCap },
   { id: "ai", label: "AI & Engine", icon: Cpu },
   { id: "theme", label: "Theme Colors", icon: Palette },
 ];
@@ -69,6 +71,7 @@ export default function AdminSettings() {
               {activeTab === "email" && <EmailSettings />}
               {activeTab === "payment" && <PaymentSettings />}
               {activeTab === "general" && <GeneralSettings />}
+              {activeTab === "training" && <TrainingSettings />}
               {activeTab === "ai" && <AIEngineSettings />}
               {activeTab === "theme" && <ThemeColorSettings />}
             </motion.div>

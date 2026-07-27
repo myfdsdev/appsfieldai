@@ -39,6 +39,8 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      // Flag so the welcome popup video shows once right after login
+      sessionStorage.setItem("popup_video_after_login", "1");
       // Fire-and-forget admin notification
       base44.functions.invoke("notifyAdminLogin", {
         fullName: email,
@@ -69,6 +71,7 @@ export default function Login() {
     const urlParams = new URLSearchParams(window.location.search);
     const from = urlParams.get("from");
     const redirectUrl = from ? decodeURIComponent(from) : "/";
+    sessionStorage.setItem("popup_video_after_login", "1");
     base44.auth.loginWithProvider("google", redirectUrl);
   };
 

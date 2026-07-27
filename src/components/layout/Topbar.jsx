@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings, Package, Radar } from "lucide-react";
+import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings, Package, Radar, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -28,6 +28,7 @@ const profileMenuItems = [
   { to: "/my-account", label: "My Account", icon: ShoppingCart },
   { to: "/lead-finder", label: "Lead Finder", icon: Radar, feature: "leadFinderAllowed" },
   { to: "/vendor/dashboard", label: "Vendor Dashboard", icon: Settings, feature: "vendorManagementAllowed" },
+  { to: "/training", label: "Training", icon: GraduationCap },
   { to: "/pricing", label: "Plans", icon: Package },
 ];
 

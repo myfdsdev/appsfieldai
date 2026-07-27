@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getYouTubeId } from "@/lib/youtube";
 
-// Extract a YouTube video ID from any common YouTube URL format.
-function getYouTubeId(url) {
-  if (!url) return "";
-  const m = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/
-  );
-  return m ? m[1] : "";
-}
-
-const SEEN_KEY = "popup_video_seen";
+// Shows right after the user logs in. Login sets this flag; we clear it once shown.
+const AFTER_LOGIN_KEY = "popup_video_after_login";
 
 export default function PopupVideo() {
   const [config, setConfig] = useState(null);
@@ -19,18 +12,17 @@ export default function PopupVideo() {
 
   useEffect(() => {
     (async () => {
+      // Only show when the just-logged-in flag is present.
+      if (!sessionStorage.getItem(AFTER_LOGIN_KEY)) return;
       try {
         const configs = await base44.entities.AppConfig.filter({ key: "main" });
         const cfg = configs?.[0];
         if (cfg?.popupVideoEnabled && getYouTubeId(cfg.popupVideoUrl)) {
           setConfig(cfg);
-          // Show once per browser session
-          if (!sessionStorage.getItem(SEEN_KEY)) {
-            setOpen(true);
-            sessionStorage.setItem(SEEN_KEY, "1");
-          }
+          setOpen(true);
         }
       } catch { /* ignore */ }
+      sessionStorage.removeItem(AFTER_LOGIN_KEY);
     })();
   }, []);
 

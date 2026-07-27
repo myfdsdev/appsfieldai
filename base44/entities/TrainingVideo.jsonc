@@ -1,0 +1,31 @@
+{
+  "name": "TrainingVideo",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Training video title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of what the training covers"
+    },
+    "videoUrl": {
+      "type": "string",
+      "description": "YouTube video link"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order (lower appears first)"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this training video is shown to users"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
