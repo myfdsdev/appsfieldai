@@ -35,7 +35,13 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
     let cancelled = false;
     loadYouTubeApi().then(() => {
       if (cancelled || !containerRef.current) return;
-      playerRef.current = new window.YT.Player(containerRef.current, {
+      // YouTube REPLACES the target node with an iframe. Give it a fresh child
+      // div (not the React-managed container) so React's ref stays valid.
+      const mount = document.createElement("div");
+      mount.style.width = "100%";
+      mount.style.height = "100%";
+      containerRef.current.appendChild(mount);
+      playerRef.current = new window.YT.Player(mount, {
         videoId,
         playerVars: {
           autoplay: autoplay ? 1 : 0,
@@ -61,6 +67,7 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
     return () => {
       cancelled = true;
       try { playerRef.current?.destroy?.(); } catch { /* ignore */ }
+      if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [videoId, autoplay]);
 
