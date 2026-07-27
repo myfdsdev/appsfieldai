@@ -12,6 +12,7 @@ import BuildingStoreOverlay from "@/components/marketplace/BuildingStoreOverlay"
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import StoreStylePicker from "@/components/store/StoreStylePicker";
 import { DEFAULT_STORE_STYLE } from "@/components/store/storeStyles";
+import { ensureUniqueMarketplaceSlug } from "@/lib/uniqueSlug";
 
 const TEMPLATES = [
   { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600", primaryColor: "#7c3aed", accentColor: "#06b6d4" },
@@ -167,11 +168,14 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         heroGradientStart: `${data.branding.primaryColor}33`,
         heroGradientEnd: "#0a0603",
       };
+      // Guarantee a globally-unique slug so two stores with the same name don't
+      // resolve to the same public URL (appends -2, -3, ... if already taken).
+      const uniqueSlug = await ensureUniqueMarketplaceSlug(data.slug || data.name);
       const created = await base44.entities.Marketplace.create({
         ...payload,
         pageSections: seededPageSections,
         name: data.name,
-        slug: data.slug,
+        slug: uniqueSlug,
         ownerId: (await base44.auth.me()).id,
       });
       // Auto-build store content (hero copy, FAQs, testimonials, product import) from the description.
