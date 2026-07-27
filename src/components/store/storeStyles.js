@@ -312,12 +312,63 @@ export const STORE_STYLES = [
     sectionTitleClass: "text-2xl font-bold tracking-tight",
     preview: { bg: "linear-gradient(135deg,#FF6B00,#161616)", font: "'Outfit',sans-serif" },
   },
+  {
+    slug: "orion",
+    name: "Orion",
+    tagline: "Lifetime deals marketplace — dark-nav, orange, light body",
+    // Reuses the Appsfield layout/structure so the search bar, blog, login,
+    // navbar, cards and sections all align — just a refined palette.
+    headingFont: "'Outfit', sans-serif",
+    bodyFont: "'Inter', sans-serif",
+    googleFonts: ["Outfit:wght@500;600;700;800", "Inter:wght@400;500;600;700"],
+    palette: {
+      accent: "#f97316",
+      accentText: "#ffffff",
+      surface: "#f7f7f8",
+      card: "#ffffff",
+      cardBorder: "#E5E7EB",
+      text: "#161616",
+    },
+    hero: {
+      variant: "appsfield",
+      size: "lg",
+      align: "left",
+      titleClass: "text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight",
+      gradientTitle: false,
+      logoShape: "rounded-xl",
+      logoSize: "w-14 h-14",
+      badgePill: true,
+      ctaShape: "rounded-lg",
+    },
+    products: {
+      layout: "appsfield",
+      columns: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+      gap: "gap-5",
+      radius: "rounded-xl",
+      buttonShape: "rounded",
+      imageHeight: "h-40",
+      cardBorder: "border border-[#E5E7EB]",
+      cardBg: "bg-white",
+      cardHover: "hover:-translate-y-1 hover:border-[#f97316] hover:shadow-lg",
+      titleClass: "font-semibold text-[15px] tracking-tight",
+      uppercaseTitle: false,
+    },
+    sectionTitleClass: "text-2xl font-bold tracking-tight",
+    preview: { bg: "linear-gradient(135deg,#f97316,#0d1117)", font: "'Outfit',sans-serif" },
+  },
 ];
 
 export const DEFAULT_STORE_STYLE = "aurora";
 
 export function getStoreStyle(slug) {
   return STORE_STYLES.find((s) => s.slug === slug) || STORE_STYLES[0];
+}
+
+// Themes that share the Appsfield layout (dark-nav navbar + rotating hero).
+// Orion reuses Appsfield's structure with its own palette, so any slug-based
+// layout branch should match both.
+export function usesAppsfieldLayout(slug) {
+  return getStoreStyle(slug)?.hero?.variant === "appsfield";
 }
 
 // Hero vertical padding presets keyed by hero.size.

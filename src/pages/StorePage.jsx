@@ -29,7 +29,7 @@ import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { useStoreCart } from "@/hooks/useStoreCart";
 import { getRefFromUrl, saveAffiliateRef } from "@/lib/affiliateRef";
 import DealMakerWidget from "@/components/store/dealmaker/DealMakerWidget";
-import { getStoreStyle, loadStyleFonts } from "@/components/store/storeStyles";
+import { getStoreStyle, loadStyleFonts, usesAppsfieldLayout } from "@/components/store/storeStyles";
 import { toast } from "sonner";
 
 export default function StorePage() {
@@ -247,8 +247,8 @@ export default function StorePage() {
       className="min-h-screen bg-background"
       style={{ fontFamily: storeStyle.bodyFont, ...(pal ? { background: pal.surface, color: pal.text || "#e8f0df" } : {}) }}
     >
-      {/* Store top nav — Carbon & Appsfield themes use their own navbars */}
-      {sections.storeStyle === "appsfield" ? (
+      {/* Store top nav — Carbon & Appsfield/Orion themes use their own navbars */}
+      {usesAppsfieldLayout(sections.storeStyle) ? (
         <StoreAppsfieldNavbar
           marketplace={marketplace}
           sections={sections}

@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { getStoreStyle, HERO_SIZE_PADDING } from "./storeStyles";
+import { getStoreStyle, HERO_SIZE_PADDING, usesAppsfieldLayout } from "./storeStyles";
 import StoreBinaseaHero from "./StoreBinaseaHero";
 import StoreNexusHero from "./StoreNexusHero";
 import StoreAppsfieldHero from "./StoreAppsfieldHero";
@@ -31,8 +31,9 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
     return <StoreNexusHero marketplace={marketplace} sections={sections} listingsCount={listingsCount} />;
   }
 
-  // Appsfield uses a dedicated auto-rotating 3-slide marketplace hero.
-  if (sections.storeStyle === "appsfield") {
+  // Appsfield (and Orion, which reuses its layout) uses a dedicated
+  // auto-rotating 3-slide marketplace hero.
+  if (usesAppsfieldLayout(sections.storeStyle)) {
     return <StoreAppsfieldHero marketplace={marketplace} sections={sections} />;
   }
 
