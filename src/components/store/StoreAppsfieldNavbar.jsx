@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Store, Menu, X, User, LogOut, ChevronDown, ShoppingCart, Heart, Search, Share2, Rocket } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 // Appsfield store navbar: orange promo bar + white sticky header (logo, search,
 // wishlist/cart/account) + a category nav strip. Mirrors the reference layout
@@ -13,6 +14,9 @@ export default function StoreAppsfieldNavbar({
 }) {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  // Accent from the selected store style so Orion (and any other Appsfield-layout
+  // theme) shows its own accent color instead of the hardcoded Appsfield orange.
+  const accent = getStoreStyle(sections.storeStyle).palette?.accent || "#FF6B00";
   const goToDashboard = () => navigate(dashboardPath);
   const goToAccount = () => navigate(`${dashboardPath}?tab=account`);
   const goToAffiliate = () => (affiliatePath ? navigate(affiliatePath) : onOpenAffiliate?.());
@@ -46,7 +50,7 @@ export default function StoreAppsfieldNavbar({
     <div style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* Promo bar */}
       {promoOpen && (sections.heroBadgeText || true) && (
-        <div className="bg-[#FF6B00] text-white text-xs sm:text-sm py-2 px-4 relative text-center font-medium">
+        <div className="text-white text-xs sm:text-sm py-2 px-4 relative text-center font-medium" style={{ background: accent }}>
           <span>🚀 {sections.headerSubtitle ? "Launch deals are live now — grab lifetime access." : `Welcome to ${name} — lifetime software deals, live now.`}</span>
           <button onClick={() => setPromoOpen(false)} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-black/10 rounded transition">
             <X className="w-4 h-4" />
@@ -68,7 +72,7 @@ export default function StoreAppsfieldNavbar({
                   <img src={logo} alt={name} className="h-9 max-w-[200px] object-contain" />
                 ) : (
                   <>
-                    <div className="w-8 h-8 bg-[#FF6B00] rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: accent }}>
                       <Rocket className="w-5 h-5 text-white" />
                     </div>
                     <span className="truncate max-w-[220px]">{name}</span>
@@ -82,7 +86,7 @@ export default function StoreAppsfieldNavbar({
               onSubmit={(e) => { e.preventDefault(); scrollTo("store-lifetime-deals"); }}
               className="hidden lg:flex flex-1 max-w-2xl"
             >
-              <div className="no-global-input-style flex w-full border-2 border-[#E5E7EB] rounded-lg overflow-hidden transition focus-within:border-[#FF6B00]">
+              <div className="no-global-input-style flex w-full border-2 border-[#E5E7EB] rounded-lg overflow-hidden transition focus-within:border-[var(--af-accent)]" style={{ ["--af-accent"]: accent }}>
                 <div className="px-3 flex items-center bg-gray-50 text-[#6B7280]"><Search className="w-5 h-5" /></div>
                 <input
                   type="text"
@@ -91,7 +95,7 @@ export default function StoreAppsfieldNavbar({
                   placeholder="Search software, AI tools and lifetime deals"
                   className="w-full py-2.5 px-2 text-sm text-[#161616] placeholder:text-[#6B7280] outline-none border-0 focus:ring-0 bg-white"
                 />
-                <button type="submit" className="bg-[#FF6B00] text-white px-6 font-semibold flex items-center text-sm hover:bg-orange-700 transition" style={{ fontFamily: "'Outfit', sans-serif" }}>Search</button>
+                <button type="submit" className="text-white px-6 font-semibold flex items-center text-sm hover:opacity-90 transition" style={{ fontFamily: "'Outfit', sans-serif", background: accent }}>Search</button>
               </div>
             </form>
 
@@ -108,7 +112,7 @@ export default function StoreAppsfieldNavbar({
               <button onClick={onOpenCart} className="relative p-2 text-[#6B7280] hover:text-[#FF6B00] transition flex items-center gap-2">
                 <ShoppingCart className="w-6 h-6" />
                 {cartCount > 0 && (
-                  <span className="absolute top-0 -right-1 min-w-[20px] h-5 px-1 bg-[#FF6B00] text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white">{cartCount}</span>
+                  <span className="absolute top-0 -right-1 min-w-[20px] h-5 px-1 text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white" style={{ background: accent }}>{cartCount}</span>
                 )}
                 <span className="hidden sm:block font-semibold text-sm text-[#161616]" style={{ fontFamily: "'Outfit', sans-serif" }}>Cart</span>
               </button>
@@ -120,7 +124,7 @@ export default function StoreAppsfieldNavbar({
                     {customer.avatarUrl ? (
                       <img src={customer.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
                     ) : (
-                      <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center"><User className="w-3.5 h-3.5 text-white" /></div>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: accent }}><User className="w-3.5 h-3.5 text-white" /></div>
                     )}
                     <span className="text-sm font-medium max-w-[110px] truncate hidden sm:block text-[#161616]">{customer.fullName || customer.email}</span>
                     <ChevronDown className={`w-3.5 h-3.5 text-[#6B7280] transition-transform ${accountOpen ? "rotate-180" : ""}`} />
@@ -142,7 +146,7 @@ export default function StoreAppsfieldNavbar({
                 </div>
               ) : (
                 <button onClick={() => onOpenAuth?.("login")} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#E5E7EB] hover:bg-[#F7F7F7] transition text-[#161616]">
-                  <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center"><User className="w-3.5 h-3.5 text-white" /></div>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: accent }}><User className="w-3.5 h-3.5 text-white" /></div>
                   <span className="text-sm font-medium hidden sm:block">Login</span>
                 </button>
               )}
@@ -163,7 +167,7 @@ export default function StoreAppsfieldNavbar({
               </li>
             ))}
             <li className="ml-auto">
-              <button onClick={() => scrollTo("store-listings")} className="py-4 text-sm font-semibold text-[#FF6B00] hover:text-orange-700 transition flex items-center gap-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              <button onClick={() => scrollTo("store-listings")} className="py-4 text-sm font-semibold hover:opacity-80 transition flex items-center gap-1" style={{ fontFamily: "'Outfit', sans-serif", color: accent }}>
                 Browse All Deals
               </button>
             </li>

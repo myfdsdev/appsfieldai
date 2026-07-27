@@ -18,6 +18,7 @@ export default function AppsfieldProductCard({
   onAddToCart,
   onBuyNow,
   affiliateLink,
+  accent = "#FF6B00",
 }) {
   const [linkCopied, setLinkCopied] = React.useState(false);
   const [wished, setWished] = React.useState(false);
@@ -28,7 +29,6 @@ export default function AppsfieldProductCard({
     isBestSeller, isLifetimeDeal, status, dealType, customButton, noDayLimit, dealEndDate,
   } = listing || {};
 
-  const accent = "#FF6B00";
   const thumbnail = logo || screenshots?.[0];
   const title = softwareName || "Untitled";
   const fullPrice = price && price > 0 ? price : (sharePrice || 0) * (totalShares || 0);
@@ -73,8 +73,10 @@ export default function AppsfieldProductCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="group relative flex flex-col h-full rounded-xl bg-white border border-[#E5E7EB] overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:border-[#FF6B00] hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)]"
+      className="group relative flex flex-col h-full rounded-xl bg-white border border-[#E5E7EB] overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)]"
       style={{ color: "#161616" }}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = accent)}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
     >
       {/* Badges */}
       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
@@ -85,7 +87,7 @@ export default function AppsfieldProductCard({
           <span className="bg-[#179447] text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">Lifetime</span>
         )}
         {discountPct > 0 && !isBestSeller && !isLifetimeDeal && (
-          <span className="bg-[#FF6B00] text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">{discountPct}% OFF</span>
+          <span className="text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide" style={{ background: accent }}>{discountPct}% OFF</span>
         )}
       </div>
 
@@ -94,7 +96,7 @@ export default function AppsfieldProductCard({
         onClick={(e) => { e.stopPropagation(); setWished((w) => !w); }}
         className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:scale-110 transition"
       >
-        <Heart className={`w-4 h-4 transition-colors ${wished ? "fill-[#FF6B00] text-[#FF6B00]" : "text-[#6B7280]"}`} />
+        <Heart className="w-4 h-4 transition-colors" style={wished ? { fill: accent, color: accent } : { color: "#6B7280" }} />
       </button>
 
       {/* Image */}
@@ -105,8 +107,8 @@ export default function AppsfieldProductCard({
         {thumbnail ? (
           <img src={thumbnail} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-50">
-            <span className="text-[#FF6B00] font-bold text-lg text-center px-4">{title}</span>
+          <div className="w-full h-full flex items-center justify-center" style={{ background: `${accent}14` }}>
+            <span className="font-bold text-lg text-center px-4" style={{ color: accent }}>{title}</span>
           </div>
         )}
       </div>

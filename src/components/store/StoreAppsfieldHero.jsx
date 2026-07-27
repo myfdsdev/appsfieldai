@@ -1,10 +1,14 @@
 import React from "react";
+import { getStoreStyle } from "@/components/store/storeStyles";
 
 // Single hero for the Appsfield store style: rounded card, left text
 // (badge + big headline + subtext + dark CTA) and a right feature image with
 // a soft fade. Uses the owner's configured header title/subtitle/image, badge,
 // CTA and Background settings so the hero always matches Page Settings.
 export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
+  // The accent comes from the selected store style's palette so themes that
+  // reuse this layout (Appsfield, Orion, …) each get their own accent color.
+  const accent = getStoreStyle(sections.storeStyle).palette?.accent || "#FF6B00";
   const title = sections.headerTitle || marketplace.name;
   const subtitle =
     sections.headerSubtitle ||
@@ -43,7 +47,7 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
 
         <div className="relative z-10 flex w-full min-h-[400px] flex-col md:flex-row items-stretch">
           <div className="w-full md:flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-            <span className="inline-block px-3 py-1 bg-white rounded-full text-[10px] font-bold tracking-wider mb-4 border border-orange-200 self-start uppercase" style={{ color: "#FF6B00" }}>
+            <span className="inline-block px-3 py-1 bg-white rounded-full text-[10px] font-bold tracking-wider mb-4 border self-start uppercase" style={{ color: accent, borderColor: `${accent}33` }}>
               {badge}
             </span>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#161616] leading-tight mb-4" style={{ fontFamily: "'Outfit', sans-serif" }}>
@@ -53,8 +57,10 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
             <div>
               <button
                 onClick={scrollToDeals}
-                className="bg-[#161616] text-white font-semibold px-8 py-3.5 rounded-lg hover:bg-[#FF6B00] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm"
-                style={{ fontFamily: "'Outfit', sans-serif" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = accent)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#161616")}
+                className="text-white font-semibold px-8 py-3.5 rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm"
+                style={{ fontFamily: "'Outfit', sans-serif", background: "#161616" }}
               >
                 {cta}
               </button>
