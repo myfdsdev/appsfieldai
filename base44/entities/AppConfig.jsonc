@@ -30,6 +30,19 @@
       "type": "string",
       "description": "Custom app favicon image URL"
     },
+    "popupVideoEnabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the welcome popup video is shown to users when they open the app"
+    },
+    "popupVideoUrl": {
+      "type": "string",
+      "description": "YouTube video link shown in the welcome popup"
+    },
+    "popupVideoTitle": {
+      "type": "string",
+      "description": "Optional heading shown above the popup video"
+    },
     "jvzooSecretKey": {
       "type": "string",
       "description": "JVZoo IPN secret key used to verify incoming webhook signatures"

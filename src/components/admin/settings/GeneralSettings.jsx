@@ -27,6 +27,9 @@ export default function GeneralSettings() {
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUrlDark, setLogoUrlDark] = useState("");
   const [faviconUrl, setFaviconUrl] = useState("");
+  const [popupVideoEnabled, setPopupVideoEnabled] = useState(false);
+  const [popupVideoUrl, setPopupVideoUrl] = useState("");
+  const [popupVideoTitle, setPopupVideoTitle] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
   const [platformDomain, setPlatformDomain] = useState("");
   const [detectedDomain, setDetectedDomain] = useState("");
@@ -54,6 +57,9 @@ export default function GeneralSettings() {
         if (cfg?.appLogoUrl) setLogoUrl(cfg.appLogoUrl);
         if (cfg?.appLogoUrlDark) setLogoUrlDark(cfg.appLogoUrlDark);
         if (cfg?.appFaviconUrl) setFaviconUrl(cfg.appFaviconUrl);
+        if (cfg?.popupVideoEnabled !== undefined) setPopupVideoEnabled(cfg.popupVideoEnabled);
+        if (cfg?.popupVideoUrl) setPopupVideoUrl(cfg.popupVideoUrl);
+        if (cfg?.popupVideoTitle) setPopupVideoTitle(cfg.popupVideoTitle);
       } catch { /* none yet */ }
       try {
         const res = await base44.functions.invoke("getPlatformDomain", {});
@@ -76,6 +82,9 @@ export default function GeneralSettings() {
         appLogoUrl: logoUrl,
         appLogoUrlDark: logoUrlDark,
         appFaviconUrl: faviconUrl,
+        popupVideoEnabled,
+        popupVideoUrl,
+        popupVideoTitle,
       };
       const configs = await base44.entities.AppConfig.filter({ key: "main" });
       if (configs?.[0]) await base44.entities.AppConfig.update(configs[0].id, payload);
@@ -161,6 +170,31 @@ export default function GeneralSettings() {
             <p className="text-xs text-muted-foreground">Square image, 32×32 or 64×64px (PNG/ICO).</p>
           </Field>
         </div>
+      </div>
+
+      {/* Popup Video */}
+      <div className="pt-2 border-t border-border/30">
+        <h3 className="text-sm font-semibold text-foreground mb-3">Popup Video</h3>
+        <ToggleRow label="Show welcome popup video" checked={popupVideoEnabled} onChange={setPopupVideoEnabled} />
+        <div className="grid sm:grid-cols-2 gap-4 mt-2">
+          <Field label="YouTube Video Link">
+            <Input
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={popupVideoUrl}
+              onChange={(e) => setPopupVideoUrl(e.target.value)}
+              className="h-10 bg-secondary/40 border-border/50"
+            />
+          </Field>
+          <Field label="Popup Title (optional)">
+            <Input
+              placeholder="Welcome! Watch this quick intro"
+              value={popupVideoTitle}
+              onChange={(e) => setPopupVideoTitle(e.target.value)}
+              className="h-10 bg-secondary/40 border-border/50"
+            />
+          </Field>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Shows once per session when a user opens the app. Paste any YouTube link (watch, share, or embed).</p>
       </div>
 
       {/* Defaults */}
