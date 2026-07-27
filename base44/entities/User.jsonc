@@ -73,6 +73,18 @@
       "default": "active",
       "description": "Account status"
     },
+    "telegramChatId": {
+      "type": "string",
+      "description": "Connected Telegram chat ID that receives agent alerts (new leads, new sales). Set automatically when the owner starts the Telegram bot."
+    },
+    "telegramUsername": {
+      "type": "string",
+      "description": "Telegram @username of the connected account (for display)"
+    },
+    "telegramConnectCode": {
+      "type": "string",
+      "description": "One-time code embedded in the bot deep link, used to match the owner when they start the bot"
+    },
     "leadFinderSmtp": {
       "type": "object",
       "description": "Personal SMTP settings used to send Lead Finder outreach emails",

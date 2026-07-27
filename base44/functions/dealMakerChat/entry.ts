@@ -109,6 +109,17 @@ Deno.serve(async (req) => {
         }
       } catch (e) { console.error('proposal owner email failed:', e); }
 
+      // Fire-and-forget Telegram alert — a hot custom-build proposal was approved.
+      try {
+        await base44.functions.invoke('notifyOwnerTelegram', {
+          marketplaceId,
+          text: `🔥 <b>New custom-build request!</b>\n\n` +
+            `<b>Project:</b> ${plan.title || 'Custom software'}\n` +
+            `<b>Name:</b> ${contact.name || '—'}\n<b>Email:</b> ${contact.email || '—'}\n<b>Phone:</b> ${contact.phone || '—'}\n` +
+            `<b>Business:</b> ${contact.businessType || '—'}\n\n${(plan.overview || '').slice(0, 400)}`,
+        });
+      } catch (e) { console.error('proposal telegram failed:', e); }
+
       return Response.json({ ok: true, leadId: created.id });
     }
 
@@ -143,6 +154,16 @@ Deno.serve(async (req) => {
           });
         }
       } catch (e) { console.error('dealMakerChat lead email failed:', e); }
+      // Fire-and-forget Telegram alert to the store owner.
+      try {
+        const isHot = created.type === 'custom_request';
+        await base44.functions.invoke('notifyOwnerTelegram', {
+          marketplaceId,
+          text: `${isHot ? '🔥 <b>New custom-build request!</b>' : '🎯 <b>New lead captured!</b>'}\n\n` +
+            `<b>Name:</b> ${created.name || '—'}\n<b>Email:</b> ${created.email || '—'}\n<b>Phone:</b> ${created.phone || '—'}\n` +
+            `<b>Business:</b> ${created.businessType || '—'}\n\n${(created.summary || '').slice(0, 500)}`,
+        });
+      } catch (e) { console.error('dealMakerChat lead telegram failed:', e); }
       return Response.json({ ok: true, leadId: created.id });
     }
 

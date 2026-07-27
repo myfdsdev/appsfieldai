@@ -116,6 +116,18 @@ Deno.serve(async (req) => {
       notes: `Purchased via Deal Maker chat (${mode} price)`,
     });
 
+    // Fire-and-forget Telegram alert to the store owner — new sale via the agent.
+    try {
+      await svc.functions.invoke('notifyOwnerTelegram', {
+        marketplaceId,
+        text: `💰 <b>New sale on ${marketplace.name}!</b>\n\n` +
+          `<b>Amount:</b> ${currency} ${total.toLocaleString()}\n` +
+          `<b>Customer:</b> ${name} (${cleanEmail})\n` +
+          `<b>Product:</b> ${listing.softwareName || '—'}\n` +
+          `<b>Via:</b> Deal Maker chat`,
+      });
+    } catch (e) { console.error('dealMakerCheckout telegram failed:', e); }
+
     // ── Access email: order confirmation + a passwordless login link ──
     // The dashboard link carries a one-time login token so the buyer lands
     // signed in — no password to set up front. A separate magic-link email is

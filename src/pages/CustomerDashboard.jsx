@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { User, Mail } from "lucide-react";
+import { User, Mail, Send } from "lucide-react";
 import UserAccountSettings from "@/components/dashboard/UserAccountSettings";
 import LeadSmtpSettings from "@/components/leadfinder/LeadSmtpSettings";
+import TelegramSettings from "@/components/dashboard/TelegramSettings";
 
 export default function CustomerDashboard() {
   // Deep-link support: /my-account?tab=smtp opens the Outreach Email tab directly.
-  const initialTab = new URLSearchParams(window.location.search).get("tab") === "smtp" ? "smtp" : "account";
+  const tabParam = new URLSearchParams(window.location.search).get("tab");
+  const initialTab = tabParam === "smtp" ? "smtp" : tabParam === "telegram" ? "telegram" : "account";
   const [tab, setTab] = useState(initialTab);
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
@@ -27,6 +29,7 @@ export default function CustomerDashboard() {
         {[
           { id: "account", label: "Account", icon: User },
           { id: "smtp", label: "Outreach Email", icon: Mail },
+          { id: "telegram", label: "Telegram", icon: Send },
         ].map((t) => (
           <button
             key={t.id}
@@ -44,6 +47,10 @@ export default function CustomerDashboard() {
       {tab === "smtp" ? (
         <div className="space-y-6">
           <LeadSmtpSettings user={currentUser} />
+        </div>
+      ) : tab === "telegram" ? (
+        <div className="space-y-6">
+          <TelegramSettings />
         </div>
       ) : (
         <div className="space-y-6">

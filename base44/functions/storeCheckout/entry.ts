@@ -195,6 +195,19 @@ Deno.serve(async (req) => {
       } catch (_) { /* non-fatal */ }
     }
 
+    // Fire-and-forget Telegram alert to the store owner — new sale.
+    try {
+      const itemsSummary = lineItems.map((li) => `${li.quantity}× ${li.listingTitle}`).join(', ');
+      await base44.asServiceRole.functions.invoke('notifyOwnerTelegram', {
+        marketplaceId,
+        text: `💰 <b>New sale on ${marketplace.name}!</b>\n\n` +
+          `<b>Amount:</b> ${marketplace.currency || 'USD'} ${total.toLocaleString()}\n` +
+          `<b>Customer:</b> ${buyerName || '—'} (${customer.email || '—'})\n` +
+          `<b>Items:</b> ${itemsSummary}\n` +
+          `<b>Payment:</b> ${method === 'paypal' ? 'PayPal' : 'Manual / COD'}`,
+      });
+    } catch (e) { console.error('storeCheckout telegram failed:', e); }
+
     return Response.json({
       success: true,
       order,
