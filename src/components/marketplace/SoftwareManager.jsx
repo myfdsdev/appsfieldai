@@ -34,7 +34,7 @@ const dealTypeBadge = (type) => {
   return <Badge className={`text-[10px] border ${cfg.color}`}>{cfg.label}</Badge>;
 };
 
-export default function SoftwareManager({ marketplaceId }) {
+export default function SoftwareManager({ marketplaceId, marketplaceType }) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -134,6 +134,7 @@ export default function SoftwareManager({ marketplaceId }) {
     return (
       <AddProductForm
         marketplaceId={marketplaceId}
+        marketplaceType={marketplaceType}
         listing={editing}
         onClose={() => { setShowForm(false); setEditing(null); }}
         categories={categories}

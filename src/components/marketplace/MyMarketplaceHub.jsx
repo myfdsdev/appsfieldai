@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard, FolderKanban, Contact
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard, FolderKanban, Contact, Store
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,7 @@ import DealMakerReport from "@/components/marketplace/DealMakerReport";
 import DealMakerLeads from "@/components/marketplace/DealMakerLeads";
 import ProjectRequestsManager from "@/components/marketplace/ProjectRequestsManager";
 import ProjectClients from "@/components/marketplace/ProjectClients";
+import StoreVendorsPanel from "@/components/marketplace/StoreVendorsPanel";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import StoreStylePicker from "@/components/store/StoreStylePicker";
 
@@ -89,6 +90,7 @@ const NAV_GROUPS = [
       { id: "auctions", label: "Auctions", icon: Gavel },
       { id: "tax", label: "Tax Information", icon: Receipt },
       { id: "customers", label: "Customers", icon: Users },
+      { id: "vendors", label: "Vendors", icon: Store },
       { id: "affiliates", label: "Affiliates", icon: Share2 },
     ]
   },
@@ -493,7 +495,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
           {/* PRODUCTS */}
           {activeTab === "products" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Products</h2>
-            <SoftwareManager marketplaceId={marketplace?.id} /></div>
+            <SoftwareManager marketplaceId={marketplace?.id} marketplaceType={marketplace?.type} /></div>
           )}
 
           {/* ORDERS */}
@@ -619,6 +621,41 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
           {activeTab === "customers" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Customers</h2>
             <CustomerManager marketplaceId={marketplace?.id} /></div>
+          )}
+
+          {/* VENDORS */}
+          {activeTab === "vendors" && (
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <h2 className="text-lg font-display font-bold">Vendors</h2>
+                  <p className="text-sm text-muted-foreground">Approve vendors, review their products, and see which vendor owns each listing.</p>
+                </div>
+                <div className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 ${marketplace?.type === "multi_vendor" ? "border-orange-500/30 bg-orange-500/5" : "border-border/30 bg-secondary/20"}`}>
+                  <div>
+                    <p className="text-xs font-medium">Multi-vendor mode</p>
+                    <p className="text-[10px] text-muted-foreground">Show "Become a Vendor" on your store</p>
+                  </div>
+                  <Toggle
+                    value={marketplace?.type === "multi_vendor"}
+                    onChange={async (v) => {
+                      await base44.entities.Marketplace.update(marketplace.id, { type: v ? "multi_vendor" : "single_vendor" });
+                      queryClient.invalidateQueries({ queryKey: ["hubMarketplace", marketplace.id] });
+                      queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
+                      toast.success(v ? "Multi-vendor mode enabled." : "Multi-vendor mode disabled.");
+                    }}
+                  />
+                </div>
+              </div>
+              {marketplace?.type === "multi_vendor" ? (
+                <StoreVendorsPanel marketplaceId={marketplace?.id} />
+              ) : (
+                <div className="text-center py-12 rounded-xl border border-dashed border-border/40 text-muted-foreground">
+                  <Store className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">Enable multi-vendor mode to let others apply to sell on your store.</p>
+                </div>
+              )}
+            </div>
           )}
 
           {/* AFFILIATES */}

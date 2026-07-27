@@ -27,7 +27,7 @@ const profileMenuItems = [
   { to: "/dashboard", label: "My Marketplaces", icon: Building2 },
   { to: "/my-account", label: "My Account", icon: ShoppingCart },
   { to: "/lead-finder", label: "Lead Finder", icon: Radar, feature: "leadFinderAllowed" },
-  { to: "/vendor/dashboard", label: "Vendor Management", icon: Settings, feature: "vendorManagementAllowed" },
+  { to: "/vendor/dashboard", label: "Vendor Dashboard", icon: Settings, feature: "vendorManagementAllowed" },
   { to: "/pricing", label: "Plans", icon: Package },
 ];
 

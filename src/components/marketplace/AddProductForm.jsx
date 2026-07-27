@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Package, DollarSign, Image, Rocket, Save, Plus, X,
@@ -34,8 +34,15 @@ const GRADIENTS = [
   "from-red-500 to-pink-500",
 ];
 
-export default function AddProductForm({ marketplaceId, listing, onClose, categories = [] }) {
+export default function AddProductForm({ marketplaceId, listing, onClose, categories = [], marketplaceType }) {
   const queryClient = useQueryClient();
+
+  // Approved vendors for this store — lets the owner attribute a product to a vendor.
+  const { data: approvedVendors = [] } = useQuery({
+    queryKey: ["approvedVendors", marketplaceId],
+    queryFn: async () => (await base44.entities.Vendor.filter({ marketplaceId, status: "approved" })),
+    enabled: !!marketplaceId && marketplaceType === "multi_vendor",
+  });
   const [activeTab, setActiveTab] = useState("details");
   const [saving, setSaving] = useState(false);
   const [featureInput, setFeatureInput] = useState("");
@@ -67,6 +74,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     tags: [],
     imageGradient: GRADIENTS[0],
     sellerName: "",
+    vendorId: "",
     pricingType: "paid",
     status: "pending",
     isBestSeller: false,
@@ -107,6 +115,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         tags: listing.tags || [],
         imageGradient: listing.imageGradient || GRADIENTS[0],
         sellerName: listing.sellerName || "",
+        vendorId: listing.vendorId || "",
         pricingType: listing.pricingType || "paid",
         status: listing.status || "pending",
         isBestSeller: listing.isBestSeller || false,
@@ -263,6 +272,18 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                 <Input value={form.sellerName} onChange={e => update("sellerName", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Your name or company" />
               </div>
             </div>
+
+            {/* Assign to Vendor — only on multi-vendor stores with approved vendors */}
+            {marketplaceType === "multi_vendor" && approvedVendors.length > 0 && (
+              <div>
+                <label className="text-xs text-muted-foreground">Assign to Vendor (optional)</label>
+                <select value={form.vendorId} onChange={e => update("vendorId", e.target.value)} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
+                  <option value="">Store owner (no vendor)</option>
+                  {approvedVendors.map(v => <option key={v.id} value={v.id}>{v.vendorName}</option>)}
+                </select>
+                <p className="text-[11px] text-muted-foreground mt-1">Attribute this product to one of your approved vendors.</p>
+              </div>
+            )}
 
             {/* Product Delivery */}
             <div className="pt-2 border-t border-border/30">
