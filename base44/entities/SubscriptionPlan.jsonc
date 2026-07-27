@@ -145,6 +145,11 @@
       "default": false,
       "description": "Access to the Lead Finder tool"
     },
+    "telegramAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to the Telegram notifications & bot commands feature"
+    },
     "premiumTemplatesAccess": {
       "type": "boolean",
       "default": false,
