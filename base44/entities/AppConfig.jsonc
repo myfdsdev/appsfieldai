@@ -88,14 +88,19 @@
           "type": "string",
           "description": "xAI (Grok) API key (used when provider is xai to call the real x.ai API)"
         },
+        "kieAiApiKey": {
+          "type": "string",
+          "description": "Kie.ai API key (used when the image/video provider is kie to call the Kie.ai Grok Imagine API)"
+        },
         "imageProvider": {
           "type": "string",
           "enum": [
             "base44",
-            "xai"
+            "xai",
+            "kie"
           ],
           "default": "base44",
-          "description": "Provider used for AI image generation: base44 (built-in) or xai (Grok Imagine)"
+          "description": "Provider used for AI image generation: base44 (built-in), xai (Grok Imagine), or kie (Kie.ai)"
         },
         "imageModel": {
           "type": "string",
@@ -105,14 +110,15 @@
           "type": "string",
           "enum": [
             "base44",
-            "xai"
+            "xai",
+            "kie"
           ],
           "default": "base44",
-          "description": "Provider used for AI video generation: base44 (built-in) or xai (Grok Imagine)"
+          "description": "Provider used for AI video generation: base44 (built-in), xai (Grok Imagine), or kie (Kie.ai)"
         },
         "videoModel": {
           "type": "string",
-          "description": "Selected video-generation model id for the chosen video provider (e.g. grok-imagine-video)"
+          "description": "Selected video-generation model id for the chosen video provider (e.g. grok-imagine-video-1-5-preview)"
         },
         "voiceModel": {
           "type": "string",

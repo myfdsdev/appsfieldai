@@ -122,6 +122,14 @@ export const AI_IMAGE_PROVIDERS = [
       { id: "grok-imagine-image-fast", name: "Grok Imagine (fast)" },
     ],
   },
+  {
+    id: "kie",
+    name: "Kie.ai (Grok Imagine)",
+    desc: "Kie.ai-hosted Grok Imagine image models — uses your Kie.ai API key.",
+    models: [
+      { id: "grok-imagine-image-1-5-preview", name: "Grok Imagine Image 1.5 (preview)" },
+    ],
+  },
 ];
 
 export const AI_VIDEO_PROVIDERS = [
@@ -140,6 +148,14 @@ export const AI_VIDEO_PROVIDERS = [
       { id: "grok-imagine-video-fast", name: "Grok Imagine Video (fast)" },
     ],
   },
+  {
+    id: "kie",
+    name: "Kie.ai (Grok Imagine)",
+    desc: "Kie.ai-hosted Grok Imagine video — uses your Kie.ai API key.",
+    models: [
+      { id: "grok-imagine-video-1-5-preview", name: "Grok Imagine Video 1.5 (preview)" },
+    ],
+  },
 ];
 
 export default function AIEngineSettings() {
@@ -150,6 +166,7 @@ export default function AIEngineSettings() {
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [xaiApiKey, setXaiApiKey] = useState("");
+  const [kieAiApiKey, setKieAiApiKey] = useState("");
   const [imageProvider, setImageProvider] = useState("base44");
   const [imageModel, setImageModel] = useState("");
   const [videoProvider, setVideoProvider] = useState("base44");
@@ -210,6 +227,7 @@ export default function AIEngineSettings() {
           setOpenaiApiKey(eng.openaiApiKey || "");
           setGeminiApiKey(eng.geminiApiKey || "");
           setXaiApiKey(eng.xaiApiKey || "");
+          setKieAiApiKey(eng.kieAiApiKey || "");
           setImageProvider(eng.imageProvider || "base44");
           setImageModel(eng.imageModel || "");
           setVideoProvider(eng.videoProvider || "base44");
@@ -260,6 +278,8 @@ export default function AIEngineSettings() {
   const needsGeminiKey = provider === "gemini" || voiceProvider === "gemini";
   // xAI key needed if selected for text, image, or video generation.
   const needsXaiKey = provider === "xai" || imageProvider === "xai" || videoProvider === "xai";
+  // Kie.ai key needed if selected for image or video generation.
+  const needsKieKey = imageProvider === "kie" || videoProvider === "kie";
 
   const buildEnginePayload = () => ({
     provider,
@@ -268,6 +288,7 @@ export default function AIEngineSettings() {
     openaiApiKey: openaiApiKey.trim(),
     geminiApiKey: geminiApiKey.trim(),
     xaiApiKey: xaiApiKey.trim(),
+    kieAiApiKey: kieAiApiKey.trim(),
     imageProvider,
     imageModel,
     videoProvider,
@@ -308,6 +329,10 @@ export default function AIEngineSettings() {
     }
     if (needsXaiKey && !xaiApiKey.trim()) {
       toast.error("Enter your xAI (Grok) API key.");
+      return;
+    }
+    if (needsKieKey && !kieAiApiKey.trim()) {
+      toast.error("Enter your Kie.ai API key.");
       return;
     }
     setSaving(true);
@@ -434,6 +459,24 @@ export default function AIEngineSettings() {
           />
           <p className="text-xs text-muted-foreground">
             Get one at console.x.ai. Stored securely and used only on the backend. Powers Grok text, image & video generation.
+          </p>
+        </div>
+      )}
+
+      {needsKieKey && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" /> Kie.ai API Key
+          </Label>
+          <Input
+            type="password"
+            value={kieAiApiKey}
+            onChange={(e) => setKieAiApiKey(e.target.value)}
+            placeholder="Your Kie.ai API key"
+            className="bg-secondary/40 border-border/50 rounded-xl"
+          />
+          <p className="text-xs text-muted-foreground">
+            Get one at kie.ai/api-key. Stored securely and used only on the backend. Powers Kie.ai Grok Imagine image & video generation.
           </p>
         </div>
       )}
