@@ -111,7 +111,7 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
   }
 
   return (
-    <div className="relative w-full rounded-xl overflow-hidden bg-black group" style={{ paddingTop: "56.25%" }}>
+    <div className="relative w-full rounded-xl overflow-hidden bg-black group mx-auto" style={{ aspectRatio: "16 / 9", maxHeight: "80vh" }}>
       <div ref={containerRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
       {/* Transparent click layer — captures all clicks so YouTube UI is inert */}
