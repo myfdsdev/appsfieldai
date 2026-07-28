@@ -163,9 +163,9 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
         onSelect={setAspectRatio}
       />
 
-      <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
         {/* ── Left: controls ─────────────────────────────── */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
           {/* Pill row: Scene Mode / Aspect Ratio / Duration */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 px-4 py-3">
