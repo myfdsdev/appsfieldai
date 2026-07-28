@@ -44,65 +44,6 @@ async function persistToR2(sourceUrl: string, userId: string, mediaType: string)
 // Called from the frontend (base44.functions.invoke('marketingGenerate', {...}))
 // so provider API keys never leave the backend.
 
-const KIE_CREATE_URL = 'https://api.kie.ai/api/v1/jobs/createTask';
-const KIE_RECORD_URL = 'https://api.kie.ai/api/v1/jobs/recordInfo';
-
-// xAI image generation (grok image models). Returns the first image URL.
-async function callXaiImage(apiKey: string, model: string, prompt: string) {
-  const res = await fetch('https://api.x.ai/v1/images/generations', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: model || 'grok-2-image', prompt, n: 1 }),
-  });
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`xAI image error ${res.status}: ${errText}`);
-  }
-  const data = await res.json();
-  const url = data?.data?.[0]?.url || data?.data?.[0]?.b64_json;
-  if (!url) throw new Error('xAI returned no image.');
-  return url;
-}
-
-// Kie.ai — create a task and poll until it finishes.
-async function callKie(apiKey: string, model: string, input: Record<string, unknown>) {
-  const createRes = await fetch(KIE_CREATE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model, input }),
-  });
-  const createData = await createRes.json();
-  if (!createRes.ok || createData?.code !== 200 || !createData?.data?.taskId) {
-    console.error('Kie.ai createTask failed', createRes.status, JSON.stringify(createData));
-    throw new Error(createData?.msg || `Kie.ai createTask failed (${createRes.status}).`);
-  }
-  const taskId = createData.data.taskId;
-  const maxAttempts = 90; // ~6 minutes
-  for (let i = 0; i < maxAttempts; i++) {
-    await new Promise((r) => setTimeout(r, 4000));
-    const recRes = await fetch(`${KIE_RECORD_URL}?taskId=${encodeURIComponent(taskId)}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    const recData = await recRes.json();
-    const d = recData?.data;
-    if (!recRes.ok || !d) continue;
-    if (d.state === 'success') {
-      let urls: string[] = [];
-      try {
-        const parsed = JSON.parse(d.resultJson || '{}');
-        urls = parsed.resultUrls || [];
-      } catch { /* ignore */ }
-      if (!urls[0]) throw new Error('Kie.ai returned no result.');
-      return urls[0];
-    }
-    if (d.state === 'fail') {
-      console.error('Kie.ai task failed', d.failCode, d.failMsg);
-      throw new Error(d.failMsg || 'Generation failed.');
-    }
-  }
-  throw new Error('Generation timed out. Try again.');
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -178,7 +119,7 @@ Deno.serve(async (req) => {
     // Persist the generated result to R2 so it never expires.
     let finalUrl = url;
     try {
-      finalUrl = await persistToR2(url, user.id, mediaType);
+      finalUrl = await persistToR2(url, `marketing/${user.id}/${mediaType}`, mediaType);
     } catch (e) {
       console.error('marketingGenerate persistToR2 error', e);
     }

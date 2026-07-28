@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Wand2, LayoutGrid, Ratio, Clock, ChevronDown, ImageIcon, Video as VideoIcon } from "lucide-react";
+import { Sparkles, Loader2, Wand2, Ratio, Clock, ChevronDown, ImageIcon, Video as VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import MultiImageUpload from "./MultiImageUpload";
@@ -21,14 +21,15 @@ const VIDEO_RATIOS = [
   { id: "16:9", label: "Landscape" },
   { id: "1:1", label: "Square" },
 ];
-const DURATIONS = [4, 6, 8];
+const DURATIONS = [6, 8, 10, 12, 15];
 
 export default function StudioPanel({ mediaType, store, presets, presetLabelPrefix, seedImageUrl, onSeedConsumed }) {
   const [presetId, setPresetId] = useState("");
   const [input, setInput] = useState("");
   const [prompt, setPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState(mediaType === "video" ? "9:16" : "1:1");
-  const [duration, setDuration] = useState(8);
+  const [duration, setDuration] = useState(mediaType === "video" ? 6 : 8);
+  const [thumbs, setThumbs] = useState({});
   const [refImages, setRefImages] = useState([]);
   const [enhancing, setEnhancing] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -70,6 +71,36 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
     loadAssets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store?.id, mediaType]);
+
+  // Load (and generate on first use) an AI thumbnail per preset via Grok Imagine.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Load any already-cached thumbnails first.
+      let cached = [];
+      try {
+        cached = await base44.entities.PresetThumbnail.filter({ mediaType });
+      } catch { cached = []; }
+      const map = {};
+      cached.forEach((t) => { if (t.presetId && t.url) map[t.presetId] = t.url; });
+      if (!cancelled) setThumbs((prev) => ({ ...map, ...prev }));
+
+      // Generate the missing ones sequentially so we don't hammer the provider.
+      for (const p of presets) {
+        if (cancelled) return;
+        if (map[p.id]) continue;
+        try {
+          const res = await base44.functions.invoke("marketingPresetThumbnail", {
+            presetId: p.id, mediaType, prompt: p.prompt, label: p.label,
+          });
+          const url = res?.data?.url;
+          if (url && !cancelled) setThumbs((prev) => ({ ...prev, [p.id]: url }));
+        } catch { /* keep emoji fallback */ }
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaType]);
 
   const activePreset = presets.find((p) => p.id === presetId) || null;
 
@@ -166,18 +197,8 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
       <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
         {/* ── Left: controls ─────────────────────────────── */}
         <div className="space-y-5 min-w-0">
-          {/* Pill row: Scene Mode / Aspect Ratio / Duration */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 px-4 py-3">
-              <div className="w-9 h-9 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
-                <LayoutGrid className="w-4 h-4 text-violet-400" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold leading-tight">Scene Mode</p>
-                <p className="text-xs text-muted-foreground truncate">{activePreset ? activePreset.label : "Select style"}</p>
-              </div>
-            </div>
-
+          {/* Pill row: Aspect Ratio */}
+          <div className="grid grid-cols-1 gap-3">
             <button
               type="button"
               onClick={() => setRatioOpen(true)}
@@ -228,25 +249,31 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
             </div>
           )}
 
-          {/* Scene Mode big thumbnails */}
+          {/* Template grid — all presets shown, AI thumbnails via Grok Imagine */}
           <div>
-            <label className="text-sm font-semibold text-foreground">Scene Mode</label>
+            <label className="text-sm font-semibold text-foreground">Template</label>
             <p className="text-xs text-muted-foreground mb-3">{presetLabelPrefix} — pick a style.</p>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
               {presets.map((p) => {
                 const active = presetId === p.id;
+                const thumb = thumbs[p.id];
                 return (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setPresetId(active ? "" : p.id)}
-                    className={`group relative shrink-0 w-40 h-32 rounded-xl overflow-hidden border-2 transition-all ${
+                    className={`group relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
                       active ? "border-orange-500" : "border-transparent hover:border-border"
                     }`}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
-                      <span className="text-4xl opacity-80">{p.emoji}</span>
-                    </div>
+                    {thumb ? (
+                      <img src={thumb} alt={p.label} className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/50 absolute top-2 left-2" />
+                        <span className="text-4xl opacity-80">{p.emoji}</span>
+                      </div>
+                    )}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2.5 pt-6 pb-2 text-left">
                       <p className="text-xs font-bold text-white leading-tight line-clamp-2">{p.label}</p>
                     </div>

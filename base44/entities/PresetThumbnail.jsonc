@@ -1,0 +1,26 @@
+{
+  "name": "PresetThumbnail",
+  "type": "object",
+  "properties": {
+    "presetId": {
+      "type": "string",
+      "description": "The marketing preset id this thumbnail represents"
+    },
+    "mediaType": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video"
+      ],
+      "description": "Which studio tab this preset belongs to"
+    },
+    "url": {
+      "type": "string",
+      "description": "Public URL of the generated thumbnail image (stored in R2)"
+    }
+  },
+  "required": [
+    "presetId",
+    "url"
+  ]
+}
