@@ -1,4 +1,38 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { AwsClient } from 'npm:aws4fetch@1.0.20';
+
+// Download a generated media URL and persist it to Cloudflare R2, returning a
+// permanent public URL. Provider URLs (Kie/xAI/Veo) are temporary and expire.
+async function persistToR2(sourceUrl: string, userId: string, mediaType: string): Promise<string> {
+  const endpoint = (Deno.env.get('R2_ENDPOINT') || '').replace(/\/$/, '');
+  const bucket = Deno.env.get('R2_BUCKET_NAME');
+  const publicBase = (Deno.env.get('R2_PUBLIC_URL_BASE') || '').replace(/\/$/, '');
+  if (!endpoint || !bucket || !publicBase) return sourceUrl; // R2 not configured → keep original
+
+  const srcRes = await fetch(sourceUrl);
+  if (!srcRes.ok) return sourceUrl;
+  const type = srcRes.headers.get('content-type') || (mediaType === 'video' ? 'video/mp4' : 'image/png');
+  const bytes = new Uint8Array(await srcRes.arrayBuffer());
+  const ext = (type.split('/')[1] || (mediaType === 'video' ? 'mp4' : 'png')).split(';')[0];
+  const key = `marketing/${userId}/${mediaType}_${Date.now()}.${ext}`;
+
+  const aws = new AwsClient({
+    accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID'),
+    secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY'),
+    service: 's3',
+    region: 'auto',
+  });
+  const putRes = await aws.fetch(`${endpoint}/${bucket}/${key}`, {
+    method: 'PUT',
+    body: bytes,
+    headers: { 'Content-Type': type },
+  });
+  if (!putRes.ok) {
+    console.error('persistToR2 failed', putRes.status, await putRes.text());
+    return sourceUrl;
+  }
+  return `${publicBase}/${key}`;
+}
 
 // Marketing Studio media generation.
 // Generates a promotional IMAGE or VIDEO using the admin-configured default
@@ -123,7 +157,7 @@ Deno.serve(async (req) => {
       // VIDEO
       if (provider === 'kie' && eng?.kieAiApiKey) {
         const kieModel = firstRef ? 'grok-imagine/image-to-video' : 'grok-imagine/text-to-video';
-        const input: Record<string, unknown> = { prompt, aspect_ratio: aspectRatio, duration };
+        const input: Record<string, unknown> = { prompt, aspect_ratio: kieRatio, duration };
         if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
         url = await callKie(eng.kieAiApiKey, kieModel, input);
       } else {
@@ -140,7 +174,15 @@ Deno.serve(async (req) => {
     }
 
     if (!url) return Response.json({ error: 'Generation returned no result.' }, { status: 502 });
-    return Response.json({ url, provider });
+
+    // Persist the generated result to R2 so it never expires.
+    let finalUrl = url;
+    try {
+      finalUrl = await persistToR2(url, user.id, mediaType);
+    } catch (e) {
+      console.error('marketingGenerate persistToR2 error', e);
+    }
+    return Response.json({ url: finalUrl, provider });
   } catch (error) {
     console.error('marketingGenerate error', error);
     return Response.json({ error: error.message }, { status: 500 });
