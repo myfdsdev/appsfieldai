@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { Wand2, Image as ImageIcon, Video, Loader2, Pencil, RotateCcw, Save } from "lucide-react";
+import { Wand2, Image as ImageIcon, Video, Loader2, Pencil, RotateCcw, Save, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,8 +20,9 @@ export default function MarketingTemplateManager() {
   const [mediaType, setMediaType] = useState("image");
   const [overrides, setOverrides] = useState({}); // key: `${mediaType}|${presetId}` -> record
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(null); // { preset, mediaType }
-  const [form, setForm] = useState({ label: "", prompt: "", thumbnailUrl: "" });
+  // editing: { preset, isNew } — preset is either a built-in preset or a custom preset object
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ label: "", prompt: "", thumbnailUrl: "", emoji: "" });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -41,28 +42,46 @@ export default function MarketingTemplateManager() {
   useEffect(() => { load(); }, []);
 
   const activeTab = MEDIA_TABS.find((t) => t.id === mediaType);
-  const presets = activeTab.presets;
+  const builtins = activeTab.presets;
+  const builtinIds = new Set(builtins.map((p) => p.id));
 
   const getOverride = (presetId) => overrides[`${mediaType}|${presetId}`] || null;
 
+  // Admin-created custom presets for this media type.
+  const customPresets = Object.values(overrides)
+    .filter((o) => o.mediaType === mediaType && o.isCustom && !builtinIds.has(o.presetId))
+    .map((o) => ({ id: o.presetId, label: o.label || "Custom Template", emoji: o.emoji || "🎨", prompt: o.prompt || "", isCustom: true }));
+
   const openEdit = (preset) => {
     const o = getOverride(preset.id);
-    setEditing({ preset });
+    setEditing({ preset, isNew: false });
     setForm({
       label: o?.label || "",
       prompt: o?.prompt || "",
       thumbnailUrl: o?.thumbnailUrl || "",
+      emoji: o?.emoji || preset.emoji || "",
     });
+  };
+
+  const openNew = () => {
+    const id = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    setEditing({ preset: { id, label: "", emoji: "🎨", prompt: "", isCustom: true }, isNew: true });
+    setForm({ label: "", prompt: "", thumbnailUrl: "", emoji: "🎨" });
   };
 
   const handleSave = async () => {
     if (!editing) return;
+    const isCustom = editing.preset.isCustom || editing.isNew;
+    if (isCustom && !form.label.trim()) { toast.error("Give your template a title."); return; }
+    if (isCustom && !form.prompt.trim()) { toast.error("Add a base prompt for your template."); return; }
     setSaving(true);
     try {
       const existing = getOverride(editing.preset.id);
       const data = {
         presetId: editing.preset.id,
         mediaType,
+        isCustom: !!isCustom,
+        emoji: form.emoji.trim() || (isCustom ? "🎨" : ""),
         label: form.label.trim(),
         prompt: form.prompt.trim(),
         thumbnailUrl: form.thumbnailUrl.trim(),
@@ -72,7 +91,7 @@ export default function MarketingTemplateManager() {
       } else {
         await base44.entities.MarketingPresetOverride.create(data);
       }
-      toast.success("Template updated");
+      toast.success(editing.isNew ? "Template added" : "Template updated");
       setEditing(null);
       await load();
     } catch (err) {
@@ -82,6 +101,7 @@ export default function MarketingTemplateManager() {
     }
   };
 
+  // Reset a built-in preset's override back to default (delete the override record).
   const handleReset = async (preset) => {
     const existing = getOverride(preset.id);
     if (!existing) return;
@@ -94,17 +114,78 @@ export default function MarketingTemplateManager() {
     }
   };
 
+  // Permanently delete an admin-created custom preset.
+  const handleDeleteCustom = async (preset) => {
+    const existing = getOverride(preset.id);
+    if (!existing) return;
+    if (!window.confirm(`Delete the custom template “${preset.label}”? This can't be undone.`)) return;
+    try {
+      await base44.entities.MarketingPresetOverride.delete(existing.id);
+      toast.success("Template deleted");
+      await load();
+    } catch (err) {
+      toast.error(err.message || "Couldn't delete.");
+    }
+  };
+
+  const renderCard = (p, isCustom) => {
+    const o = getOverride(p.id);
+    const label = o?.label?.trim() || p.label;
+    const thumb = o?.thumbnailUrl;
+    const customized = !!o;
+    return (
+      <div key={p.id} className="group relative rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
+        <div className="relative aspect-[4/3] bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
+          {thumb ? (
+            <img src={thumb} alt={label} className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <span className="text-4xl opacity-80">{o?.emoji || p.emoji}</span>
+          )}
+          {isCustom ? (
+            <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-violet-500 text-white">Custom</span>
+          ) : customized ? (
+            <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-orange-500 text-white">Edited</span>
+          ) : null}
+        </div>
+        <div className="p-2.5">
+          <p className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[2rem]">{label}</p>
+          <div className="flex items-center gap-1 mt-2">
+            <Button size="sm" variant="ghost" onClick={() => openEdit(p)} className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground flex-1">
+              <Pencil className="w-3 h-3 mr-1" /> Edit
+            </Button>
+            {isCustom ? (
+              <Button size="sm" variant="ghost" onClick={() => handleDeleteCustom(p)} title="Delete template" className="h-7 px-2 text-[11px] text-red-400/70 hover:text-red-400">
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            ) : customized ? (
+              <Button size="sm" variant="ghost" onClick={() => handleReset(p)} title="Reset to default" className="h-7 px-2 text-[11px] text-red-400/70 hover:text-red-400">
+                <RotateCcw className="w-3 h-3" />
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const isCustomEdit = editing?.preset?.isCustom || editing?.isNew;
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="border-border/40 bg-[#1a1a1a]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-            <Wand2 className="w-4 h-4 text-violet-400" />
-            Marketing Studio Templates
-          </CardTitle>
-          <p className="text-xs text-muted-foreground mt-1">
-            Customize the title, base prompt and thumbnail for each Stores Marketing Studio template. These are used across all users' studios.
-          </p>
+        <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+              <Wand2 className="w-4 h-4 text-violet-400" />
+              Marketing Studio Templates
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Customize the title, base prompt and thumbnail for each template, or add your own. Used across all users' studios.
+            </p>
+          </div>
+          <Button onClick={openNew} size="sm" className="bg-violet-500 hover:bg-violet-600 rounded-xl gap-1.5 shrink-0">
+            <Plus className="w-4 h-4" /> Add Template
+          </Button>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Media type tabs */}
@@ -126,74 +207,59 @@ export default function MarketingTemplateManager() {
             <div className="py-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-              {presets.map((p) => {
-                const o = getOverride(p.id);
-                const label = o?.label?.trim() || p.label;
-                const thumb = o?.thumbnailUrl;
-                const customized = !!o;
-                return (
-                  <div key={p.id} className="group relative rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
-                    <div className="relative aspect-[4/3] bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
-                      {thumb ? (
-                        <img src={thumb} alt={label} className="absolute inset-0 w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-4xl opacity-80">{p.emoji}</span>
-                      )}
-                      {customized && (
-                        <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-orange-500 text-white">Custom</span>
-                      )}
-                    </div>
-                    <div className="p-2.5">
-                      <p className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[2rem]">{label}</p>
-                      <div className="flex items-center gap-1 mt-2">
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(p)} className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground flex-1">
-                          <Pencil className="w-3 h-3 mr-1" /> Edit
-                        </Button>
-                        {customized && (
-                          <Button size="sm" variant="ghost" onClick={() => handleReset(p)} title="Reset to default" className="h-7 px-2 text-[11px] text-red-400/70 hover:text-red-400">
-                            <RotateCcw className="w-3 h-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {builtins.map((p) => renderCard(p, false))}
+              {customPresets.map((p) => renderCard(p, true))}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Edit dialog */}
+      {/* Edit / add dialog */}
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="bg-[#1a1a1a] border-border/40 max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-display text-foreground flex items-center gap-2">
-              <Wand2 className="w-4 h-4 text-violet-400" /> Edit Template
+              <Wand2 className="w-4 h-4 text-violet-400" /> {editing?.isNew ? "Add Template" : "Edit Template"}
             </DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-4">
-              <div>
-                <label className="text-xs text-muted-foreground">Title</label>
-                <Input
-                  value={form.label}
-                  onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-                  placeholder={editing.preset.label}
-                  className="bg-[#252525] border-border/30 rounded-xl mt-1"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default: “{editing.preset.label}”.</p>
+              <div className="flex gap-3">
+                <div className="w-20 shrink-0">
+                  <label className="text-xs text-muted-foreground">Emoji</label>
+                  <Input
+                    value={form.emoji}
+                    onChange={(e) => setForm((f) => ({ ...f, emoji: e.target.value }))}
+                    placeholder="🎨"
+                    maxLength={4}
+                    className="bg-[#252525] border-border/30 rounded-xl mt-1 text-center text-lg"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-muted-foreground">Title</label>
+                  <Input
+                    value={form.label}
+                    onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
+                    placeholder={editing.preset.label || "Template title"}
+                    className="bg-[#252525] border-border/30 rounded-xl mt-1"
+                  />
+                  {!isCustomEdit && (
+                    <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default: “{editing.preset.label}”.</p>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Base Prompt</label>
                 <Textarea
                   value={form.prompt}
                   onChange={(e) => setForm((f) => ({ ...f, prompt: e.target.value }))}
-                  placeholder={editing.preset.prompt}
+                  placeholder={editing.preset.prompt || "Describe the design direction for this template…"}
                   rows={6}
                   className="bg-[#252525] border-border/30 rounded-xl mt-1 resize-y"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">The design direction fed to the generator. Leave empty to use the built-in default.</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  The design direction fed to the generator.{!isCustomEdit && " Leave empty to use the built-in default."}
+                </p>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Custom Thumbnail</label>

@@ -4,7 +4,7 @@
   "properties": {
     "presetId": {
       "type": "string",
-      "description": "The built-in Marketing Studio preset id this override customizes"
+      "description": "The Marketing Studio preset id this record customizes. For built-in presets this matches the built-in id; for admin-created custom presets it is a generated unique id."
     },
     "mediaType": {
       "type": "string",
@@ -13,6 +13,15 @@
         "video"
       ],
       "description": "Which studio tab this preset belongs to"
+    },
+    "isCustom": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a fully admin-created custom preset (true) or an override of a built-in preset (false)"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji shown as the fallback icon for custom presets when no thumbnail is set"
     },
     "label": {
       "type": "string",

@@ -1,7 +1,8 @@
 import { base44 } from "@/api/base44Client";
 
 // Merges admin-configured MarketingPresetOverride records onto the built-in
-// presets: custom label, base prompt and thumbnail win when set.
+// presets: custom label, base prompt and thumbnail win when set. Admin-created
+// custom presets (isCustom) are appended after the built-ins.
 // Returns { presets, thumbs } — thumbs is a {presetId: url} map of custom
 // thumbnails (used to seed the Studio thumbnail cache).
 export async function applyPresetOverrides(presets, mediaType) {
@@ -25,6 +26,20 @@ export async function applyPresetOverrides(presets, mediaType) {
       prompt: o.prompt?.trim() || p.prompt,
     };
   });
+
+  // Append fully admin-created custom presets (not tied to a built-in id).
+  const builtinIds = new Set(presets.map((p) => p.id));
+  overrides
+    .filter((o) => o.isCustom && !builtinIds.has(o.presetId))
+    .forEach((o) => {
+      if (o.thumbnailUrl) thumbs[o.presetId] = o.thumbnailUrl;
+      merged.push({
+        id: o.presetId,
+        label: o.label?.trim() || "Custom Template",
+        emoji: o.emoji || "🎨",
+        prompt: o.prompt?.trim() || "",
+      });
+    });
 
   return { presets: merged, thumbs };
 }
