@@ -63,7 +63,7 @@ export default function MarketingStudio() {
   ];
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
           <Wand2 className="w-5 h-5 text-white" />
@@ -76,6 +76,16 @@ export default function MarketingStudio() {
           <Link to="/dashboard"><ArrowLeft className="w-4 h-4" /> Back to Dashboard</Link>
         </Button>
       </motion.div>
+
+      {/* Tabs — placed at the top (Lead Finder style) */}
+      <div className="flex gap-2 p-1 rounded-xl bg-secondary/40 w-fit">
+        {tabs.map((t) => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${tab === t.id ? "bg-orange-500 text-white shadow" : "text-muted-foreground hover:text-foreground"}`}>
+            <t.icon className="w-4 h-4" /> {t.label}
+          </button>
+        ))}
+      </div>
 
       {/* Store picker */}
       <div className="rounded-2xl border border-border/40 bg-card/60 p-4">
@@ -100,16 +110,6 @@ export default function MarketingStudio() {
             </p>
           </>
         )}
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-border/40">
-        {tabs.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors flex items-center gap-1.5 ${tab === t.id ? "border-orange-500 text-orange-400" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-            <t.icon className="w-4 h-4" /> {t.label}
-          </button>
-        ))}
       </div>
 
       <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
