@@ -1,0 +1,34 @@
+{
+  "name": "MarketingPresetOverride",
+  "type": "object",
+  "properties": {
+    "presetId": {
+      "type": "string",
+      "description": "The built-in Marketing Studio preset id this override customizes"
+    },
+    "mediaType": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video"
+      ],
+      "description": "Which studio tab this preset belongs to"
+    },
+    "label": {
+      "type": "string",
+      "description": "Custom title/label shown on the template card (overrides the built-in)"
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Custom base prompt / design direction (overrides the built-in)"
+    },
+    "thumbnailUrl": {
+      "type": "string",
+      "description": "Custom thumbnail image URL (overrides the auto-generated one)"
+    }
+  },
+  "required": [
+    "presetId",
+    "mediaType"
+  ]
+}

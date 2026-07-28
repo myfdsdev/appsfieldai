@@ -8,6 +8,7 @@ import MultiImageUpload from "./MultiImageUpload";
 import RecentGallery from "./RecentGallery";
 import AspectRatioModal from "./AspectRatioModal";
 import { buildStoreContext } from "./storeContext";
+import { applyPresetOverrides } from "./applyPresetOverrides";
 
 const IMAGE_RATIOS = [
   { id: "1:1", label: "Square" },
@@ -23,7 +24,9 @@ const VIDEO_RATIOS = [
 ];
 const DURATIONS = [6, 8, 10, 12, 15];
 
-export default function StudioPanel({ mediaType, store, presets, presetLabelPrefix, seedImageUrl, onSeedConsumed }) {
+export default function StudioPanel({ mediaType, store, presets: rawPresets, presetLabelPrefix, seedImageUrl, onSeedConsumed }) {
+  const [presets, setPresets] = useState(rawPresets);
+  const [customThumbs, setCustomThumbs] = useState({});
   const [presetId, setPresetId] = useState("");
   const [input, setInput] = useState("");
   const [prompt, setPrompt] = useState("");
@@ -72,7 +75,22 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store?.id, mediaType]);
 
+  // Apply admin-configured template overrides (custom title / base prompt / thumbnail).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { presets: merged, thumbs: custom } = await applyPresetOverrides(rawPresets, mediaType);
+      if (cancelled) return;
+      setPresets(merged);
+      setCustomThumbs(custom);
+      setThumbs((prev) => ({ ...prev, ...custom }));
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawPresets, mediaType]);
+
   // Load (and generate on first use) an AI thumbnail per preset via Grok Imagine.
+  // Admin custom thumbnails always win and skip generation.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -83,12 +101,12 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
       } catch { cached = []; }
       const map = {};
       cached.forEach((t) => { if (t.presetId && t.url) map[t.presetId] = t.url; });
-      if (!cancelled) setThumbs((prev) => ({ ...map, ...prev }));
+      if (!cancelled) setThumbs((prev) => ({ ...map, ...prev, ...customThumbs }));
 
       // Generate the missing ones sequentially so we don't hammer the provider.
       for (const p of presets) {
         if (cancelled) return;
-        if (map[p.id]) continue;
+        if (customThumbs[p.id] || map[p.id]) continue;
         try {
           const res = await base44.functions.invoke("marketingPresetThumbnail", {
             presetId: p.id, mediaType, prompt: p.prompt, label: p.label,
@@ -100,7 +118,7 @@ export default function StudioPanel({ mediaType, store, presets, presetLabelPref
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mediaType]);
+  }, [mediaType, customThumbs]);
 
   const activePreset = presets.find((p) => p.id === presetId) || null;
 

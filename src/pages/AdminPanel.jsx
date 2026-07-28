@@ -16,6 +16,7 @@ import HookManagement from "@/components/admin/HookManagement";
 import JvzooManager from "@/components/admin/JvzooManager";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
+import MarketingTemplateManager from "@/components/admin/MarketingTemplateManager";
 import MarketplaceThemeManager from "@/components/admin/MarketplaceThemeManager";
 import TrainingSettings from "@/components/admin/settings/TrainingSettings";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
@@ -465,14 +466,7 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "templates":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Layers className="w-4 h-4 text-cyan-400" />Templates</CardTitle></CardHeader>
-              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Template management coming soon.</p></CardContent>
-            </Card>
-          </motion.div>
-        );
+        return <MarketingTemplateManager />;
       case "media":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
