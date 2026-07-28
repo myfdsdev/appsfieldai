@@ -1,0 +1,52 @@
+{
+  "name": "MarketingAsset",
+  "type": "object",
+  "properties": {
+    "ownerId": {
+      "type": "string",
+      "description": "User ID of the store owner who generated this asset"
+    },
+    "marketplaceId": {
+      "type": "string",
+      "description": "ID of the Marketplace/store this asset was generated for"
+    },
+    "storeName": {
+      "type": "string",
+      "description": "Store name (context, for display in the gallery)"
+    },
+    "mediaType": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video"
+      ],
+      "default": "image",
+      "description": "Whether this is a promotional image or video"
+    },
+    "url": {
+      "type": "string",
+      "description": "Public URL of the generated image or video"
+    },
+    "prompt": {
+      "type": "string",
+      "description": "The final prompt used to generate this asset"
+    },
+    "presetId": {
+      "type": "string",
+      "description": "The marketing preset used (if any)"
+    },
+    "aspectRatio": {
+      "type": "string",
+      "description": "Aspect ratio used (e.g. 1:1, 16:9, 9:16, 4:5)"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Video duration in seconds (video assets only)"
+    }
+  },
+  "required": [
+    "ownerId",
+    "mediaType",
+    "url"
+  ]
+}

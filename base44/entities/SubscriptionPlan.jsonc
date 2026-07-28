@@ -145,6 +145,11 @@
       "default": false,
       "description": "Access to the Lead Finder tool"
     },
+    "marketingStudioAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to the Stores Marketing Studio (AI promotional image & video generation)"
+    },
     "telegramAllowed": {
       "type": "boolean",
       "default": false,
