@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import MinimalYouTubePlayer from "@/components/MinimalYouTubePlayer";
 
@@ -6,7 +7,7 @@ import MinimalYouTubePlayer from "@/components/MinimalYouTubePlayer";
 export default function WalkthroughVideoModal({ open, onClose, url, title }) {
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={onClose}>
@@ -31,6 +32,7 @@ export default function WalkthroughVideoModal({ open, onClose, url, title }) {
           <MinimalYouTubePlayer url={url} autoplay />
         </div>
       </div>
-    </div>);
+    </div>,
+    document.body);
 
 }

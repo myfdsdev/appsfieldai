@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { getYouTubeId } from "@/lib/youtube";
@@ -33,7 +34,7 @@ export default function PopupVideo() {
 
   if (!open || !config) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={() => setOpen(false)}
@@ -58,6 +59,7 @@ export default function PopupVideo() {
           <MinimalYouTubePlayer url={config.popupVideoUrl} autoplay />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
