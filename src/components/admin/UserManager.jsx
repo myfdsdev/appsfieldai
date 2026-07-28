@@ -26,7 +26,12 @@ export default function UserManager() {
 
   const { data: allUsers = [], isLoading } = useQuery({
     queryKey: ["allUsers"],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      // Load via backend function so app super_admins (not just the platform
+      // `admin` role) can see all users.
+      const res = await base44.functions.invoke("adminListUsers", {});
+      return res?.data?.users || [];
+    },
   });
 
   const { data: currentUser } = useQuery({
@@ -72,10 +77,14 @@ export default function UserManager() {
     const targetEmail = editUser.email;
     const targetName = editForm.full_name;
     try {
-      await base44.entities.User.update(editUser.id, {
-        full_name: editForm.full_name,
-        role: editForm.role,
-        planId: editForm.planId || null,
+      await base44.functions.invoke("adminUpdateUser", {
+        action: "update",
+        userId: editUser.id,
+        data: {
+          full_name: editForm.full_name,
+          role: editForm.role,
+          planId: editForm.planId || null,
+        },
       });
       queryClient.invalidateQueries({ queryKey: ["allUsers"] });
 
@@ -106,7 +115,7 @@ export default function UserManager() {
     setSavingEdit(false);
   };
   const handleDeleteUser = async (u) => {
-    await base44.entities.User.delete(u.id);
+    await base44.functions.invoke("adminUpdateUser", { action: "delete", userId: u.id });
     queryClient.invalidateQueries({ queryKey: ["allUsers"] });
     toast.success(`${u.full_name || u.email} deleted`);
   };
