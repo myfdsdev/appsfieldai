@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import WalkthroughButton from "@/components/WalkthroughButton";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
@@ -108,6 +109,7 @@ export default function Topbar() {
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
+              <WalkthroughButton />
               <ThemeToggle />
               <NotificationBell />
               {/* Profile Dropdown */}
