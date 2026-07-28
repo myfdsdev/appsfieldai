@@ -12,7 +12,7 @@ export default function WalkthroughVideoModal({ open, onClose, url, title }) {
       onClick={onClose}>
       
       <div
-        className="relative w-full my-auto max-h-[92vh] flex flex-col bg-card rounded-2xl border border-border/40 shadow-2xl max-w-7xl"
+        className="relative w-full max-w-4xl my-auto max-h-[92vh] flex flex-col bg-card rounded-2xl border border-border/40 shadow-2xl"
         onClick={(e) => e.stopPropagation()}>
         
         <button
