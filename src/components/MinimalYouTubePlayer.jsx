@@ -119,7 +119,7 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
         type="button"
         onClick={toggle}
         aria-label={playing ? "Pause" : "Play"}
-        className="absolute inset-0 bottom-12 w-full flex items-center justify-center focus:outline-none"
+        className="absolute inset-0 w-full h-full flex items-center justify-center focus:outline-none"
       >
         {/* Center play/pause button */}
         <span
@@ -133,7 +133,7 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
 
       {/* Seek bar */}
       {ready && (
-        <div className="absolute bottom-0 inset-x-0 px-3 pb-2.5 pt-6 bg-gradient-to-t from-black/70 to-transparent flex items-center gap-2">
+        <div className="absolute bottom-0 inset-x-0 z-10 px-3 pb-2.5 pt-6 bg-gradient-to-t from-black/70 to-transparent flex items-center gap-2">
           <span className="text-[11px] text-white/80 tabular-nums w-9 text-right">{fmt(current)}</span>
           <input
             type="range"
