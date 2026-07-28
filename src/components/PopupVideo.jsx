@@ -39,7 +39,7 @@ export default function PopupVideo() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-4xl bg-card rounded-2xl border border-border/40 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-card rounded-2xl border border-border/40 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
