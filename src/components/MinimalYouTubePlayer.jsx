@@ -23,11 +23,20 @@ function loadYouTubeApi() {
 // A clean YouTube player with ONLY play/pause — no YouTube controls, logo,
 // related videos, or menus. A transparent overlay swallows all clicks so
 // the underlying YouTube UI is never interactive.
+function fmt(sec) {
+  if (!sec || isNaN(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export default function MinimalYouTubePlayer({ url, autoplay = true }) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [duration, setDuration] = useState(0);
   const videoId = getYouTubeId(url);
 
   useEffect(() => {
@@ -64,8 +73,16 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
         },
       });
     });
+    const interval = setInterval(() => {
+      const p = playerRef.current;
+      if (p?.getCurrentTime && p?.getDuration) {
+        setCurrent(p.getCurrentTime() || 0);
+        setDuration(p.getDuration() || 0);
+      }
+    }, 250);
     return () => {
       cancelled = true;
+      clearInterval(interval);
       try { playerRef.current?.destroy?.(); } catch { /* ignore */ }
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
@@ -76,6 +93,13 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
     if (!p) return;
     if (playing) p.pauseVideo();
     else p.playVideo();
+  };
+
+  const seek = (e) => {
+    const p = playerRef.current;
+    if (!p || !duration) return;
+    p.seekTo(Number(e.target.value), true);
+    setCurrent(Number(e.target.value));
   };
 
   if (!videoId) {
@@ -95,7 +119,7 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
         type="button"
         onClick={toggle}
         aria-label={playing ? "Pause" : "Play"}
-        className="absolute inset-0 w-full h-full flex items-center justify-center focus:outline-none"
+        className="absolute inset-0 bottom-12 w-full flex items-center justify-center focus:outline-none"
       >
         {/* Center play/pause button */}
         <span
@@ -106,6 +130,24 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
           {playing ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 ml-0.5" />}
         </span>
       </button>
+
+      {/* Seek bar */}
+      {ready && (
+        <div className="absolute bottom-0 inset-x-0 px-3 pb-2.5 pt-6 bg-gradient-to-t from-black/70 to-transparent flex items-center gap-2">
+          <span className="text-[11px] text-white/80 tabular-nums w-9 text-right">{fmt(current)}</span>
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step="any"
+            value={current}
+            onChange={seek}
+            aria-label="Seek"
+            className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-white bg-white/30"
+          />
+          <span className="text-[11px] text-white/80 tabular-nums w-9">{fmt(duration)}</span>
+        </div>
+      )}
 
       {!ready && (
         <div className="absolute inset-0 flex items-center justify-center bg-black">
