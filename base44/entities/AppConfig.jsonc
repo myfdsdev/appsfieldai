@@ -56,10 +56,11 @@
           "enum": [
             "base44",
             "openai",
-            "gemini"
+            "gemini",
+            "xai"
           ],
           "default": "base44",
-          "description": "AI provider for LLM/agent TEXT responses: base44 (built-in automatic), openai, or gemini"
+          "description": "AI provider for LLM/agent TEXT responses: base44 (built-in automatic), openai, gemini, or xai (Grok)"
         },
         "voiceProvider": {
           "type": "string",
@@ -73,7 +74,7 @@
         },
         "model": {
           "type": "string",
-          "description": "Selected model id for the chosen provider (e.g. gpt_5_4, gemini_3_flash)"
+          "description": "Selected model id for the chosen provider (e.g. gpt_5_4, gemini_3_flash, grok-4)"
         },
         "openaiApiKey": {
           "type": "string",
@@ -82,6 +83,36 @@
         "geminiApiKey": {
           "type": "string",
           "description": "Google Gemini API key (used when provider is gemini to call the real Gemini API)"
+        },
+        "xaiApiKey": {
+          "type": "string",
+          "description": "xAI (Grok) API key (used when provider is xai to call the real x.ai API)"
+        },
+        "imageProvider": {
+          "type": "string",
+          "enum": [
+            "base44",
+            "xai"
+          ],
+          "default": "base44",
+          "description": "Provider used for AI image generation: base44 (built-in) or xai (Grok Imagine)"
+        },
+        "imageModel": {
+          "type": "string",
+          "description": "Selected image-generation model id for the chosen image provider (e.g. grok-2-image)"
+        },
+        "videoProvider": {
+          "type": "string",
+          "enum": [
+            "base44",
+            "xai"
+          ],
+          "default": "base44",
+          "description": "Provider used for AI video generation: base44 (built-in) or xai (Grok Imagine)"
+        },
+        "videoModel": {
+          "type": "string",
+          "description": "Selected video-generation model id for the chosen video provider (e.g. grok-imagine-video)"
         },
         "voiceModel": {
           "type": "string",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Cpu, Save, Check, KeyRound, Mic, Volume2, FileAudio, PlugZap, Play, Loader2 } from "lucide-react";
+import { Cpu, Save, Check, KeyRound, Mic, Volume2, FileAudio, PlugZap, Play, Loader2, Image as ImageIcon, Video } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,59 @@ export const AI_PROVIDERS = [
     ],
     transcribeModels: [{ id: "", name: "Default (via Base44)" }],
   },
+  {
+    id: "xai",
+    name: "xAI (Grok)",
+    desc: "Real x.ai API — needs your Grok API key.",
+    models: [
+      { id: "grok-4", name: "Grok 4 (highest quality)" },
+      { id: "grok-4-fast-reasoning", name: "Grok 4 Fast (reasoning)" },
+      { id: "grok-4-fast-non-reasoning", name: "Grok 4 Fast (fast)" },
+      { id: "grok-3", name: "Grok 3" },
+      { id: "grok-3-mini", name: "Grok 3 Mini (cheapest)" },
+    ],
+    voices: [],
+    voiceModels: [],
+    transcribeModels: [],
+  },
+];
+
+// Image & video generation providers/models (separate from the text LLM).
+export const AI_IMAGE_PROVIDERS = [
+  {
+    id: "base44",
+    name: "Base44 (Built-in)",
+    desc: "Base44's built-in image generation — no setup needed.",
+    models: [{ id: "", name: "Default" }],
+  },
+  {
+    id: "xai",
+    name: "xAI (Grok Imagine)",
+    desc: "Grok image generation — uses your xAI API key.",
+    models: [
+      { id: "grok-2-image", name: "Grok 2 Image" },
+      { id: "grok-imagine-image-quality", name: "Grok Imagine (quality)" },
+      { id: "grok-imagine-image-fast", name: "Grok Imagine (fast)" },
+    ],
+  },
+];
+
+export const AI_VIDEO_PROVIDERS = [
+  {
+    id: "base44",
+    name: "Base44 (Built-in)",
+    desc: "Base44's built-in video generation — no setup needed.",
+    models: [{ id: "", name: "Default (Veo)" }],
+  },
+  {
+    id: "xai",
+    name: "xAI (Grok Imagine)",
+    desc: "Grok video generation — uses your xAI API key.",
+    models: [
+      { id: "grok-imagine-video", name: "Grok Imagine Video" },
+      { id: "grok-imagine-video-fast", name: "Grok Imagine Video (fast)" },
+    ],
+  },
 ];
 
 export default function AIEngineSettings() {
@@ -96,6 +149,11 @@ export default function AIEngineSettings() {
   const [model, setModel] = useState("automatic");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [geminiApiKey, setGeminiApiKey] = useState("");
+  const [xaiApiKey, setXaiApiKey] = useState("");
+  const [imageProvider, setImageProvider] = useState("base44");
+  const [imageModel, setImageModel] = useState("");
+  const [videoProvider, setVideoProvider] = useState("base44");
+  const [videoModel, setVideoModel] = useState("");
   const [voiceModel, setVoiceModel] = useState("");
   const [voiceName, setVoiceName] = useState("");
   const [voiceInstructions, setVoiceInstructions] = useState("");
@@ -151,6 +209,11 @@ export default function AIEngineSettings() {
           setModel(eng.model || (eng.provider ? "" : "automatic"));
           setOpenaiApiKey(eng.openaiApiKey || "");
           setGeminiApiKey(eng.geminiApiKey || "");
+          setXaiApiKey(eng.xaiApiKey || "");
+          setImageProvider(eng.imageProvider || "base44");
+          setImageModel(eng.imageModel || "");
+          setVideoProvider(eng.videoProvider || "base44");
+          setVideoModel(eng.videoModel || "");
           setVoiceModel(eng.voiceModel || "");
           setVoiceName(eng.voiceName || "");
           setVoiceInstructions(eng.voiceInstructions || "");
@@ -165,6 +228,8 @@ export default function AIEngineSettings() {
   // Voice-specific provider — drives the voice list, voice model, transcription
   // and voice instructions, independent from the text/LLM provider above.
   const activeVoiceProvider = AI_PROVIDERS.find((p) => p.id === voiceProvider) || AI_PROVIDERS[0];
+  const activeImageProvider = AI_IMAGE_PROVIDERS.find((p) => p.id === imageProvider) || AI_IMAGE_PROVIDERS[0];
+  const activeVideoProvider = AI_VIDEO_PROVIDERS.find((p) => p.id === videoProvider) || AI_VIDEO_PROVIDERS[0];
 
   const selectProvider = (p) => {
     setProvider(p.id);
@@ -180,9 +245,21 @@ export default function AIEngineSettings() {
     setTranscribeModel(p.transcribeModels[0].id);
   };
 
+  const selectImageProvider = (p) => {
+    setImageProvider(p.id);
+    setImageModel(p.models[0].id);
+  };
+
+  const selectVideoProvider = (p) => {
+    setVideoProvider(p.id);
+    setVideoModel(p.models[0].id);
+  };
+
   // Does the current text OR voice provider require this external key?
   const needsOpenaiKey = provider === "openai" || voiceProvider === "openai";
   const needsGeminiKey = provider === "gemini" || voiceProvider === "gemini";
+  // xAI key needed if selected for text, image, or video generation.
+  const needsXaiKey = provider === "xai" || imageProvider === "xai" || videoProvider === "xai";
 
   const buildEnginePayload = () => ({
     provider,
@@ -190,6 +267,11 @@ export default function AIEngineSettings() {
     model: model || activeProvider.models[0].id,
     openaiApiKey: openaiApiKey.trim(),
     geminiApiKey: geminiApiKey.trim(),
+    xaiApiKey: xaiApiKey.trim(),
+    imageProvider,
+    imageModel,
+    videoProvider,
+    videoModel,
     voiceModel,
     voiceName,
     voiceInstructions: voiceInstructions.trim(),
@@ -204,6 +286,7 @@ export default function AIEngineSettings() {
         model: model || activeProvider.models[0].id,
         openaiApiKey: openaiApiKey.trim(),
         geminiApiKey: geminiApiKey.trim(),
+        xaiApiKey: xaiApiKey.trim(),
       });
       if (res.data?.ok) toast.success(res.data.message || "Connection successful.");
       else toast.error(res.data?.error || "Connection failed.");
@@ -221,6 +304,10 @@ export default function AIEngineSettings() {
     }
     if (needsGeminiKey && !geminiApiKey.trim()) {
       toast.error("Enter your Gemini API key.");
+      return;
+    }
+    if (needsXaiKey && !xaiApiKey.trim()) {
+      toast.error("Enter your xAI (Grok) API key.");
       return;
     }
     setSaving(true);
@@ -333,6 +420,110 @@ export default function AIEngineSettings() {
         </div>
       )}
 
+      {needsXaiKey && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" /> xAI (Grok) API Key
+          </Label>
+          <Input
+            type="password"
+            value={xaiApiKey}
+            onChange={(e) => setXaiApiKey(e.target.value)}
+            placeholder="xai-..."
+            className="bg-secondary/40 border-border/50 rounded-xl"
+          />
+          <p className="text-xs text-muted-foreground">
+            Get one at console.x.ai. Stored securely and used only on the backend. Powers Grok text, image & video generation.
+          </p>
+        </div>
+      )}
+
+      {/* Image & Video generation providers/models */}
+      <div className="border-t border-border/40 pt-6 space-y-6">
+        <div className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4 text-violet-400" />
+          <h3 className="text-sm font-semibold text-foreground">Image & Video Generation</h3>
+        </div>
+
+        {/* Image provider + model */}
+        <div className="space-y-3">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <ImageIcon className="w-3.5 h-3.5" /> Image Provider
+          </Label>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {AI_IMAGE_PROVIDERS.map((p) => {
+              const active = imageProvider === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => selectImageProvider(p)}
+                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
+                    active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </span>
+                  )}
+                  <p className="font-semibold text-sm">{p.name}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+          <select
+            value={imageModel}
+            onChange={(e) => setImageModel(e.target.value)}
+            className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
+          >
+            {activeImageProvider.models.map((m) => (
+              <option key={m.id || "default"} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Video provider + model */}
+        <div className="space-y-3">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <Video className="w-3.5 h-3.5" /> Video Provider
+          </Label>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {AI_VIDEO_PROVIDERS.map((p) => {
+              const active = videoProvider === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => selectVideoProvider(p)}
+                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
+                    active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </span>
+                  )}
+                  <p className="font-semibold text-sm">{p.name}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+          <select
+            value={videoModel}
+            onChange={(e) => setVideoModel(e.target.value)}
+            className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
+          >
+            {activeVideoProvider.models.map((m) => (
+              <option key={m.id || "default"} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Voice & transcription — its OWN provider, independent from the text LLM */}
       <div className="border-t border-border/40 pt-6 space-y-5">
         <div className="flex items-center gap-2">
@@ -348,7 +539,7 @@ export default function AIEngineSettings() {
         <div className="space-y-3">
           <Label className="text-sm text-muted-foreground">Voice Provider (Text-to-Speech)</Label>
           <div className="grid sm:grid-cols-3 gap-3">
-            {AI_PROVIDERS.map((p) => {
+            {AI_PROVIDERS.filter((p) => p.voices.length > 0).map((p) => {
               const active = voiceProvider === p.id;
               return (
                 <button

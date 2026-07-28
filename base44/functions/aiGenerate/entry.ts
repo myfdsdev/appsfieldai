@@ -34,6 +34,32 @@ async function callOpenAI(apiKey: string, model: string, prompt: string, jsonSch
   return jsonSchema ? JSON.parse(content) : content;
 }
 
+// xAI (Grok) — OpenAI-compatible Chat Completions API.
+async function callXai(apiKey: string, model: string, prompt: string, jsonSchema: unknown) {
+  const body: Record<string, unknown> = {
+    model: model || 'grok-3-mini',
+    messages: [{ role: 'user', content: prompt }],
+  };
+  if (jsonSchema) {
+    body.response_format = {
+      type: 'json_schema',
+      json_schema: { name: 'result', strict: false, schema: jsonSchema },
+    };
+  }
+  const res = await fetch('https://api.x.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`xAI API error ${res.status}: ${errText}`);
+  }
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content || '';
+  return jsonSchema ? JSON.parse(content) : content;
+}
+
 async function callGemini(apiKey: string, model: string, prompt: string, jsonSchema: unknown) {
   // Map retired/legacy model ids to current live equivalents so old saved
   // configs don't 404 (Google retires older models like gemini-2.0-flash).
@@ -89,6 +115,12 @@ Deno.serve(async (req) => {
     if (provider === 'gemini' && eng?.geminiApiKey) {
       const result = await callGemini(eng.geminiApiKey, eng.model, prompt, jsonSchema);
       return Response.json({ result, provider: 'gemini' });
+    }
+
+    // xAI (Grok) — real API when provider selected and a key is present.
+    if (provider === 'xai' && eng?.xaiApiKey) {
+      const result = await callXai(eng.xaiApiKey, eng.model, prompt, jsonSchema);
+      return Response.json({ result, provider: 'xai' });
     }
 
     // Base44 built-in (default) or fallback when no external key is configured.

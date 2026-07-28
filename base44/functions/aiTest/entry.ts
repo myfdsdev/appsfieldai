@@ -23,6 +23,7 @@ Deno.serve(async (req) => {
     const model = overrides.model || eng?.model || '';
     const openaiApiKey = overrides.openaiApiKey || eng?.openaiApiKey || '';
     const geminiApiKey = overrides.geminiApiKey || eng?.geminiApiKey || '';
+    const xaiApiKey = overrides.xaiApiKey || eng?.xaiApiKey || '';
 
     const prompt = 'Reply with the single word: OK';
 
@@ -59,6 +60,20 @@ Deno.serve(async (req) => {
         return Response.json({ ok: false, provider, error: `Gemini ${res.status}: ${t.slice(0, 300)}` });
       }
       return Response.json({ ok: true, provider, message: 'Gemini connection successful.' });
+    }
+
+    if (provider === 'xai') {
+      if (!xaiApiKey) return Response.json({ ok: false, provider, error: 'No xAI API key set.' });
+      const res = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${xaiApiKey}` },
+        body: JSON.stringify({ model: model || 'grok-3-mini', messages: [{ role: 'user', content: prompt }], max_tokens: 5 }),
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        return Response.json({ ok: false, provider, error: `xAI ${res.status}: ${t.slice(0, 300)}` });
+      }
+      return Response.json({ ok: true, provider, message: 'xAI (Grok) connection successful.' });
     }
 
     // Base44 built-in — always available.
