@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
         const kieModel = firstRef ? 'grok-imagine/image-to-video' : 'grok-imagine/text-to-video';
         const input: Record<string, unknown> = { prompt, aspect_ratio: kieRatio, duration };
         if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
+        console.log('marketingGenerate video Kie input', JSON.stringify({ kieModel, aspect_ratio: kieRatio, duration, refs: input.image_urls?.length || 0 }));
         url = await callKie(eng.kieAiApiKey, kieModel, input);
       } else {
         // Base44 built-in Veo (xai video not supported here → falls back to base44).
