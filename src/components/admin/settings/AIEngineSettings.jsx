@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Cpu, Save, Check, KeyRound, Mic, Volume2, FileAudio, PlugZap, Play, Loader2, Image as ImageIcon, Video } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Cpu, Save, PlugZap, KeyRound, MessageSquare, Image as ImageIcon, Video, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import ApiKeysTab from "./ai/ApiKeysTab";
+import TextTab from "./ai/TextTab";
+import MediaTab from "./ai/MediaTab";
+import VoiceTab from "./ai/VoiceTab";
 
 // AI providers and the models each exposes. For OpenAI/Gemini the model ids are
 // the REAL API model names (used directly against each provider's API).
@@ -363,346 +366,75 @@ export default function AIEngineSettings() {
         </div>
       </div>
 
-      {/* Text / LLM provider picker */}
-      <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Agent Text Provider (LLM)</Label>
-        <div className="grid sm:grid-cols-3 gap-3">
-          {AI_PROVIDERS.map((p) => {
-            const active = provider === p.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => selectProvider(p)}
-                className={`relative text-left rounded-xl border-2 p-4 transition-all ${
-                  active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
-                }`}
-              >
-                {active && (
-                  <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white" />
-                  </span>
-                )}
-                <p className="font-semibold text-sm">{p.name}</p>
-                <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <Tabs defaultValue="keys" className="w-full">
+        <TabsList className="flex flex-wrap h-auto gap-1 bg-secondary/40 p-1 rounded-xl">
+          <TabsTrigger value="keys" className="gap-1.5"><KeyRound className="w-4 h-4" /> API Keys</TabsTrigger>
+          <TabsTrigger value="text" className="gap-1.5"><MessageSquare className="w-4 h-4" /> Text / LLM</TabsTrigger>
+          <TabsTrigger value="image" className="gap-1.5"><ImageIcon className="w-4 h-4" /> Image</TabsTrigger>
+          <TabsTrigger value="video" className="gap-1.5"><Video className="w-4 h-4" /> Video</TabsTrigger>
+          <TabsTrigger value="voice" className="gap-1.5"><Mic className="w-4 h-4" /> Voice / Audio</TabsTrigger>
+        </TabsList>
 
-      {/* Model picker */}
-      <div className="space-y-2">
-        <Label className="text-sm text-muted-foreground">Model</Label>
-        <select
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
-        >
-          {activeProvider.models.map((m) => (
-            <option key={m.id} value={m.id}>{m.name}</option>
-          ))}
-        </select>
-        <p className="text-xs text-muted-foreground">
-          This model powers auto-building new stores and the Deal Maker sales agent's replies. Higher-quality models produce better content but use more credits.
-        </p>
-      </div>
-
-      {/* API keys — shown when the text OR voice provider needs them */}
-      {needsOpenaiKey && (
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" /> OpenAI API Key
-          </Label>
-          <Input
-            type="password"
-            value={openaiApiKey}
-            onChange={(e) => setOpenaiApiKey(e.target.value)}
-            placeholder="sk-..."
-            className="bg-secondary/40 border-border/50 rounded-xl"
+        <TabsContent value="keys" className="mt-6">
+          <ApiKeysTab
+            openaiApiKey={openaiApiKey} setOpenaiApiKey={setOpenaiApiKey}
+            geminiApiKey={geminiApiKey} setGeminiApiKey={setGeminiApiKey}
+            xaiApiKey={xaiApiKey} setXaiApiKey={setXaiApiKey}
+            kieAiApiKey={kieAiApiKey} setKieAiApiKey={setKieAiApiKey}
           />
-          <p className="text-xs text-muted-foreground">
-            Get one at platform.openai.com/api-keys. Stored securely and used only on the backend.
-          </p>
-        </div>
-      )}
+        </TabsContent>
 
-      {needsGeminiKey && (
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" /> Gemini API Key
-          </Label>
-          <Input
-            type="password"
-            value={geminiApiKey}
-            onChange={(e) => setGeminiApiKey(e.target.value)}
-            placeholder="AIza..."
-            className="bg-secondary/40 border-border/50 rounded-xl"
+        <TabsContent value="text" className="mt-6">
+          <TextTab
+            providers={AI_PROVIDERS}
+            provider={provider}
+            model={model}
+            setModel={setModel}
+            onSelectProvider={selectProvider}
+            activeProvider={activeProvider}
           />
-          <p className="text-xs text-muted-foreground">
-            Get one at aistudio.google.com/apikey. Stored securely and used only on the backend.
-          </p>
-        </div>
-      )}
+        </TabsContent>
 
-      {needsXaiKey && (
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" /> xAI (Grok) API Key
-          </Label>
-          <Input
-            type="password"
-            value={xaiApiKey}
-            onChange={(e) => setXaiApiKey(e.target.value)}
-            placeholder="xai-..."
-            className="bg-secondary/40 border-border/50 rounded-xl"
+        <TabsContent value="image" className="mt-6">
+          <MediaTab
+            providers={AI_IMAGE_PROVIDERS}
+            providerId={imageProvider}
+            model={imageModel}
+            setModel={setImageModel}
+            onSelectProvider={selectImageProvider}
+            activeProvider={activeImageProvider}
+            helpText="Used whenever the app generates images (store creation, product art, etc.)."
           />
-          <p className="text-xs text-muted-foreground">
-            Get one at console.x.ai. Stored securely and used only on the backend. Powers Grok text, image & video generation.
-          </p>
-        </div>
-      )}
+        </TabsContent>
 
-      {needsKieKey && (
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" /> Kie.ai API Key
-          </Label>
-          <Input
-            type="password"
-            value={kieAiApiKey}
-            onChange={(e) => setKieAiApiKey(e.target.value)}
-            placeholder="Your Kie.ai API key"
-            className="bg-secondary/40 border-border/50 rounded-xl"
+        <TabsContent value="video" className="mt-6">
+          <MediaTab
+            providers={AI_VIDEO_PROVIDERS}
+            providerId={videoProvider}
+            model={videoModel}
+            setModel={setVideoModel}
+            onSelectProvider={selectVideoProvider}
+            activeProvider={activeVideoProvider}
+            helpText="Used whenever the app generates videos. Video generation may take a while."
           />
-          <p className="text-xs text-muted-foreground">
-            Get one at kie.ai/api-key. Stored securely and used only on the backend. Powers Kie.ai Grok Imagine image & video generation.
-          </p>
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Image & Video generation providers/models */}
-      <div className="border-t border-border/40 pt-6 space-y-6">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-violet-400" />
-          <h3 className="text-sm font-semibold text-foreground">Image & Video Generation</h3>
-        </div>
+        <TabsContent value="voice" className="mt-6">
+          <VoiceTab
+            voiceProviders={AI_PROVIDERS.filter((p) => p.voices.length > 0)}
+            voiceProvider={voiceProvider}
+            onSelectVoiceProvider={selectVoiceProvider}
+            activeVoiceProvider={activeVoiceProvider}
+            voiceName={voiceName} setVoiceName={setVoiceName}
+            voiceModel={voiceModel} setVoiceModel={setVoiceModel}
+            voiceInstructions={voiceInstructions} setVoiceInstructions={setVoiceInstructions}
+            transcribeModel={transcribeModel} setTranscribeModel={setTranscribeModel}
+            previewing={previewing} playSample={playSample}
+          />
+        </TabsContent>
+      </Tabs>
 
-        {/* Image provider + model */}
-        <div className="space-y-3">
-          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <ImageIcon className="w-3.5 h-3.5" /> Image Provider
-          </Label>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {AI_IMAGE_PROVIDERS.map((p) => {
-              const active = imageProvider === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => selectImageProvider(p)}
-                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
-                    active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </span>
-                  )}
-                  <p className="font-semibold text-sm">{p.name}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
-                </button>
-              );
-            })}
-          </div>
-          <select
-            value={imageModel}
-            onChange={(e) => setImageModel(e.target.value)}
-            className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
-          >
-            {activeImageProvider.models.map((m) => (
-              <option key={m.id || "default"} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Video provider + model */}
-        <div className="space-y-3">
-          <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <Video className="w-3.5 h-3.5" /> Video Provider
-          </Label>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {AI_VIDEO_PROVIDERS.map((p) => {
-              const active = videoProvider === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => selectVideoProvider(p)}
-                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
-                    active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </span>
-                  )}
-                  <p className="font-semibold text-sm">{p.name}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
-                </button>
-              );
-            })}
-          </div>
-          <select
-            value={videoModel}
-            onChange={(e) => setVideoModel(e.target.value)}
-            className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
-          >
-            {activeVideoProvider.models.map((m) => (
-              <option key={m.id || "default"} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Voice & transcription — its OWN provider, independent from the text LLM */}
-      <div className="border-t border-border/40 pt-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <Mic className="w-4 h-4 text-violet-400" />
-          <h3 className="text-sm font-semibold text-foreground">Voice & Transcription</h3>
-        </div>
-        <p className="text-xs text-muted-foreground -mt-3">
-          Pick the voice provider separately from the text provider — e.g. use one AI for the agent's words and another for how it sounds.
-          {voiceProvider === "gemini" && " Gemini uses its native TTS voices; transcription falls back to Base44."}
-        </p>
-
-        {/* Voice provider picker */}
-        <div className="space-y-3">
-          <Label className="text-sm text-muted-foreground">Voice Provider (Text-to-Speech)</Label>
-          <div className="grid sm:grid-cols-3 gap-3">
-            {AI_PROVIDERS.filter((p) => p.voices.length > 0).map((p) => {
-              const active = voiceProvider === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => selectVoiceProvider(p)}
-                  className={`relative text-left rounded-xl border-2 p-4 transition-all ${
-                    active ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </span>
-                  )}
-                  <p className="font-semibold text-sm">{p.name}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{p.desc}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          {/* TTS voice — pick + play a sample of each */}
-          <div className="space-y-2 sm:col-span-2">
-            <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <Volume2 className="w-3.5 h-3.5" /> Voice (Text-to-Speech)
-            </Label>
-            <div className="grid sm:grid-cols-2 gap-2">
-              {activeVoiceProvider.voices.map((v) => {
-                const selected = voiceName === v.id;
-                const isPreviewing = previewing === v.id;
-                return (
-                  <div
-                    key={v.id}
-                    className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2 transition-all ${
-                      selected ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setVoiceName(v.id)}
-                      className="flex-1 flex items-center gap-2 text-left"
-                    >
-                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${selected ? "border-violet-500 bg-violet-500" : "border-border"}`}>
-                        {selected && <Check className="w-2.5 h-2.5 text-white" />}
-                      </span>
-                      <span className="text-sm">{v.name}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => playSample(v)}
-                      disabled={isPreviewing}
-                      className="w-8 h-8 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center shrink-0 transition-colors disabled:opacity-60"
-                      aria-label={`Play ${v.name} sample`}
-                      title="Play sample"
-                    >
-                      {isPreviewing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* TTS model */}
-          <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Voice Model</Label>
-            <select
-              value={voiceModel}
-              onChange={(e) => setVoiceModel(e.target.value)}
-              className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
-            >
-              {activeVoiceProvider.voiceModels.map((m) => (
-                <option key={m.id || "default"} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Custom voice instructions — OpenAI (gpt-4o-mini-tts) & Gemini TTS both
-              accept a natural-language style prompt to steer tone/emotion/pacing. */}
-          {(voiceProvider === "openai" || voiceProvider === "gemini") && (
-            <div className="space-y-2 sm:col-span-2">
-              <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <Volume2 className="w-3.5 h-3.5" /> Custom Voice Instructions
-              </Label>
-              <textarea
-                value={voiceInstructions}
-                onChange={(e) => setVoiceInstructions(e.target.value)}
-                rows={3}
-                placeholder="e.g. Speak warmly and confidently, like a friendly sales expert. Keep an upbeat, energetic pace."
-                className="w-full bg-secondary/40 border border-border/50 rounded-xl px-3 py-2 text-sm resize-y"
-              />
-              <p className="text-xs text-muted-foreground">
-                Steers the voice's tone, emotion and pacing.
-                {voiceProvider === "openai" ? " Works best with the GPT-4o Mini TTS model." : " Applied as a style prompt to Gemini TTS."}
-              </p>
-            </div>
-          )}
-
-          {/* Transcribe model */}
-          <div className="space-y-2 sm:col-span-2">
-            <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <FileAudio className="w-3.5 h-3.5" /> Transcription Model (Speech-to-Text)
-            </Label>
-            <select
-              value={transcribeModel}
-              onChange={(e) => setTranscribeModel(e.target.value)}
-              className="w-full h-10 bg-secondary/40 border border-border/50 rounded-xl px-3 text-sm"
-            >
-              {activeVoiceProvider.transcribeModels.map((m) => (
-                <option key={m.id || "default"} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-3 pt-2">
+      <div className="flex flex-wrap gap-3 pt-6 border-t border-border/40 mt-6">
         <Button onClick={handleSave} disabled={saving} className="bg-orange-500 hover:bg-orange-600 text-white h-10 px-6">
           <Save className="w-4 h-4 mr-2" />
           {saving ? "Saving..." : "Save Settings"}
