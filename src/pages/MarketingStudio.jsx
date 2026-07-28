@@ -2,12 +2,18 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Wand2, Image as ImageIcon, Video, Lock, ArrowLeft, Store } from "lucide-react";
+import { Wand2, Image as ImageIcon, Video, Lock, ArrowLeft, Store, Infinity as InfinityIcon, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
 import StudioPanel from "@/components/marketing/StudioPanel";
 import { IMAGE_PRESETS, VIDEO_PRESETS } from "@/components/marketing/marketingPresets";
+
+// Current month key in UTC (matches the backend usage period).
+const currentPeriod = () => {
+  const n = new Date();
+  return `${n.getUTCFullYear()}-${String(n.getUTCMonth() + 1).padStart(2, "0")}`;
+};
 
 export default function MarketingStudio() {
   const { user } = useAuth();
@@ -41,6 +47,16 @@ export default function MarketingStudio() {
 
   const allowed = isAdmin || userPlan?.marketingStudioAllowed;
   const activeStore = stores.find((s) => s.id === storeId) || null;
+
+  // Usage / limit state for the active tab.
+  const hasOwnKey = !!user?.marketingApiKeys?.kieAiApiKey?.trim();
+  const usage = user?.marketingUsage || {};
+  const usedThisMonth = usage.periodMonth === currentPeriod()
+    ? (tab === "image" ? usage.imageCount || 0 : usage.videoCount || 0)
+    : 0;
+  const planLimit = tab === "image" ? (userPlan?.monthlyImageLimit ?? 0) : (userPlan?.monthlyVideoLimit ?? 0);
+  const unlimited = hasOwnKey || isAdmin || planLimit === -1;
+  const remaining = Math.max(0, (planLimit || 0) - usedThisMonth);
 
   if (!user || planLoading) {
     return <div className="py-20 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -85,6 +101,25 @@ export default function MarketingStudio() {
             <t.icon className="w-4 h-4" /> {t.label}
           </button>
         ))}
+      </div>
+
+      {/* Usage / limit badge for the active tab */}
+      <div className="flex items-center gap-2 flex-wrap -mt-2">
+        {unlimited ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+            <InfinityIcon className="w-3.5 h-3.5" />
+            Unlimited {tab === "image" ? "images" : "videos"}{hasOwnKey ? " (your Kie.ai key)" : ""}
+          </span>
+        ) : (
+          <>
+            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${remaining > 0 ? "bg-orange-500/10 text-orange-500 border-orange-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"}`}>
+              {remaining} of {planLimit || 0} {tab === "image" ? "images" : "videos"} left this month
+            </span>
+            <Link to="/my-account?tab=api-keys" className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 transition-colors">
+              <KeyRound className="w-3.5 h-3.5" /> Add your API key for unlimited
+            </Link>
+          </>
+        )}
       </div>
 
       {/* Store picker */}

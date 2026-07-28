@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { User, Mail, Send } from "lucide-react";
+import { User, Mail, Send, KeyRound } from "lucide-react";
 import UserAccountSettings from "@/components/dashboard/UserAccountSettings";
 import LeadSmtpSettings from "@/components/leadfinder/LeadSmtpSettings";
 import TelegramSettings from "@/components/dashboard/TelegramSettings";
+import CustomApiKeysSettings from "@/components/dashboard/CustomApiKeysSettings";
 
 export default function CustomerDashboard() {
   // Deep-link support: /my-account?tab=smtp opens the Outreach Email tab directly.
   const tabParam = new URLSearchParams(window.location.search).get("tab");
-  const initialTab = tabParam === "smtp" ? "smtp" : tabParam === "telegram" ? "telegram" : "account";
+  const initialTab = tabParam === "smtp" ? "smtp" : tabParam === "telegram" ? "telegram" : tabParam === "api-keys" ? "api-keys" : "account";
   const [tab, setTab] = useState(initialTab);
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
@@ -25,7 +26,11 @@ export default function CustomerDashboard() {
     enabled: !!currentUser?.planId,
   });
   const telegramAllowed = isAdmin || !!userPlan?.telegramAllowed;
-  const activeTab = tab === "telegram" && !telegramAllowed ? "account" : tab;
+  const customApiKeyAllowed = isAdmin || !!userPlan?.customApiKeyAllowed;
+  const activeTab =
+    (tab === "telegram" && !telegramAllowed) ? "account" :
+    (tab === "api-keys" && !customApiKeyAllowed) ? "account" :
+    tab;
 
   return (
     <div className="space-y-6">
@@ -39,6 +44,7 @@ export default function CustomerDashboard() {
         {[
           { id: "account", label: "Account", icon: User },
           { id: "smtp", label: "Outreach Email", icon: Mail },
+          ...(customApiKeyAllowed ? [{ id: "api-keys", label: "Custom API Keys", icon: KeyRound }] : []),
           ...(telegramAllowed ? [{ id: "telegram", label: "Telegram", icon: Send }] : []),
         ].map((t) => (
           <button
@@ -57,6 +63,10 @@ export default function CustomerDashboard() {
       {activeTab === "smtp" ? (
         <div className="space-y-6">
           <LeadSmtpSettings user={currentUser} />
+        </div>
+      ) : activeTab === "api-keys" ? (
+        <div className="space-y-6">
+          <CustomApiKeysSettings user={currentUser} allowed={customApiKeyAllowed} />
         </div>
       ) : activeTab === "telegram" ? (
         <div className="space-y-6">

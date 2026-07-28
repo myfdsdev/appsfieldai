@@ -150,6 +150,21 @@
       "default": false,
       "description": "Access to the Stores Marketing Studio (AI promotional image & video generation)"
     },
+    "customApiKeyAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether users on this plan can add their own AI provider (Kie.ai) API key in My Account to generate Marketing Studio content unlimited with their own key"
+    },
+    "monthlyImageLimit": {
+      "type": "number",
+      "default": 0,
+      "description": "Max Marketing Studio images the user can generate per month on the shared platform key (resets monthly). Own API key = unlimited. Use -1 for unlimited on the shared key."
+    },
+    "monthlyVideoLimit": {
+      "type": "number",
+      "default": 0,
+      "description": "Max Marketing Studio videos the user can generate per month on the shared platform key (resets monthly). Own API key = unlimited. Use -1 for unlimited on the shared key."
+    },
     "telegramAllowed": {
       "type": "boolean",
       "default": false,

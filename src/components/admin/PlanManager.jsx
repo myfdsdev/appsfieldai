@@ -27,6 +27,7 @@ const FEATURE_TOGGLES = [
   { key: "investmentsAllowed", label: "Investments", desc: "Access to the Investments section" },
   { key: "leadFinderAllowed", label: "Lead Finder", desc: "Access to the AI Lead Finder tool" },
   { key: "marketingStudioAllowed", label: "Marketing Studio", desc: "Access to the AI promotional image & video studio" },
+  { key: "customApiKeyAllowed", label: "Custom API Key", desc: "Users can add their own Kie.ai API key for unlimited image/video generation" },
   { key: "telegramAllowed", label: "Telegram", desc: "Access to Telegram notifications & bot commands" },
 ];
 
@@ -62,7 +63,7 @@ export default function PlanManager() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, marketingStudioAllowed: false, telegramAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, marketingStudioAllowed: false, customApiKeyAllowed: false, monthlyImageLimit: 0, monthlyVideoLimit: 0, telegramAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };
@@ -70,7 +71,7 @@ export default function PlanManager() {
 
   const handleSave = async () => {
     if (!form.name?.trim()) { toast.error("Plan name is required"); return; }
-    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed, allowedDfyProductIds: form.allowedDfyProductIds || [] };
+    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed, allowedDfyProductIds: form.allowedDfyProductIds || [], monthlyImageLimit: parseInt(form.monthlyImageLimit) || 0, monthlyVideoLimit: parseInt(form.monthlyVideoLimit) || 0 };
     if (editPlan) {
       await base44.entities.SubscriptionPlan.update(editPlan.id, data);
       toast.success(`Plan "${data.name}" updated`);
@@ -178,6 +179,8 @@ export default function PlanManager() {
                 <div><label className="text-xs font-medium">Store Creation Limit <span className="text-red-400">*</span></label><Input type="number" value={form.storeLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, storeLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Max stores the user can create</p></div>
                 <div><label className="text-xs font-medium">Product Limit (per store) <span className="text-red-400">*</span></label><Input type="number" value={form.productLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, productLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Max products per store</p></div>
                 <div><label className="text-xs font-medium">DFY Product Limit</label><Input type="number" value={form.dfyProductLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, dfyProductLimit: e.target.value }))} disabled={!form.dfyAllowed} className="bg-secondary/50 border-border/30 rounded-xl mt-1 disabled:opacity-50" /><p className="text-[10px] text-muted-foreground mt-1">Max Done-For-You products the user can import</p></div>
+                <div><label className="text-xs font-medium">Monthly Image Limit</label><Input type="number" value={form.monthlyImageLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, monthlyImageLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Marketing Studio images per month on the shared key. Use -1 for unlimited. Own API key is always unlimited.</p></div>
+                <div><label className="text-xs font-medium">Monthly Video Limit</label><Input type="number" value={form.monthlyVideoLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, monthlyVideoLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Marketing Studio videos per month on the shared key. Use -1 for unlimited. Own API key is always unlimited.</p></div>
               </div>
               <div className="rounded-xl border border-border/30 bg-secondary/20 px-4 mt-4">
                 <SwitchRow label="Allow DFY Products" desc="Users on this plan can import Done-For-You products" checked={form.dfyAllowed} onChange={(v) => setForm((f) => ({ ...f, dfyAllowed: v }))} />

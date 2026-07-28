@@ -85,6 +85,36 @@
       "type": "string",
       "description": "One-time code embedded in the bot deep link, used to match the owner when they start the bot"
     },
+    "marketingApiKeys": {
+      "type": "object",
+      "description": "Store owner's own AI provider API keys for Marketing Studio image/video generation. When a key is set, generation uses it and is unlimited (the plan's monthly caps only apply to the shared platform key).",
+      "properties": {
+        "kieAiApiKey": {
+          "type": "string",
+          "description": "Owner's own Kie.ai API key used for image & video generation"
+        }
+      }
+    },
+    "marketingUsage": {
+      "type": "object",
+      "description": "Monthly Marketing Studio generation counters against the shared platform key. Reset automatically when the month changes.",
+      "properties": {
+        "periodMonth": {
+          "type": "string",
+          "description": "The month these counters apply to, in YYYY-MM format"
+        },
+        "imageCount": {
+          "type": "number",
+          "default": 0,
+          "description": "Images generated this month on the shared platform key"
+        },
+        "videoCount": {
+          "type": "number",
+          "default": 0,
+          "description": "Videos generated this month on the shared platform key"
+        }
+      }
+    },
     "leadFinderSmtp": {
       "type": "object",
       "description": "Personal SMTP settings used to send Lead Finder outreach emails",

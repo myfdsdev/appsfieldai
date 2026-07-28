@@ -31,7 +31,40 @@ Deno.serve(async (req) => {
       eng = cfgs?.[0]?.aiEngine || null;
     } catch { /* fall back to base44 */ }
 
-    const provider = mediaType === 'image' ? (eng?.imageProvider || 'base44') : (eng?.videoProvider || 'base44');
+    // Does the store owner have their OWN Kie.ai key? If so, generation is
+    // unlimited and always routed through Kie with their key.
+    const ownKey = (user?.marketingApiKeys?.kieAiApiKey || '').trim();
+    const useOwnKey = !!ownKey;
+
+    // On the shared platform key, enforce the plan's monthly generation caps.
+    if (!useOwnKey) {
+      let plan: Record<string, number> | null = null;
+      try {
+        if (user?.planId) {
+          const plans = await base44.asServiceRole.entities.SubscriptionPlan.filter({ id: user.planId });
+          plan = plans?.[0] || null;
+        }
+      } catch { /* no plan → treat as 0 */ }
+      const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+      const limit = mediaType === 'image' ? (plan?.monthlyImageLimit ?? 0) : (plan?.monthlyVideoLimit ?? 0);
+      // -1 = unlimited on shared key; admins are always unlimited.
+      if (!isAdmin && limit !== -1) {
+        const now = new Date();
+        const period = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+        const usage = user?.marketingUsage || {};
+        const sameMonth = usage.periodMonth === period;
+        const used = mediaType === 'image' ? (sameMonth ? usage.imageCount || 0 : 0) : (sameMonth ? usage.videoCount || 0 : 0);
+        if (used >= (limit || 0)) {
+          return Response.json({
+            error: `You've reached your monthly limit of ${limit || 0} ${mediaType}${(limit || 0) === 1 ? '' : 's'}. Add your own Kie.ai API key in My Account for unlimited generations, or upgrade your plan.`,
+            limitReached: true,
+          }, { status: 403 });
+        }
+      }
+    }
+
+    const provider = useOwnKey ? 'kie' : (mediaType === 'image' ? (eng?.imageProvider || 'base44') : (eng?.videoProvider || 'base44'));
+    const kieKey = useOwnKey ? ownKey : (eng?.kieAiApiKey || '');
     const model = mediaType === 'image' ? (eng?.imageModel || '') : (eng?.videoModel || '');
     const firstRef = Array.isArray(referenceImageUrls) && referenceImageUrls.length ? referenceImageUrls[0] : null;
 
@@ -46,13 +79,13 @@ Deno.serve(async (req) => {
     if (mediaType === 'image') {
       if (provider === 'xai' && eng?.xaiApiKey) {
         url = await callXaiImage(eng.xaiApiKey, model, prompt);
-      } else if (provider === 'kie' && eng?.kieAiApiKey) {
+      } else if (provider === 'kie' && kieKey) {
         // Kie Grok Imagine uses text-to-image vs image-to-image depending on
         // whether reference images were provided.
         const kieModel = firstRef ? 'grok-imagine/image-to-image' : 'grok-imagine/text-to-image';
         const input: Record<string, unknown> = { prompt, aspect_ratio: kieRatio };
         if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
-        url = await callKie(eng.kieAiApiKey, kieModel, input);
+        url = await callKie(kieKey, kieModel, input);
       } else {
         // Base44 built-in.
         const res = await base44.integrations.Core.GenerateImage({
@@ -63,12 +96,12 @@ Deno.serve(async (req) => {
       }
     } else {
       // VIDEO
-      if (provider === 'kie' && eng?.kieAiApiKey) {
+      if (provider === 'kie' && kieKey) {
         const kieModel = firstRef ? 'grok-imagine/image-to-video' : 'grok-imagine/text-to-video';
         const input: Record<string, unknown> = { prompt, aspect_ratio: kieRatio, duration };
         if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
         console.log('marketingGenerate video Kie input', JSON.stringify({ kieModel, aspect_ratio: kieRatio, duration, refs: input.image_urls?.length || 0 }));
-        url = await callKie(eng.kieAiApiKey, kieModel, input);
+        url = await callKie(kieKey, kieModel, input);
       } else {
         // Base44 built-in Veo (xai video not supported here → falls back to base44).
         const ratio = aspectRatio === '9:16' ? '9:16' : '16:9';
@@ -91,7 +124,26 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.error('marketingGenerate persistToR2 error', e);
     }
-    return Response.json({ url: finalUrl, provider });
+
+    // Increment the monthly usage counter (only when using the shared key).
+    if (!useOwnKey) {
+      try {
+        const now = new Date();
+        const period = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+        const usage = user?.marketingUsage || {};
+        const sameMonth = usage.periodMonth === period;
+        const next = {
+          periodMonth: period,
+          imageCount: (sameMonth ? usage.imageCount || 0 : 0) + (mediaType === 'image' ? 1 : 0),
+          videoCount: (sameMonth ? usage.videoCount || 0 : 0) + (mediaType === 'video' ? 1 : 0),
+        };
+        await base44.asServiceRole.entities.User.update(user.id, { marketingUsage: next });
+      } catch (e) {
+        console.error('marketingGenerate usage update error', e);
+      }
+    }
+
+    return Response.json({ url: finalUrl, provider, usedOwnKey: useOwnKey });
   } catch (error) {
     console.error('marketingGenerate error', error);
     return Response.json({ error: error.message }, { status: 500 });
