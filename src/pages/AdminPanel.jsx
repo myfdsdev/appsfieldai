@@ -22,6 +22,7 @@ import TrainingSettings from "@/components/admin/settings/TrainingSettings";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
+import WebhookSettings from "@/components/admin/settings/WebhookSettings";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -824,7 +825,17 @@ export default function AdminPanel() {
       case "chat_monitor":
       case "analytics":
         return aiContent;
-      case "stripe_int": case "razorpay_int": case "gmail_int": case "webhooks_int":
+      case "webhooks_int":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardContent className="pt-6">
+                <WebhookSettings />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "stripe_int": case "razorpay_int": case "gmail_int":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
@@ -905,28 +916,8 @@ export default function AdminPanel() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Webhook className="w-4 h-4 text-violet-400" />Webhooks</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-violet-500/5 border border-violet-500/20">
-                  <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center"><Webhook className="w-4 h-4 text-violet-400" /></div>
-                  <div><p className="text-sm font-medium text-foreground">Webhook Endpoints</p><p className="text-xs text-muted-foreground">Register and manage outgoing webhook URLs</p></div>
-                </div>
-                <div className="divide-y divide-border/20">
-                  {[
-                    { event: "listing.approved", url: "/api/webhooks/listing", status: "active" },
-                    { event: "order.completed",  url: "/api/webhooks/order",   status: "active" },
-                    { event: "user.registered",  url: "/api/webhooks/user",    status: "inactive" },
-                  ].map((wh, i) => (
-                    <div key={i} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                      <div>
-                        <p className="text-xs font-medium text-foreground">{wh.event}</p>
-                        <p className="text-[11px] text-muted-foreground">{wh.url}</p>
-                      </div>
-                      <Badge className={`text-[10px] ${wh.status === "active" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-secondary text-muted-foreground border-border/30"}`}>{wh.status}</Badge>
-                    </div>
-                  ))}
-                </div>
-                <Button size="sm" variant="outline" className="border-border/40 rounded-xl text-xs w-full">+ Add Webhook Endpoint</Button>
+              <CardContent className="pt-6">
+                <WebhookSettings />
               </CardContent>
             </Card>
           </motion.div>
