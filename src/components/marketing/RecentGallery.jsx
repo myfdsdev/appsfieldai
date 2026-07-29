@@ -6,10 +6,16 @@ import { toast } from "sonner";
 // Force a real file download. The R2 CDN doesn't send CORS headers, so a direct
 // client fetch is blocked — we proxy through the backend which streams the file
 // with a Content-Disposition: attachment header.
+// Map a content-type to a correct file extension so the OS can thumbnail it.
+const EXT_BY_MIME = {
+  "image/png": "png", "image/jpeg": "jpg", "image/jpg": "jpg",
+  "image/webp": "webp", "image/gif": "gif", "image/avif": "avif",
+  "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov",
+};
+
 async function downloadAsset(url, mediaType) {
-  const filename = `appsfield-${mediaType}-${Date.now()}.${mediaType === "video" ? "mp4" : "png"}`;
   try {
-    const res = await base44.functions.invoke("downloadAsset", { url, filename });
+    const res = await base44.functions.invoke("downloadAsset", { url, filename: "download" });
     const data = res?.data || {};
     if (!data.base64) throw new Error("No file data");
     // Decode the base64 payload back into the exact original bytes.
@@ -17,6 +23,10 @@ async function downloadAsset(url, mediaType) {
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     const mime = data.contentType || (mediaType === "video" ? "video/mp4" : "image/png");
+    // Derive the extension from the ACTUAL file type — mismatched extensions
+    // (e.g. a .webp saved as .png) break OS thumbnail previews.
+    const ext = EXT_BY_MIME[mime.toLowerCase().split(";")[0].trim()] || (mediaType === "video" ? "mp4" : "png");
+    const filename = `appsfield-${mediaType}-${Date.now()}.${ext}`;
     const typedBlob = new Blob([bytes], { type: mime });
     const objUrl = URL.createObjectURL(typedBlob);
     const a = document.createElement("a");
