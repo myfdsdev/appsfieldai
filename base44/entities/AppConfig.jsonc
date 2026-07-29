@@ -47,6 +47,21 @@
       "type": "string",
       "description": "JVZoo IPN secret key used to verify incoming webhook signatures"
     },
+    "platformWebhook": {
+      "type": "object",
+      "description": "Outbound provisioning webhook to an external app. On JVZoo sale/refund/reversal, this app POSTs the customer name & email to the external app so it can register/deregister access. The shared secret is stored as the PLATFORM_WEBHOOK_SECRET app secret.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to send provisioning events to the external app on JVZoo sales/refunds"
+        },
+        "baseUrl": {
+          "type": "string",
+          "description": "Base URL of the external provisioning app (e.g. https://ai-local-business-schema-generato-backend.onrender.com). The app calls {baseUrl}/api/v1/platform/provision | /suspend | /reactivate."
+        }
+      }
+    },
     "aiEngine": {
       "type": "object",
       "description": "AI engine configuration used for store creation and Deal Maker chat responses",

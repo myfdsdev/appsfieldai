@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Mail, CreditCard, Settings, Palette, Cpu, GraduationCap } from "lucide-react";
+import { ArrowLeft, Mail, CreditCard, Settings, Palette, Cpu, GraduationCap, Webhook } from "lucide-react";
 import { Link } from "react-router-dom";
 import EmailSettings from "@/components/admin/settings/EmailSettings";
 import PaymentSettings from "@/components/admin/settings/PaymentSettings";
@@ -8,6 +8,7 @@ import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
 import TrainingSettings from "@/components/admin/settings/TrainingSettings";
+import WebhookSettings from "@/components/admin/settings/WebhookSettings";
 
 const TABS = [
   { id: "email", label: "Email Settings", icon: Mail },
@@ -15,6 +16,7 @@ const TABS = [
   { id: "general", label: "General Settings", icon: Settings },
   { id: "training", label: "Training", icon: GraduationCap },
   { id: "ai", label: "AI & Engine", icon: Cpu },
+  { id: "webhook", label: "Webhook", icon: Webhook },
   { id: "theme", label: "Theme Colors", icon: Palette },
 ];
 
@@ -73,6 +75,7 @@ export default function AdminSettings() {
               {activeTab === "general" && <GeneralSettings />}
               {activeTab === "training" && <TrainingSettings />}
               {activeTab === "ai" && <AIEngineSettings />}
+              {activeTab === "webhook" && <WebhookSettings />}
               {activeTab === "theme" && <ThemeColorSettings />}
             </motion.div>
           </AnimatePresence>

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { sendPlatformEvent } from '../../shared/platformWebhook.ts';
 
 // JVZoo IPN webhook handler.
 // Receives sale/refund notifications from JVZoo (posted as form-encoded data),
@@ -269,6 +270,14 @@ Deno.serve(async (req) => {
           }
         }
       }
+
+      // Notify the external provisioning app to grant access for this customer.
+      await sendPlatformEvent(base44, 'provision', {
+        email,
+        name: fields['ccustname'] || '',
+        product: fields['cproditem'] || '',
+        plan: plan?.name || '',
+      });
     } else if (transaction === 'RFND' || transaction === 'CGBK' || transaction === 'CANCEL-REBILL') {
       // Remove the plan on refund/chargeback/cancellation.
       if (user && plan) {
@@ -297,6 +306,14 @@ Deno.serve(async (req) => {
           }
         }
       }
+
+      // Notify the external provisioning app to revoke access for this customer.
+      await sendPlatformEvent(base44, 'suspend', {
+        email,
+        name: fields['ccustname'] || user?.full_name || '',
+        product: fields['cproditem'] || '',
+        plan: plan?.name || '',
+      });
     }
 
     // Record the transaction.
