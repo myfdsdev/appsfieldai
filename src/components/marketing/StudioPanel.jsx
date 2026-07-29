@@ -212,7 +212,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
         onSelect={setAspectRatio} />
       
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_442px] gap-6 items-start">
         {/* ── Left: controls ─────────────────────────────── */}
         <div className="space-y-5 min-w-0">
           {/* Pill row: Aspect Ratio */}
