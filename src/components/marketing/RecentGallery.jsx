@@ -1,6 +1,24 @@
 import React from "react";
 import { Download, Video as VideoIcon, Clapperboard, Loader2 } from "lucide-react";
 
+// Force a real file download (the `download` attr is ignored for cross-origin R2 URLs).
+async function downloadAsset(url, mediaType) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objUrl;
+    a.download = `appsfield-${mediaType}-${Date.now()}.${mediaType === "video" ? "mp4" : "png"}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
+
 // Shows the recent generated assets for the active media type.
 export default function RecentGallery({ assets = [], loading, mediaType, onUseForVideo }) {
   if (loading) {
@@ -29,15 +47,13 @@ export default function RecentGallery({ assets = [], loading, mediaType, onUseFo
             )}
           </div>
           <div className="p-2 flex items-center gap-1.5">
-            <a
-              href={a.url}
-              target="_blank"
-              rel="noreferrer"
-              download
+            <button
+              type="button"
+              onClick={() => downloadAsset(a.url, a.mediaType)}
               className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg bg-secondary/60 hover:bg-secondary text-xs font-medium transition-colors"
             >
               <Download className="w-3.5 h-3.5" /> Save
-            </a>
+            </button>
             {a.mediaType === "image" && onUseForVideo && (
               <button
                 type="button"
