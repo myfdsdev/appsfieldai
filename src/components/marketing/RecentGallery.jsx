@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Download, Video as VideoIcon, Clapperboard, Loader2 } from "lucide-react";
+import { Download, Video as VideoIcon, Clapperboard, Loader2, Eye, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
@@ -42,8 +42,36 @@ async function downloadAsset(url, mediaType) {
   }
 }
 
+// Centered popup that previews the selected image/video.
+function PreviewModal({ asset, onClose }) {
+  if (!asset) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        {asset.mediaType === "video" ? (
+          <video src={asset.url} controls autoPlay className="max-w-[90vw] max-h-[90vh] rounded-xl" />
+        ) : (
+          <img src={asset.url} alt="preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-xl" />
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Shows the recent generated assets for the active media type.
 export default function RecentGallery({ assets = [], loading, mediaType, onUseForVideo }) {
+  const [previewAsset, setPreviewAsset] = useState(null);
+
   if (loading) {
     return (
       <div className="flex justify-center py-10">
@@ -62,12 +90,20 @@ export default function RecentGallery({ assets = [], loading, mediaType, onUseFo
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {assets.map((a) => (
         <div key={a.id} className="rounded-xl overflow-hidden border border-border/40 bg-secondary/20 group">
-          <div className="relative aspect-square bg-black/20">
+          <div
+            className="relative aspect-square bg-black/20 cursor-pointer group/preview"
+            onClick={() => setPreviewAsset(a)}
+          >
             {a.mediaType === "video" ? (
-              <video src={a.url} className="w-full h-full object-contain" controls />
+              <video src={a.url} className="w-full h-full object-contain" />
             ) : (
               <img src={a.url} alt="generated" className="w-full h-full object-contain" />
             )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/preview:bg-black/40 transition-colors">
+              <span className="opacity-0 group-hover/preview:opacity-100 flex items-center gap-1.5 px-3 h-8 rounded-lg bg-white/90 text-black text-xs font-semibold transition-opacity">
+                <Eye className="w-3.5 h-3.5" /> Preview
+              </span>
+            </div>
           </div>
           <div className="p-2 flex items-center gap-1.5">
             <button
@@ -90,6 +126,7 @@ export default function RecentGallery({ assets = [], loading, mediaType, onUseFo
           </div>
         </div>
       ))}
+      <PreviewModal asset={previewAsset} onClose={() => setPreviewAsset(null)} />
     </div>
   );
 }
