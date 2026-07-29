@@ -11,6 +11,7 @@ import { buildStoreContext } from "./storeContext";
 import { applyPresetOverrides } from "./applyPresetOverrides";
 
 const IMAGE_RATIOS = [
+  { id: "4:5", label: "Portrait (Social)" },
   { id: "1:1", label: "Square" },
   { id: "16:9", label: "Landscape" },
   { id: "9:16", label: "Portrait" },
@@ -30,7 +31,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
   const [presetId, setPresetId] = useState("");
   const [input, setInput] = useState("");
   const [prompt, setPrompt] = useState("");
-  const [aspectRatio, setAspectRatio] = useState(mediaType === "video" ? "9:16" : "1:1");
+  const [aspectRatio, setAspectRatio] = useState(mediaType === "video" ? "9:16" : "4:5");
   const [duration, setDuration] = useState(mediaType === "video" ? 6 : 8);
   const [thumbs, setThumbs] = useState({});
   const [refImages, setRefImages] = useState([]);
