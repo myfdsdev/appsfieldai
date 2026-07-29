@@ -83,7 +83,7 @@ export default function MarketingStudio() {
   const isLibrary = tab === "library";
 
   return (
-    <div className="space-y-6 mx-auto max-w-5xl">
+    <div className="space-y-6 mx-auto max-w-8xl">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
           <Wand2 className="w-5 h-5 text-white" />
