@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Image as ImageIcon, Video as VideoIcon, Loader2 } from "lucide-react";
 import RecentGallery from "./RecentGallery";
 
-// Shows generated marketing assets in Images / Videos sections.
+// Shows generated marketing assets under Images / Videos sub-tabs.
 // - Regular users: all of their own assets across every store.
 // - Admins: EVERY user's assets in one mixed feed, each item labeled with the
 //   user's name & email (like the marketplaces view for admins).
@@ -11,6 +11,7 @@ export default function GeneratedContentLibrary({ ownerId, isAdmin }) {
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sub, setSub] = useState("image");
 
   useEffect(() => {
     let cancelled = false;
@@ -53,23 +54,31 @@ export default function GeneratedContentLibrary({ ownerId, isAdmin }) {
     );
   }
 
-  return (
-    <div className="space-y-8">
-      <section>
-        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-orange-400" />
-          Images <span className="text-muted-foreground font-normal">({images.length})</span>
-        </h3>
-        <RecentGallery assets={images} loading={false} mediaType="image" />
-      </section>
+  const subTabs = [
+    { id: "image", label: "Images", icon: ImageIcon, count: images.length },
+    { id: "video", label: "Videos", icon: VideoIcon, count: videos.length },
+  ];
 
-      <section className="border-t border-border/40 pt-8">
-        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-          <VideoIcon className="w-4 h-4 text-orange-400" />
-          Videos <span className="text-muted-foreground font-normal">({videos.length})</span>
-        </h3>
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-2 p-1 rounded-xl bg-secondary/40 w-fit">
+        {subTabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setSub(t.id)}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${sub === t.id ? "bg-orange-500 text-white shadow" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            <t.icon className="w-4 h-4" /> {t.label}
+            <span className={sub === t.id ? "text-white/80" : "text-muted-foreground/70"}>({t.count})</span>
+          </button>
+        ))}
+      </div>
+
+      {sub === "image" ? (
+        <RecentGallery assets={images} loading={false} mediaType="image" />
+      ) : (
         <RecentGallery assets={videos} loading={false} mediaType="video" />
-      </section>
+      )}
     </div>
   );
 }
