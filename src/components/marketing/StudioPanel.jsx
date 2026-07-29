@@ -375,7 +375,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
             {isVideo ? <VideoIcon className="w-4 h-4 text-emerald-400" /> : <ImageIcon className="w-4 h-4 text-emerald-400" />}
             <span className="text-sm font-semibold">Preview</span>
           </div>
-          <div className="p-4 min-h-[280px] flex items-center justify-center">
+          <div className="p-4 min-h-[560px] flex items-center justify-center">
             {generating ? (
               <div className="text-center space-y-3">
                 <Loader2 className="w-8 h-8 animate-spin text-orange-400 mx-auto" />
@@ -383,9 +383,9 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
               </div>
             ) : result ? (
               isVideo ? (
-                <video src={result.url} controls className="max-h-[360px] w-full rounded-lg" />
+                <video src={result.url} controls className="max-h-[620px] w-auto max-w-full rounded-lg" style={{ aspectRatio: "9/16" }} />
               ) : (
-                <img src={result.url} alt="Generated" className="max-h-[360px] w-full object-contain rounded-lg" />
+                <img src={result.url} alt="Generated" className="max-h-[620px] w-auto max-w-full object-contain rounded-lg" />
               )
             ) : (
               <div className="text-center space-y-3 px-4">
