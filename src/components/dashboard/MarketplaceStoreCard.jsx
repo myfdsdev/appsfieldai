@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 // notification badge when recent slot/software purchases came in. Loads its own
 // stats so the parent list stays light.
 export default function MarketplaceStoreCard({ m, i, plan, owner, isAdmin, platformDomain, storeUrl, onManage, onVisit, onDelete }) {
-  const cover = m.pageSections?.headerImageUrl || m.pageSections?.heroBgImageUrl || m.branding?.logo || "";
+  // Cover banner should use an actual cover/hero image — never the logo (the logo
+  // has its own dedicated box below), otherwise the logo gets stretched across the banner.
+  const cover = m.pageSections?.headerImageUrl || m.pageSections?.heroBgImageUrl || "";
 
   // When no cover image is set, fall back to the store's hero theme from page settings.
   const ps = m.pageSections || {};
