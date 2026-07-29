@@ -1,21 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { Download, Video as VideoIcon, Clapperboard, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
-// Force a real file download (the `download` attr is ignored for cross-origin R2 URLs).
+// Force a real file download. The R2 CDN doesn't send CORS headers, so a direct
+// client fetch is blocked — we proxy through the backend which streams the file
+// with a Content-Disposition: attachment header.
 async function downloadAsset(url, mediaType) {
+  const filename = `appsfield-${mediaType}-${Date.now()}.${mediaType === "video" ? "mp4" : "png"}`;
   try {
-    const res = await fetch(url);
-    const blob = await res.blob();
+    const res = await base44.functions.invoke(
+      "downloadAsset",
+      { url, filename },
+      { responseType: "blob" }
+    );
+    const blob = res?.data instanceof Blob ? res.data : new Blob([res.data]);
     const objUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = objUrl;
-    a.download = `appsfield-${mediaType}-${Date.now()}.${mediaType === "video" ? "mp4" : "png"}`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(objUrl);
   } catch {
-    window.open(url, "_blank");
+    window.open(url.replace(/^http:\/\//, "https://"), "_blank");
+    toast.error("Couldn't download directly — opened in a new tab instead.");
   }
 }
 
