@@ -14,8 +14,12 @@ async function downloadAsset(url, mediaType) {
       { url, filename },
       { responseType: "blob" }
     );
-    const blob = res?.data instanceof Blob ? res.data : new Blob([res.data]);
-    const objUrl = URL.createObjectURL(blob);
+    // Force the correct MIME type by extension so the saved file previews properly.
+    const mime = mediaType === "video" ? "video/mp4" : "image/png";
+    const raw = res?.data instanceof Blob ? res.data : new Blob([res.data]);
+    const blob = raw.type ? raw : new Blob([raw], { type: mime });
+    const typedBlob = blob.type === mime ? blob : new Blob([blob], { type: mime });
+    const objUrl = URL.createObjectURL(typedBlob);
     const a = document.createElement("a");
     a.href = objUrl;
     a.download = filename;
