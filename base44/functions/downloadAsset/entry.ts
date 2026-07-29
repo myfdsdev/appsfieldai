@@ -34,13 +34,22 @@ Deno.serve(async (req) => {
     }
 
     const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
-    return new Response(upstream.body, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'no-store',
-      },
+
+    // The Base44 SDK's functions.invoke parses responses as text/JSON, which
+    // corrupts raw binary. So we return the bytes base64-encoded inside JSON and
+    // let the frontend rebuild a proper Blob from it.
+    const buf = new Uint8Array(await upstream.arrayBuffer());
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, buf.subarray(i, i + chunk) as unknown as number[]);
+    }
+    const base64 = btoa(binary);
+
+    return Response.json({
+      base64,
+      contentType,
+      filename,
     });
   } catch (error) {
     console.error('downloadAsset error', error);

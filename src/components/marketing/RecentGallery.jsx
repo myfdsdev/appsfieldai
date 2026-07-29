@@ -9,16 +9,15 @@ import { toast } from "sonner";
 async function downloadAsset(url, mediaType) {
   const filename = `appsfield-${mediaType}-${Date.now()}.${mediaType === "video" ? "mp4" : "png"}`;
   try {
-    const res = await base44.functions.invoke(
-      "downloadAsset",
-      { url, filename },
-      { responseType: "blob" }
-    );
-    // Force the correct MIME type by extension so the saved file previews properly.
-    const mime = mediaType === "video" ? "video/mp4" : "image/png";
-    const raw = res?.data instanceof Blob ? res.data : new Blob([res.data]);
-    const blob = raw.type ? raw : new Blob([raw], { type: mime });
-    const typedBlob = blob.type === mime ? blob : new Blob([blob], { type: mime });
+    const res = await base44.functions.invoke("downloadAsset", { url, filename });
+    const data = res?.data || {};
+    if (!data.base64) throw new Error("No file data");
+    // Decode the base64 payload back into the exact original bytes.
+    const binary = atob(data.base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const mime = data.contentType || (mediaType === "video" ? "video/mp4" : "image/png");
+    const typedBlob = new Blob([bytes], { type: mime });
     const objUrl = URL.createObjectURL(typedBlob);
     const a = document.createElement("a");
     a.href = objUrl;
