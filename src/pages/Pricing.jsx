@@ -15,15 +15,20 @@ export default function Pricing() {
   const [billing, setBilling] = useState("monthly");
   const [loadingPlan, setLoadingPlan] = useState(null);
 
-  const { data: plans = [] } = useQuery({
-    queryKey: ["platformPlans"],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
-  });
-
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me().catch(() => null),
   });
+
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
+
+  const { data: allPlans = [] } = useQuery({
+    queryKey: ["platformPlans"],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
+  });
+
+  // Regular users only see plans flagged visibleToUsers; admins see all active plans.
+  const plans = isAdmin ? allPlans : allPlans.filter((p) => p.visibleToUsers !== false);
 
   const handleSubscribe = async (plan) => {
     const planSlug = plan.name.toLowerCase().replace(/\s+/g, "_");
