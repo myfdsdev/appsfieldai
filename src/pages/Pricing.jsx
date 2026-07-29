@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useNavigate, Link } from "react-router-dom";
-import { Check, Infinity, Sparkles, Crown, Zap, Building2, ArrowRight } from "lucide-react";
+import { Check, Infinity, Sparkles, Crown, Zap, Building2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,11 @@ export default function Pricing() {
   const { data: plans = [] } = useQuery({
     queryKey: ["platformPlans"],
     queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => base44.auth.me().catch(() => null),
   });
 
   const handleSubscribe = async (plan) => {
@@ -53,6 +58,7 @@ export default function Pricing() {
           {plans.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map((plan, i) => {
             const Icon = planIcons[plan.name.toLowerCase().replace(/\s+/g, "_")] || Zap;
             const price = billing === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+            const isCurrent = currentUser?.planId === plan.id;
             return (
               <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                 <Card className="border-border/40 bg-card/60 backdrop-blur-xl h-full flex flex-col relative overflow-hidden">
@@ -80,10 +86,17 @@ export default function Pricing() {
                       {plan.commissionModuleAllowed && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />Commission Module</li>}
                       <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{plan.supportLevel} support</li>
                     </ul>
-                    <Button onClick={() => handleSubscribe(plan)} disabled={loadingPlan === plan.id}
-                      className="w-full mt-4 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5">
-                      {loadingPlan === plan.id ? "Redirecting..." : <>Subscribe <ArrowRight className="w-4 h-4" /></>}
-                    </Button>
+                    {isCurrent ? (
+                      <Button disabled
+                        className="w-full mt-4 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-xl gap-1.5 disabled:opacity-100 cursor-default hover:bg-emerald-500/15">
+                        <CheckCircle2 className="w-4 h-4" /> Subscribed
+                      </Button>
+                    ) : (
+                      <Button onClick={() => handleSubscribe(plan)} disabled={loadingPlan === plan.id}
+                        className="w-full mt-4 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5">
+                        {loadingPlan === plan.id ? "Redirecting..." : <>Subscribe <ArrowRight className="w-4 h-4" /></>}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
