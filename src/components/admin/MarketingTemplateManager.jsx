@@ -56,8 +56,10 @@ export default function MarketingTemplateManager() {
     const o = getOverride(preset.id);
     setEditing({ preset, isNew: false });
     setForm({
-      label: o?.label || "",
-      prompt: o?.prompt || "",
+      // Prefill with the actual built-in values (falling back to the override)
+      // so the real text is visible, selectable and copyable — not just a placeholder.
+      label: o?.label || preset.label || "",
+      prompt: o?.prompt || preset.prompt || "",
       thumbnailUrl: o?.thumbnailUrl || "",
       emoji: o?.emoji || preset.emoji || "",
     });
