@@ -22,7 +22,7 @@ export default function MarketingTemplateManager() {
   const [loading, setLoading] = useState(true);
   // editing: { preset, isNew } — preset is either a built-in preset or a custom preset object
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ label: "", prompt: "", thumbnailUrl: "", emoji: "" });
+  const [form, setForm] = useState({ label: "", prompt: "", thumbnailUrl: "", emoji: "", previewVideoUrl: "" });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -62,13 +62,14 @@ export default function MarketingTemplateManager() {
       prompt: o?.prompt || preset.prompt || "",
       thumbnailUrl: o?.thumbnailUrl || "",
       emoji: o?.emoji || preset.emoji || "",
+      previewVideoUrl: o?.previewVideoUrl || "",
     });
   };
 
   const openNew = () => {
     const id = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     setEditing({ preset: { id, label: "", emoji: "🎨", prompt: "", isCustom: true }, isNew: true });
-    setForm({ label: "", prompt: "", thumbnailUrl: "", emoji: "🎨" });
+    setForm({ label: "", prompt: "", thumbnailUrl: "", emoji: "🎨", previewVideoUrl: "" });
   };
 
   const handleSave = async () => {
@@ -87,6 +88,7 @@ export default function MarketingTemplateManager() {
         label: form.label.trim(),
         prompt: form.prompt.trim(),
         thumbnailUrl: form.thumbnailUrl.trim(),
+        previewVideoUrl: mediaType === "video" ? form.previewVideoUrl.trim() : "",
       };
       if (existing) {
         await base44.entities.MarketingPresetOverride.update(existing.id, data);
@@ -134,14 +136,30 @@ export default function MarketingTemplateManager() {
     const o = getOverride(p.id);
     const label = o?.label?.trim() || p.label;
     const thumb = o?.thumbnailUrl;
+    const previewVideo = mediaType === "video" ? (o?.previewVideoUrl?.trim() || "") : "";
     const customized = !!o;
     return (
-      <div key={p.id} className="group relative rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
-        <div className="relative aspect-[4/3] bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
+      <div
+        key={p.id}
+        className="group relative rounded-xl overflow-hidden border border-border/40 bg-secondary/30"
+        onMouseEnter={previewVideo ? (e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.play().catch(() => {}); } } : undefined}
+        onMouseLeave={previewVideo ? (e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.pause(); v.currentTime = 0; } } : undefined}
+      >
+        <div className="relative aspect-[4/5] bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
           {thumb ? (
             <img src={thumb} alt={label} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <span className="text-4xl opacity-80">{o?.emoji || p.emoji}</span>
+          )}
+          {previewVideo && (
+            <video
+              src={previewVideo}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           )}
           {isCustom ? (
             <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-violet-500 text-white">Custom</span>
@@ -275,6 +293,18 @@ export default function MarketingTemplateManager() {
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the auto-generated preview.</p>
               </div>
+              {mediaType === "video" && (
+                <div>
+                  <label className="text-xs text-muted-foreground">Preview Video Link</label>
+                  <Input
+                    value={form.previewVideoUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, previewVideoUrl: e.target.value }))}
+                    placeholder="https://example.com/preview.mp4"
+                    className="bg-[#252525] border-border/30 rounded-xl mt-1"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">Optional MP4 played on hover over this template card.</p>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>

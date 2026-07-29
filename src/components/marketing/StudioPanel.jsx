@@ -275,12 +275,15 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
               {presets.map((p) => {
                 const active = presetId === p.id;
                 const thumb = thumbs[p.id];
+                const previewVideo = isVideo ? (p.previewVideoUrl || "") : "";
                 return (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setPresetId(active ? "" : p.id)}
-                    className={`group relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                    onMouseEnter={previewVideo ? (e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.play().catch(() => {}); } } : undefined}
+                    onMouseLeave={previewVideo ? (e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.pause(); v.currentTime = 0; } } : undefined}
+                    className={`group relative aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all ${
                       active ? "border-orange-500" : "border-transparent hover:border-border"
                     }`}
                   >
@@ -291,6 +294,16 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
                         <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/50 absolute top-2 left-2" />
                         <span className="text-4xl opacity-80">{p.emoji}</span>
                       </div>
+                    )}
+                    {previewVideo && (
+                      <video
+                        src={previewVideo}
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
                     )}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2.5 pt-6 pb-2 text-left">
                       <p className="text-xs font-bold text-white leading-tight line-clamp-2">{p.label}</p>

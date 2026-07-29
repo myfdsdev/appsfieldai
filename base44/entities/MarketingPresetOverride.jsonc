@@ -34,6 +34,10 @@
     "thumbnailUrl": {
       "type": "string",
       "description": "Custom thumbnail image URL (overrides the auto-generated one)"
+    },
+    "previewVideoUrl": {
+      "type": "string",
+      "description": "Optional preview video URL (video templates only) played on hover over the template card"
     }
   },
   "required": [

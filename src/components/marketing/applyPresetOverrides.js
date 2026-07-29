@@ -24,6 +24,7 @@ export async function applyPresetOverrides(presets, mediaType) {
       ...p,
       label: o.label?.trim() || p.label,
       prompt: o.prompt?.trim() || p.prompt,
+      previewVideoUrl: o.previewVideoUrl?.trim() || p.previewVideoUrl || "",
     };
   });
 
@@ -38,6 +39,7 @@ export async function applyPresetOverrides(presets, mediaType) {
         label: o.label?.trim() || "Custom Template",
         emoji: o.emoji || "🎨",
         prompt: o.prompt?.trim() || "",
+        previewVideoUrl: o.previewVideoUrl?.trim() || "",
       });
     });
 
