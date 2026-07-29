@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Webhook, Save, ShieldCheck } from "lucide-react";
+import { Webhook, Save, ShieldCheck, KeyRound, CheckCircle2, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ export default function WebhookSettings() {
   const [enabled, setEnabled] = useState(false);
   const [baseUrl, setBaseUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [secretConfigured, setSecretConfigured] = useState(null); // null = loading
 
   useEffect(() => {
     (async () => {
@@ -23,6 +24,10 @@ export default function WebhookSettings() {
         setEnabled(!!pw.enabled);
         setBaseUrl(pw.baseUrl || "");
       } catch { /* none yet */ }
+      try {
+        const res = await base44.functions.invoke("platformWebhookSecretStatus", {});
+        setSecretConfigured(!!res?.data?.configured);
+      } catch { setSecretConfigured(false); }
     })();
   }, []);
 
@@ -82,12 +87,39 @@ export default function WebhookSettings() {
         </div>
       </div>
 
+      {/* Shared secret key */}
+      <div className="space-y-2">
+        <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <KeyRound className="w-3.5 h-3.5" /> Shared Secret Key
+        </Label>
+        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-secondary/30 p-3">
+          {secretConfigured === null ? (
+            <span className="text-xs text-muted-foreground">Checking…</span>
+          ) : secretConfigured ? (
+            <>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-xs text-foreground/90">Secret is configured</span>
+              <code className="font-mono text-xs text-muted-foreground/70 ml-1">••••••••••••</code>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="w-4 h-4 text-orange-400 shrink-0" />
+              <span className="text-xs text-foreground/90">No secret set yet</span>
+            </>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          For security the secret value can't be shown or edited here. To set or rotate it, update the
+          <code className="font-mono mx-1">PLATFORM_WEBHOOK_SECRET</code> app secret in your Base44 dashboard settings
+          (Settings → Environment Variables / Secrets). Use the exact same value in the external app.
+        </p>
+      </div>
+
       <div className="flex items-start gap-2 rounded-lg border border-border/40 bg-secondary/30 p-3">
         <ShieldCheck className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
         <p className="text-xs text-muted-foreground">
-          Each request sends the customer's <strong>name</strong> and <strong>email</strong> in the JSON body, and a shared secret in the
-          <code className="font-mono mx-1">X-Platform-Secret</code> header. The secret is stored securely as the
-          <code className="font-mono mx-1">PLATFORM_WEBHOOK_SECRET</code> app secret — make sure the external app uses the exact same value.
+          Each request sends the customer's <strong>name</strong> and <strong>email</strong> in the JSON body, and the shared secret in the
+          <code className="font-mono mx-1">X-Platform-Secret</code> header. The external app must verify this header matches its copy of the secret.
         </p>
       </div>
 
