@@ -174,7 +174,7 @@ export default function MarketingStudio() {
             onSeedConsumed={() => setVideoSeed(null)}
           />
         )}
-        {tab === "library" && <GeneratedContentLibrary ownerId={user?.id} />}
+        {tab === "library" && <GeneratedContentLibrary ownerId={user?.id} isAdmin={isAdmin} />}
       </motion.div>
     </div>
   );
