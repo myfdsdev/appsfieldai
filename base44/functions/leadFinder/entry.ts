@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     if (action === 'findLeads') {
       const { niche, area, count } = body;
       if (!niche || !area) return Response.json({ error: 'Niche and area are required' }, { status: 400 });
-      const n = Math.min(Math.max(parseInt(count) || 10, 1), 30);
+      const n = Math.min(Math.max(parseInt(count) || 10, 1), 50);
 
       // Which contact fields the returned leads MUST have (email, phone, website, instagram, facebook).
       const FIELD_LABELS: Record<string, string> = {
@@ -46,7 +46,9 @@ Deno.serve(async (req) => {
           `It is better to return fewer businesses than to include one missing a required field. `
         : '';
 
-      const prompt = `You are a B2B lead researcher. Find ${n} real ${niche} businesses located in ${area}. ` +
+      const prompt = `You are a B2B lead researcher. Find EXACTLY ${n} real ${niche} businesses located in ${area}. ` +
+        `You MUST return the full list of ${n} businesses — do not stop early or return fewer. Broaden across the whole ${area} area ` +
+        `(all neighborhoods, suburbs and nearby districts) to reach ${n} distinct businesses. ` +
         `Use your knowledge and available web context to return genuine, existing businesses (not invented ones). ` +
         `For each business, work hard to find a real contact email address: check the business's own website ` +
         `(look at its home, contact, about and footer pages), its Google Business listing, and its Instagram/Facebook ` +
