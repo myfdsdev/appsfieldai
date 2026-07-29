@@ -11,17 +11,17 @@ import { buildStoreContext } from "./storeContext";
 import { applyPresetOverrides } from "./applyPresetOverrides";
 
 const IMAGE_RATIOS = [
-  { id: "2:3", label: "Portrait (Social)" },
-  { id: "3:2", label: "Landscape" },
-  { id: "1:1", label: "Square" },
-  { id: "9:16", label: "Portrait" },
-  { id: "16:9", label: "Wide" },
-];
+{ id: "2:3", label: "Portrait (Social)" },
+{ id: "3:2", label: "Landscape" },
+{ id: "1:1", label: "Square" },
+{ id: "9:16", label: "Portrait" },
+{ id: "16:9", label: "Wide" }];
+
 const VIDEO_RATIOS = [
-  { id: "9:16", label: "Portrait" },
-  { id: "16:9", label: "Landscape" },
-  { id: "1:1", label: "Square" },
-];
+{ id: "9:16", label: "Portrait" },
+{ id: "16:9", label: "Landscape" },
+{ id: "1:1", label: "Square" }];
+
 const DURATIONS = [6, 8, 10, 12, 15];
 
 export default function StudioPanel({ mediaType, store, presets: rawPresets, presetLabelPrefix, seedImageUrl, onSeedConsumed }) {
@@ -46,7 +46,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
 
   useEffect(() => {
     if (seedImageUrl) {
-      setRefImages((prev) => (prev.includes(seedImageUrl) ? prev : [...prev, seedImageUrl]));
+      setRefImages((prev) => prev.includes(seedImageUrl) ? prev : [...prev, seedImageUrl]);
       onSeedConsumed?.();
       toast.success("Image added as reference.");
     }
@@ -54,7 +54,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
   }, [seedImageUrl]);
 
   const loadAssets = async () => {
-    if (!store?.id) { setAssets([]); setLoadingAssets(false); return; }
+    if (!store?.id) {setAssets([]);setLoadingAssets(false);return;}
     setLoadingAssets(true);
     try {
       const rows = await base44.entities.MarketingAsset.filter(
@@ -85,7 +85,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
       setCustomThumbs(custom);
       setThumbs((prev) => ({ ...prev, ...custom }));
     })();
-    return () => { cancelled = true; };
+    return () => {cancelled = true;};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawPresets, mediaType]);
 
@@ -98,9 +98,9 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
       let cached = [];
       try {
         cached = await base44.entities.PresetThumbnail.filter({ mediaType });
-      } catch { cached = []; }
+      } catch {cached = [];}
       const map = {};
-      cached.forEach((t) => { if (t.presetId && t.url) map[t.presetId] = t.url; });
+      cached.forEach((t) => {if (t.presetId && t.url) map[t.presetId] = t.url;});
       if (!cancelled) setThumbs((prev) => ({ ...map, ...prev, ...customThumbs }));
 
       // Generate the missing ones sequentially so we don't hammer the provider.
@@ -109,21 +109,21 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
         if (customThumbs[p.id] || map[p.id]) continue;
         try {
           const res = await base44.functions.invoke("marketingPresetThumbnail", {
-            presetId: p.id, mediaType, prompt: p.prompt, label: p.label,
+            presetId: p.id, mediaType, prompt: p.prompt, label: p.label
           });
           const url = res?.data?.url;
           if (url && !cancelled) setThumbs((prev) => ({ ...prev, [p.id]: url }));
-        } catch { /* keep emoji fallback */ }
+        } catch {/* keep emoji fallback */}
       }
     })();
-    return () => { cancelled = true; };
+    return () => {cancelled = true;};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mediaType, customThumbs]);
 
   const activePreset = presets.find((p) => p.id === presetId) || null;
 
   const handleEnhance = async () => {
-    if (!store) { toast.error("Choose a store first."); return; }
+    if (!store) {toast.error("Choose a store first.");return;}
     setEnhancing(true);
     try {
       const res = await base44.functions.invoke("marketingEnhancePrompt", {
@@ -133,7 +133,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
         presetPrompt: activePreset?.prompt || "",
         userInput: input.trim(),
         aspectRatio,
-        duration,
+        duration
       });
       const data = res.data || {};
       if (data.error) throw new Error(data.error);
@@ -162,9 +162,9 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
   };
 
   const handleGenerate = async () => {
-    if (!store) { toast.error("Choose a store first."); return; }
+    if (!store) {toast.error("Choose a store first.");return;}
     const finalPrompt = resolvePrompt();
-    if (!finalPrompt) { toast.error("Pick a scene or write a prompt first."); return; }
+    if (!finalPrompt) {toast.error("Pick a scene or write a prompt first.");return;}
     setGenerating(true);
     setResult(null);
     try {
@@ -173,7 +173,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
         prompt: finalPrompt,
         referenceImageUrls: refImages,
         aspectRatio,
-        duration,
+        duration
       });
       const data = res.data || {};
       if (data.error || !data.url) throw new Error(data.error || "Generation failed.");
@@ -186,7 +186,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
         prompt: finalPrompt,
         presetId: presetId || "",
         aspectRatio,
-        ...(mediaType === "video" ? { duration } : {}),
+        ...(mediaType === "video" ? { duration } : {})
       });
       setResult(saved);
       setAssets((prev) => [saved, ...prev]);
@@ -209,8 +209,8 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
         onClose={() => setRatioOpen(false)}
         ratios={ratios}
         value={aspectRatio}
-        onSelect={setAspectRatio}
-      />
+        onSelect={setAspectRatio} />
+      
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
         {/* ── Left: controls ─────────────────────────────── */}
@@ -220,8 +220,8 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
             <button
               type="button"
               onClick={() => setRatioOpen(true)}
-              className="flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 px-4 py-3 text-left hover:border-border transition-colors"
-            >
+              className="flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 px-4 py-3 text-left hover:border-border transition-colors">
+              
               <div className="w-9 h-9 rounded-lg bg-sky-500/15 flex items-center justify-center shrink-0">
                 <Ratio className="w-4 h-4 text-sky-400" />
               </div>
@@ -234,13 +234,13 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
           </div>
 
           {/* Duration (video only) */}
-          {isVideo && (
-            <div className="relative">
+          {isVideo &&
+          <div className="relative">
               <button
-                type="button"
-                onClick={() => setDurationOpen((v) => !v)}
-                className="w-full flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 px-4 py-3 text-left hover:border-border transition-colors"
-              >
+              type="button"
+              onClick={() => setDurationOpen((v) => !v)}
+              className="w-full flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 px-4 py-3 text-left hover:border-border transition-colors">
+              
                 <div className="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
                   <Clock className="w-4 h-4 text-amber-400" />
                 </div>
@@ -250,22 +250,22 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
                 </div>
                 <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
               </button>
-              {durationOpen && (
-                <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/50 bg-card shadow-xl overflow-hidden">
-                  {DURATIONS.map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => { setDuration(d); setDurationOpen(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-secondary/60 ${duration === d ? "text-orange-400 font-semibold" : ""}`}
-                    >
+              {durationOpen &&
+            <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/50 bg-card shadow-xl overflow-hidden">
+                  {DURATIONS.map((d) =>
+              <button
+                key={d}
+                type="button"
+                onClick={() => {setDuration(d);setDurationOpen(false);}}
+                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-secondary/60 ${duration === d ? "text-orange-400 font-semibold" : ""}`}>
+                
                       {d} seconds
                     </button>
-                  ))}
-                </div>
               )}
+                </div>
+            }
             </div>
-          )}
+          }
 
           {/* Template grid — all presets shown, AI thumbnails via Grok Imagine */}
           <div>
@@ -275,42 +275,42 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
               {presets.map((p) => {
                 const active = presetId === p.id;
                 const thumb = thumbs[p.id];
-                const previewVideo = isVideo ? (p.previewVideoUrl || "") : "";
+                const previewVideo = isVideo ? p.previewVideoUrl || "" : "";
                 return (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setPresetId(active ? "" : p.id)}
-                    onMouseEnter={previewVideo ? (e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.play().catch(() => {}); } } : undefined}
-                    onMouseLeave={previewVideo ? (e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.pause(); v.currentTime = 0; } } : undefined}
+                    onMouseEnter={previewVideo ? (e) => {const v = e.currentTarget.querySelector("video");if (v) {v.play().catch(() => {});}} : undefined}
+                    onMouseLeave={previewVideo ? (e) => {const v = e.currentTarget.querySelector("video");if (v) {v.pause();v.currentTime = 0;}} : undefined}
                     className={`group relative aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all ${
-                      active ? "border-orange-500" : "border-transparent hover:border-border"
-                    }`}
-                  >
-                    {thumb ? (
-                      <img src={thumb} alt={p.label} className="absolute inset-0 w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
+                    active ? "border-orange-500" : "border-transparent hover:border-border"}`
+                    }>
+                    
+                    {thumb ?
+                    <img src={thumb} alt={p.label} className="absolute inset-0 w-full h-full object-cover" /> :
+
+                    <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/70 to-card flex items-center justify-center">
                         <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/50 absolute top-2 left-2" />
                         <span className="text-4xl opacity-80">{p.emoji}</span>
                       </div>
-                    )}
-                    {previewVideo && (
-                      <video
-                        src={previewVideo}
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
-                      />
-                    )}
+                    }
+                    {previewVideo &&
+                    <video
+                      src={previewVideo}
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    }
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2.5 pt-6 pb-2 text-left">
                       <p className="text-xs font-bold text-white leading-tight line-clamp-2">{p.label}</p>
                     </div>
                     {active && <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-orange-500" />}
-                  </button>
-                );
+                  </button>);
+
               })}
             </div>
           </div>
@@ -324,23 +324,23 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
                 onClick={handleEnhance}
                 disabled={enhancing || !store}
                 title="Magic prompt enhancer — writes a better prompt from your store content, scene and text"
-                className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
+                className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
+                
                 {enhancing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
                 {enhancing ? "Enhancing…" : "Magic Enhance"}
               </button>
             </div>
             <Textarea
               value={prompt || input}
-              onChange={(e) => { setPrompt(e.target.value); setInput(e.target.value); }}
+              onChange={(e) => {setPrompt(e.target.value);setInput(e.target.value);}}
               rows={isVideo ? 5 : 4}
               placeholder={
-                isVideo
-                  ? "Describe your UGC video, or name a specific software/feature to promote. Then hit Magic Enhance to turn it into a full UGC script + direction."
-                  : "Select a scene above or write your own prompt…"
+              isVideo ?
+              "Describe your UGC video, or name a specific software/feature to promote. Then hit Magic Enhance to turn it into a full UGC script + direction." :
+              "Select a scene above or write your own prompt…"
               }
-              className="bg-secondary/40 border-border/50 rounded-xl resize-y"
-            />
+              className="bg-secondary/40 border-border/50 rounded-xl resize-y" />
+            
             <p className="text-[11px] text-muted-foreground mt-1">
               Tip: mention a specific product from your store to feature it directly.
             </p>
@@ -360,12 +360,12 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
           <Button
             onClick={handleGenerate}
             disabled={generating || !store}
-            className="w-full h-12 text-white text-base font-semibold gap-2 rounded-xl bg-gradient-to-r from-lime-500 via-teal-500 to-blue-600 hover:opacity-90"
-          >
+            className="w-full h-12 text-white text-base font-semibold gap-2 rounded-xl bg-gradient-to-r from-lime-500 via-teal-500 to-blue-600 hover:opacity-90">
+            
             {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            {generating
-              ? isVideo ? "Generating video… this can take a few minutes" : "Generating…"
-              : `Generate ${genLabel}`}
+            {generating ?
+            isVideo ? "Generating video… this can take a few minutes" : "Generating…" :
+            `Generate ${genLabel}`}
           </Button>
         </div>
 
@@ -375,26 +375,26 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
             {isVideo ? <VideoIcon className="w-4 h-4 text-emerald-400" /> : <ImageIcon className="w-4 h-4 text-emerald-400" />}
             <span className="text-sm font-semibold">Preview</span>
           </div>
-          <div className="p-4 min-h-[560px] flex items-center justify-center">
-            {generating ? (
-              <div className="text-center space-y-3">
+          <div className="min-h-[560px] flex items-center justify-center p-">
+            {generating ?
+            <div className="text-center space-y-3">
                 <Loader2 className="w-8 h-8 animate-spin text-orange-400 mx-auto" />
                 <p className="text-xs text-muted-foreground">Generating your {genLabel.toLowerCase()}…</p>
-              </div>
-            ) : result ? (
-              isVideo ? (
-                <video src={result.url} controls className="max-h-[620px] w-auto max-w-full rounded-lg" style={{ aspectRatio: "9/16" }} />
-              ) : (
-                <img src={result.url} alt="Generated" className="max-h-[620px] w-auto max-w-full object-contain rounded-lg" />
-              )
-            ) : (
-              <div className="text-center space-y-3 px-4">
+              </div> :
+            result ?
+            isVideo ?
+            <video src={result.url} controls className="max-h-[620px] w-auto max-w-full rounded-lg" style={{ aspectRatio: "9/16" }} /> :
+
+            <img src={result.url} alt="Generated" className="max-h-[620px] w-auto max-w-full object-contain rounded-lg" /> :
+
+
+            <div className="text-center space-y-3 px-4">
                 <div className="w-14 h-14 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center mx-auto">
                   {isVideo ? <VideoIcon className="w-6 h-6 text-muted-foreground/50" /> : <ImageIcon className="w-6 h-6 text-muted-foreground/50" />}
                 </div>
                 <p className="text-xs text-muted-foreground">Choose a scene and click Generate to see your result here</p>
               </div>
-            )}
+            }
           </div>
         </div>
       </div>
@@ -409,9 +409,9 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
           assets={assets}
           loading={loadingAssets}
           mediaType={mediaType}
-          onUseForVideo={mediaType === "image" ? (url) => window.dispatchEvent(new CustomEvent("marketing:useForVideo", { detail: url })) : undefined}
-        />
+          onUseForVideo={mediaType === "image" ? (url) => window.dispatchEvent(new CustomEvent("marketing:useForVideo", { detail: url })) : undefined} />
+        
       </div>
-    </div>
-  );
+    </div>);
+
 }
