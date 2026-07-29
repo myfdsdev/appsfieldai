@@ -90,8 +90,8 @@ export default function MarketplaceStoreCard({ m, i, plan, owner, isAdmin, platf
 
         <CardHeader className="pt-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center shrink-0 overflow-hidden">
-              {m.branding?.logo ? <img src={m.branding.logo} alt="" className="w-full h-full object-cover" /> : <Store className="w-5 h-5 text-white" />}
+            <div className={`h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${m.branding?.logo ? "min-w-10 max-w-24 bg-white/5 px-1.5" : "w-10 bg-gradient-to-br from-violet-600 to-cyan-600"}`}>
+              {m.branding?.logo ? <img src={m.branding.logo} alt="" className="h-full w-auto max-w-full object-contain" /> : <Store className="w-5 h-5 text-white" />}
             </div>
             <div className="min-w-0">
               <CardTitle className="text-base font-display truncate">{m.name}</CardTitle>

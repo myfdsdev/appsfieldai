@@ -167,6 +167,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         heroBgType: "gradient",
         heroGradientStart: `${data.branding.primaryColor}33`,
         heroGradientEnd: "#0a0603",
+        // Default store cover/banner image when the owner hasn't set one.
+        headerImageUrl: (pageSections?.headerImageUrl) || "http://cdn.appsfieldai.com/uploads/6a2402b3a9b98ed1e7bf2a17/marketplace-banner_1783337842579.png",
       };
       // Guarantee a globally-unique slug so two stores with the same name don't
       // resolve to the same public URL (appends -2, -3, ... if already taken).
