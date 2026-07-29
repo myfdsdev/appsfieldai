@@ -375,7 +375,7 @@ export default function StudioPanel({ mediaType, store, presets: rawPresets, pre
             {isVideo ? <VideoIcon className="w-4 h-4 text-emerald-400" /> : <ImageIcon className="w-4 h-4 text-emerald-400" />}
             <span className="text-sm font-semibold">Preview</span>
           </div>
-          <div className="min-h-[560px] flex items-center justify-center p-">
+          <div className="flex items-center justify-center p-4 min-h-[560px]">
             {generating ?
             <div className="text-center space-y-3">
                 <Loader2 className="w-8 h-8 animate-spin text-orange-400 mx-auto" />
