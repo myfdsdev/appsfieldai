@@ -68,9 +68,12 @@ Deno.serve(async (req) => {
     const model = mediaType === 'image' ? (eng?.imageModel || '') : (eng?.videoModel || '');
     const firstRef = Array.isArray(referenceImageUrls) && referenceImageUrls.length ? referenceImageUrls[0] : null;
 
-    // Map our UI ratios to Kie's accepted aspect_ratio values.
+    // Map our UI ratios to Kie/Grok's accepted aspect_ratio values.
+    // Grok Imagine only allows: 2:3, 3:2, 1:1, 9:16, 16:9.
     const KIE_RATIO: Record<string, string> = {
-      '1:1': '1:1', '16:9': '16:9', '9:16': '9:16', '4:5': '3:4', '4:3': '4:3', '3:4': '3:4',
+      '1:1': '1:1', '16:9': '16:9', '9:16': '9:16',
+      '2:3': '2:3', '3:2': '3:2',
+      '4:5': '2:3', '3:4': '2:3', '4:3': '3:2',
     };
     const kieRatio = KIE_RATIO[aspectRatio] || '1:1';
 
