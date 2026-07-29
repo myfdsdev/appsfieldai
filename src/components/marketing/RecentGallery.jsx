@@ -105,6 +105,12 @@ export default function RecentGallery({ assets = [], loading, mediaType, onUseFo
               </span>
             </div>
           </div>
+          {a._ownerLabel && (
+            <div className="px-2.5 pt-2">
+              <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{a._ownerLabel}</p>
+              {a._ownerEmail && <p className="text-[10px] text-muted-foreground truncate">{a._ownerEmail}</p>}
+            </div>
+          )}
           <div className="p-2 flex items-center gap-1.5">
             <button
               type="button"
