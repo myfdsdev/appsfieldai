@@ -83,12 +83,21 @@ Deno.serve(async (req) => {
       if (provider === 'xai' && eng?.xaiApiKey) {
         url = await callXaiImage(eng.xaiApiKey, model, prompt);
       } else if (provider === 'kie' && kieKey) {
-        // Kie Grok Imagine uses text-to-image vs image-to-image depending on
-        // whether reference images were provided.
-        const kieModel = firstRef ? 'grok-imagine/image-to-image' : 'grok-imagine/text-to-image';
-        const input: Record<string, unknown> = { prompt, aspect_ratio: kieRatio };
-        if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
-        url = await callKie(kieKey, kieModel, input);
+        if (model === 'google/nano-banana') {
+          // Google Nano Banana (Gemini image) on Kie. Uses the edit model when
+          // reference images are supplied; expects image_size, not aspect_ratio.
+          const kieModel = firstRef ? 'google/nano-banana-edit' : 'google/nano-banana';
+          const input: Record<string, unknown> = { prompt, image_size: kieRatio, output_format: 'png' };
+          if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
+          url = await callKie(kieKey, kieModel, input);
+        } else {
+          // Kie Grok Imagine uses text-to-image vs image-to-image depending on
+          // whether reference images were provided.
+          const kieModel = firstRef ? 'grok-imagine/image-to-image' : 'grok-imagine/text-to-image';
+          const input: Record<string, unknown> = { prompt, aspect_ratio: kieRatio };
+          if (firstRef) input.image_urls = referenceImageUrls.slice(0, 5);
+          url = await callKie(kieKey, kieModel, input);
+        }
       } else {
         // Base44 built-in.
         const res = await base44.integrations.Core.GenerateImage({

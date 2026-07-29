@@ -31,7 +31,11 @@ Deno.serve(async (req) => {
     if (provider === 'xai' && eng?.xaiApiKey) {
       url = await callXaiImage(eng.xaiApiKey, eng?.imageModel || '', thumbPrompt);
     } else if (provider === 'kie' && eng?.kieAiApiKey) {
-      url = await callKie(eng.kieAiApiKey, 'grok-imagine/text-to-image', { prompt: thumbPrompt, aspect_ratio: '1:1' }, 45);
+      if (eng?.imageModel === 'google/nano-banana') {
+        url = await callKie(eng.kieAiApiKey, 'google/nano-banana', { prompt: thumbPrompt, image_size: '1:1', output_format: 'png' }, 45);
+      } else {
+        url = await callKie(eng.kieAiApiKey, 'grok-imagine/text-to-image', { prompt: thumbPrompt, aspect_ratio: '1:1' }, 45);
+      }
     } else {
       const res = await base44.integrations.Core.GenerateImage({ prompt: thumbPrompt });
       url = res?.url || null;

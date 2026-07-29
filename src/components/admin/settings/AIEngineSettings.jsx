@@ -128,9 +128,10 @@ export const AI_IMAGE_PROVIDERS = [
   {
     id: "kie",
     name: "Kie.ai (Grok Imagine)",
-    desc: "Kie.ai-hosted Grok Imagine image models — uses your Kie.ai API key.",
+    desc: "Kie.ai-hosted image models — uses your Kie.ai API key.",
     models: [
       { id: "grok-imagine-image-1-5-preview", name: "Grok Imagine Image 1.5 (preview)" },
+      { id: "google/nano-banana", name: "Google Nano Banana" },
     ],
   },
 ];
