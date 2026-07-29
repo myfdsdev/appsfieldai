@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Wand2, Image as ImageIcon, Video, Lock, ArrowLeft, Store, Infinity as InfinityIcon, KeyRound } from "lucide-react";
+import { Wand2, Image as ImageIcon, Video, Lock, ArrowLeft, Store, Infinity as InfinityIcon, KeyRound, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
 import StudioPanel from "@/components/marketing/StudioPanel";
+import GeneratedContentLibrary from "@/components/marketing/GeneratedContentLibrary";
 import { IMAGE_PRESETS, VIDEO_PRESETS } from "@/components/marketing/marketingPresets";
 
 // Current month key in UTC (matches the backend usage period).
@@ -76,7 +77,10 @@ export default function MarketingStudio() {
   const tabs = [
     { id: "image", label: "Promotional Images", icon: ImageIcon },
     { id: "video", label: "Promotional Videos", icon: Video },
+    { id: "library", label: "Generated Marketing Content", icon: LayoutGrid },
   ];
+
+  const isLibrary = tab === "library";
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -104,6 +108,7 @@ export default function MarketingStudio() {
       </div>
 
       {/* Usage / limit badge for the active tab */}
+      {!isLibrary && (
       <div className="flex items-center gap-2 flex-wrap -mt-2">
         {unlimited ? (
           <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
@@ -121,8 +126,10 @@ export default function MarketingStudio() {
           </>
         )}
       </div>
+      )}
 
       {/* Store picker */}
+      {!isLibrary && (
       <div className="rounded-2xl border border-border/40 bg-card/60 p-4">
         <label className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-2">
           <Store className="w-4 h-4 text-orange-400" /> Choose Store
@@ -146,6 +153,7 @@ export default function MarketingStudio() {
           </>
         )}
       </div>
+      )}
 
       <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         {tab === "image" && (
@@ -166,6 +174,7 @@ export default function MarketingStudio() {
             onSeedConsumed={() => setVideoSeed(null)}
           />
         )}
+        {tab === "library" && <GeneratedContentLibrary ownerId={user?.id} />}
       </motion.div>
     </div>
   );
