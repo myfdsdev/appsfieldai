@@ -87,13 +87,16 @@ export default async function (req: Request): Promise<Response> {
     const email = user.email;
     if (!email) return Response.json({ ok: true, changed: false, reason: 'no email' });
 
-    // All JVZoo transactions recorded for this email, oldest first so later
-    // refunds/cancellations correctly override earlier grants.
-    const sales = await base44.asServiceRole.entities.JvzooSale.filter(
-      { ccustemail: email },
-      'created_date',
-      500
-    );
+    const norm = (e: string) => (e || '').trim().toLowerCase();
+    const targetEmail = norm(email);
+
+    // All JVZoo transactions, oldest first so later refunds/cancellations
+    // correctly override earlier grants. We match the email case-insensitively
+    // (and trimmed) here rather than with an exact DB filter, because JVZoo can
+    // record the buyer's email with different casing/spacing than their account
+    // email — an exact filter would miss those and never assign the plan.
+    const allSales = await base44.asServiceRole.entities.JvzooSale.list('created_date', 2000);
+    const sales = allSales.filter((s) => norm(s.ccustemail) === targetEmail);
     if (!sales.length) return Response.json({ ok: true, changed: false, reason: 'no sales' });
 
     // Build the set of plans this user should currently have.
