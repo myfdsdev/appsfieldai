@@ -62,6 +62,8 @@ export async function sendPlatformEvent(
         'X-Platform-Secret': secret,
       },
       body: JSON.stringify({
+        // The external app validates on `ownerEmail`; we also send `email` for compatibility.
+        ownerEmail: payload.email,
         email: payload.email,
         name: payload.name || '',
         product: payload.product || '',
