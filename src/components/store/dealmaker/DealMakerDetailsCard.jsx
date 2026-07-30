@@ -15,6 +15,10 @@ export default function DealMakerDetailsCard({ listing, brandColor = "#f97316", 
   const share = fmt(listing.sharePrice);
   const discount = fmt(listing.discountPrice);
 
+  // Only show the "single spot / share" price when the group/share deal is
+  // actually active for this product — otherwise show just the full price.
+  const groupDealActive = (listing.dealType === "group_deal" || listing.dealType === "both") && listing.sharePrice != null;
+
   const screenshots = (listing.screenshots || []).filter(Boolean);
   const features = (listing.features || []).filter(Boolean);
   const useCases = (listing.tags || []).filter(Boolean);
@@ -129,8 +133,8 @@ export default function DealMakerDetailsCard({ listing, brandColor = "#f97316", 
           </div>
         )}
 
-        {/* Pricing — the two ways to buy */}
-        <div className="grid grid-cols-2 gap-3 pt-1">
+        {/* Pricing — show both boxes only when a group/share deal is active */}
+        <div className={`grid gap-3 pt-1 ${groupDealActive ? "grid-cols-2" : "grid-cols-1"}`}>
           {full && (
             <div className="rounded-xl border border-white/12 bg-white/5 p-3">
               <p className="text-[11px] uppercase tracking-wide text-white/50">Buy in full</p>
@@ -142,7 +146,7 @@ export default function DealMakerDetailsCard({ listing, brandColor = "#f97316", 
               )}
             </div>
           )}
-          {share && (
+          {groupDealActive && share && (
             <div className="rounded-xl border p-3" style={{ borderColor: `${brandColor}66`, background: `${brandColor}18` }}>
               <p className="text-[11px] uppercase tracking-wide text-white/60">Single spot / share</p>
               <p className="text-lg font-bold text-white mt-0.5">{share}</p>
