@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShoppingBag, Copy, Check, RefreshCw, Trash2, Link2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingBag, Copy, Check, RefreshCw, Trash2, Link2, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export default function JvzooManager() {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["jvzooSales"],
@@ -49,9 +50,17 @@ export default function JvzooManager() {
     return "bg-secondary text-muted-foreground border-border/30";
   };
 
-  const totalPages = Math.max(1, Math.ceil(sales.length / PAGE_SIZE));
+  const q = search.trim().toLowerCase();
+  const filteredSales = q
+    ? sales.filter((s) =>
+        (s.ccustname || "").toLowerCase().includes(q) ||
+        (s.ccustemail || "").toLowerCase().includes(q)
+      )
+    : sales;
+
+  const totalPages = Math.max(1, Math.ceil(filteredSales.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const pagedSales = sales.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const pagedSales = filteredSales.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="space-y-5">
@@ -92,11 +101,24 @@ export default function JvzooManager() {
             </CardTitle>
             <Button size="sm" variant="ghost" onClick={() => queryClient.invalidateQueries({ queryKey: ["jvzooSales"] })} className="text-muted-foreground hover:text-foreground h-8 text-xs"><RefreshCw className="w-3.5 h-3.5 mr-1" />Refresh</Button>
           </CardHeader>
+          <div className="px-6 pb-3">
+            <div className="relative">
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                placeholder="Search by customer name or email…"
+                className="bg-[#252525] border-border/30 rounded-xl text-xs pl-9"
+              />
+            </div>
+          </div>
           <CardContent className="divide-y divide-border/20">
             {isLoading ? (
               <p className="text-sm text-muted-foreground py-4 text-center">Loading…</p>
             ) : sales.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No JVZoo transactions yet. They'll appear here once JVZoo starts posting to your IPN URL.</p>
+            ) : filteredSales.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No transactions match "{search}".</p>
             ) : pagedSales.map((s) => (
               <div key={s.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
@@ -115,9 +137,9 @@ export default function JvzooManager() {
                 <Button size="sm" variant="ghost" onClick={() => handleDelete(s)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px] shrink-0"><Trash2 className="w-3 h-3" /></Button>
               </div>
             ))}
-            {sales.length > PAGE_SIZE && (
+            {filteredSales.length > PAGE_SIZE && (
               <div className="flex items-center justify-between pt-3">
-                <span className="text-[11px] text-muted-foreground">Page {currentPage} of {totalPages} · {sales.length} total</span>
+                <span className="text-[11px] text-muted-foreground">Page {currentPage} of {totalPages} · {filteredSales.length} total</span>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="outline" disabled={currentPage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="h-7 text-xs border-border/40"><ChevronLeft className="w-3.5 h-3.5 mr-1" />Prev</Button>
                   <Button size="sm" variant="outline" disabled={currentPage >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="h-7 text-xs border-border/40">Next<ChevronRight className="w-3.5 h-3.5 ml-1" /></Button>
