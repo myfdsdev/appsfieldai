@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Palette, Save, Image as ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { STORE_STYLES } from "@/components/store/storeStyles";
 // full-page screenshot URL; store owners see a "Preview" button on the theme
 // in the picker that opens this image full-width and scrollable.
 export default function MarketplaceThemeManager() {
+  const queryClient = useQueryClient();
   const [recordId, setRecordId] = useState(null);
   const [thumbnails, setThumbnails] = useState({});
   const [names, setNames] = useState({});
@@ -43,6 +45,7 @@ export default function MarketplaceThemeManager() {
         const created = await base44.entities.StorePageDefault.create({ key: "default", ...payload });
         setRecordId(created.id);
       }
+      queryClient.invalidateQueries({ queryKey: ["storeThemeDefaults"] });
       toast.success("Themes saved.");
     } catch {
       toast.error("Could not save themes. Try again.");
