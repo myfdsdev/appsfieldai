@@ -139,8 +139,8 @@ export default function PlanManager() {
                       <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Yearly</span><span className="font-bold text-amber-400">${p.yearlyPrice}/yr</span></div>
                     </>
                   )}
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Stores</span><span className="font-medium">{p.storeLimit ?? 0}</span></div>
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Products/store</span><span className="font-medium">{p.productLimit ?? 0}</span></div>
+                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Stores</span><span className="font-medium">{p.storeLimit === -1 ? "Unlimited" : (p.storeLimit ?? 0)}</span></div>
+                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Products/store</span><span className="font-medium">{p.productLimit === -1 ? "Unlimited" : (p.productLimit ?? 0)}</span></div>
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">DFY Products</span><span className="font-medium">{p.dfyAllowed ? (p.dfyProductLimit ?? 0) : "—"}</span></div>
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
@@ -192,8 +192,16 @@ export default function PlanManager() {
             <div className="border-t border-border/30 pt-4">
               <h3 className="text-sm font-display font-bold mb-3">Limits</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div><label className="text-xs font-medium">Store Creation Limit <span className="text-red-400">*</span></label><Input type="number" value={form.storeLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, storeLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Max stores the user can create</p></div>
-                <div><label className="text-xs font-medium">Product Limit (per store) <span className="text-red-400">*</span></label><Input type="number" value={form.productLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, productLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Max products per store</p></div>
+                <div>
+                  <label className="text-xs font-medium">Store Creation Limit <span className="text-red-400">*</span></label>
+                  <Input type="number" value={form.storeLimit === -1 ? "" : (form.storeLimit ?? 0)} disabled={form.storeLimit === -1} onChange={(e) => setForm((f) => ({ ...f, storeLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 disabled:opacity-50" />
+                  <label className="flex items-center gap-2 mt-1.5 cursor-pointer"><input type="checkbox" checked={form.storeLimit === -1} onChange={(e) => setForm((f) => ({ ...f, storeLimit: e.target.checked ? -1 : 1 }))} className="accent-orange-500 w-3.5 h-3.5" /><span className="text-[10px] text-muted-foreground">Unlimited stores</span></label>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Product Limit (per store) <span className="text-red-400">*</span></label>
+                  <Input type="number" value={form.productLimit === -1 ? "" : (form.productLimit ?? 0)} disabled={form.productLimit === -1} onChange={(e) => setForm((f) => ({ ...f, productLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 disabled:opacity-50" />
+                  <label className="flex items-center gap-2 mt-1.5 cursor-pointer"><input type="checkbox" checked={form.productLimit === -1} onChange={(e) => setForm((f) => ({ ...f, productLimit: e.target.checked ? -1 : 10 }))} className="accent-orange-500 w-3.5 h-3.5" /><span className="text-[10px] text-muted-foreground">Unlimited products</span></label>
+                </div>
                 <div><label className="text-xs font-medium">DFY Product Limit</label><Input type="number" value={form.dfyProductLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, dfyProductLimit: e.target.value }))} disabled={!form.dfyAllowed} className="bg-secondary/50 border-border/30 rounded-xl mt-1 disabled:opacity-50" /><p className="text-[10px] text-muted-foreground mt-1">Max Done-For-You products the user can import</p></div>
                 <div><label className="text-xs font-medium">Monthly Image Limit</label><Input type="number" value={form.monthlyImageLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, monthlyImageLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Marketing Studio images per month on the shared key. Use -1 for unlimited. Own API key is always unlimited.</p></div>
                 <div><label className="text-xs font-medium">Monthly Video Limit</label><Input type="number" value={form.monthlyVideoLimit ?? 0} onChange={(e) => setForm((f) => ({ ...f, monthlyVideoLimit: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /><p className="text-[10px] text-muted-foreground mt-1">Marketing Studio videos per month on the shared key. Use -1 for unlimited. Own API key is always unlimited.</p></div>
