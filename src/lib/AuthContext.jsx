@@ -93,7 +93,17 @@ export const AuthProvider = ({ children }) => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      let currentUser = await base44.auth.me();
+      // Apply any JVZoo-purchased plans that couldn't be assigned at purchase time
+      // (e.g. the buyer was only invited then, so no User record existed yet).
+      try {
+        const sync = await base44.functions.invoke('syncJvzooPlans', {});
+        if (sync?.data?.changed) {
+          currentUser = await base44.auth.me();
+        }
+      } catch (e) {
+        console.error('syncJvzooPlans failed:', e);
+      }
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
