@@ -20,7 +20,7 @@ export default function UpgradePlanDialog({ open, onClose, storeLimit = 0, hasPl
           </div>
           {hasPlan ? (
             <p className="text-sm text-muted-foreground">
-              Your current plan allows <span className="font-semibold text-foreground">{storeLimit}</span> store{storeLimit === 1 ? "" : "s"}.
+              Your current plan allows <span className="font-semibold text-foreground">{storeLimit === -1 ? "unlimited" : storeLimit}</span> store{storeLimit === 1 ? "" : "s"}.
               You've reached your limit. Upgrade to create more stores.
             </p>
           ) : (

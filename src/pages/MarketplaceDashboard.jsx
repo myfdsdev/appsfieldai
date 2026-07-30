@@ -112,8 +112,9 @@ export default function MarketplaceDashboard() {
 
   // Gate store creation by plan limit (admins bypass). Owns-count comes from the user's own marketplaces.
   const ownedCount = isAdmin ? 0 : marketplaces.filter(m => m.ownerId === currentUser?.id).length;
+  const isUnlimitedStores = storeLimit === -1;
   const startCreate = () => {
-    if (!isAdmin && ownedCount >= storeLimit) { setShowUpgrade(true); return; }
+    if (!isAdmin && !isUnlimitedStores && ownedCount >= storeLimit) { setShowUpgrade(true); return; }
     setSelectedMarketplace(null); setView("wizard");
   };
   const { data: platformDomain = "" } = useQuery({
