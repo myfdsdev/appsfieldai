@@ -105,7 +105,7 @@ export default function JvzooManager() {
                     <span className="text-xs text-muted-foreground">{s.ccustemail}</span>
                     <Badge className={`text-[10px] border ${txBadge(s.ctransaction)}`}>{s.ctransaction}</Badge>
                   </div>
-                  <p className="text-xs text-violet-400">{s.cprodtitle || "—"} <span className="text-muted-foreground">({s.cproditem})</span></p>
+                  <p className="text-xs text-violet-400">{s.cprodtitle || "—"} <span className="text-muted-foreground">Product ID: {s.cproditem}</span></p>
                   <div className="flex items-center gap-3 flex-wrap">
                     {s.ctransamount > 0 && <span className="text-[11px] text-amber-400">${s.ctransamount?.toLocaleString()}</span>}
                     <span className="text-[11px] text-muted-foreground">Plan: <span className="text-foreground">{planName(s.assignedPlanId)}</span></span>
