@@ -25,7 +25,7 @@ const emptyForm = {
   totalShares: "", monthlyRevenue: "", growthRate: "", rating: 5,
   dealType: "single_purchase", pricingType: "lifetime_deal",
   imageGradient: GRADIENTS[0], isActive: true,
-  adminAccessType: "none", adminAccessUrl: "", adminAccessInfo: "",
+  adminAccessType: "none", adminAccessUrl: "", adminAccessInfo: "", provisionEndpointUrl: "",
 };
 
 export default function DFYProductManager() {
@@ -51,6 +51,7 @@ export default function DFYProductManager() {
       pricingType: p.pricingType || "lifetime_deal", imageGradient: p.imageGradient || GRADIENTS[0],
       isActive: p.isActive ?? true,
       adminAccessType: p.adminAccessType || "none", adminAccessUrl: p.adminAccessUrl || "", adminAccessInfo: p.adminAccessInfo || "",
+      provisionEndpointUrl: p.provisionEndpointUrl || "",
     });
     setEditingId(p.id);
     setShowForm(true);
@@ -71,6 +72,7 @@ export default function DFYProductManager() {
       adminAccessType: form.adminAccessType,
       adminAccessUrl: form.adminAccessType === "url" ? form.adminAccessUrl : "",
       adminAccessInfo: form.adminAccessType === "info" ? form.adminAccessInfo : "",
+      provisionEndpointUrl: form.provisionEndpointUrl.trim(),
     };
     if (editingId) await base44.entities.DFYProduct.update(editingId, payload);
     else await base44.entities.DFYProduct.create(payload);
@@ -154,6 +156,11 @@ export default function DFYProductManager() {
               {form.adminAccessType === "info" && (
                 <div><label className="text-xs text-muted-foreground">Admin Access Info</label><Textarea value={form.adminAccessInfo} onChange={e => setForm(f => ({ ...f, adminAccessInfo: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1 h-24 resize-none" placeholder="Admin panel: https://...&#10;Username: ...&#10;Password: ...&#10;Notes on managing user access" /></div>
               )}
+              <div className="pt-1 border-t border-orange-500/10">
+                <label className="text-xs text-muted-foreground">Provisioning Endpoint URL (optional)</label>
+                <Input value={form.provisionEndpointUrl} onChange={e => setForm(f => ({ ...f, provisionEndpointUrl: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://yourapp.com/api/v1/platform/provision" />
+                <p className="text-[10px] text-muted-foreground mt-1">When set, clicking "Get Admin Access" POSTs the owner's name &amp; email to this URL, signed with the universal platform secret. Leave empty to skip.</p>
+              </div>
             </div>
             <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
               <Save className="w-4 h-4" /> {editingId ? "Update" : "Add"} Product

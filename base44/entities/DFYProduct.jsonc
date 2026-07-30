@@ -118,6 +118,10 @@
       "type": "string",
       "description": "Admin access instructions/credentials revealed inline when adminAccessType is 'info'"
     },
+    "provisionEndpointUrl": {
+      "type": "string",
+      "description": "Optional per-product provisioning endpoint URL. When set, clicking 'Get Admin Access' POSTs the store owner's name & email to this URL (signed with the universal PLATFORM_WEBHOOK_SECRET) so the external app can grant access on demand."
+    },
     "isActive": {
       "type": "boolean",
       "default": true,

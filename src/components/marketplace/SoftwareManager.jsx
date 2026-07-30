@@ -43,6 +43,28 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
   const [importing, setImporting] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [revealedAccess, setRevealedAccess] = useState(null); // listing id whose admin info is shown
+  const [provisioning, setProvisioning] = useState(null); // listing id currently being provisioned
+
+  // Fire the on-demand provisioning webhook for a listing (if it has an endpoint configured).
+  // Returns true on success (or when there's nothing to provision), false on failure.
+  const provisionAccess = async (listing) => {
+    if (!listing.adminAccess?.provisionEndpointUrl) return true;
+    setProvisioning(listing.id);
+    try {
+      const res = await base44.functions.invoke("provisionAdminAccess", { listingId: listing.id });
+      if (res?.data?.ok) {
+        toast.success(`Access requested for ${listing.softwareName}.`);
+        return true;
+      }
+      toast.error(res?.data?.error || "Could not send access request.");
+      return false;
+    } catch (e) {
+      toast.error("Could not send access request.");
+      return false;
+    } finally {
+      setProvisioning(null);
+    }
+  };
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["softwareListings", marketplaceId],
@@ -117,6 +139,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
           type: p.adminAccessType || "none",
           url: p.adminAccessUrl || "",
           info: p.adminAccessInfo || "",
+          provisionEndpointUrl: p.provisionEndpointUrl || "",
         },
       })));
       queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
@@ -243,13 +266,25 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
                   <Link to={`/saas/${item.id}`} target="_blank"><Button size="sm" variant="ghost" className="h-7 text-[10px]"><ExternalLink className="w-3 h-3 mr-1" />View</Button></Link>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(item)} disabled={actionLoading === item.id} className="h-7 text-[10px] text-red-400"><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
                   {item.adminAccess?.type === "url" && item.adminAccess?.url && (
-                    <a href={item.adminAccess.url} target="_blank" rel="noopener noreferrer">
-                      <Button size="sm" variant="ghost" className="h-7 text-[10px] text-orange-400"><KeyRound className="w-3 h-3 mr-1" />Get Admin Access</Button>
-                    </a>
+                    <Button size="sm" variant="ghost" disabled={provisioning === item.id} onClick={async () => {
+                      const ok = await provisionAccess(item);
+                      if (ok) window.open(item.adminAccess.url, "_blank", "noopener,noreferrer");
+                    }} className="h-7 text-[10px] text-orange-400">
+                      {provisioning === item.id ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <KeyRound className="w-3 h-3 mr-1" />}Get Admin Access
+                    </Button>
                   )}
                   {item.adminAccess?.type === "info" && item.adminAccess?.info && (
-                    <Button size="sm" variant="ghost" onClick={() => setRevealedAccess(revealedAccess === item.id ? null : item.id)} className="h-7 text-[10px] text-orange-400">
-                      <KeyRound className="w-3 h-3 mr-1" />Get Admin Access {revealedAccess === item.id ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                    <Button size="sm" variant="ghost" disabled={provisioning === item.id} onClick={async () => {
+                      const willReveal = revealedAccess !== item.id;
+                      if (willReveal) { const ok = await provisionAccess(item); if (!ok) return; }
+                      setRevealedAccess(willReveal ? item.id : null);
+                    }} className="h-7 text-[10px] text-orange-400">
+                      {provisioning === item.id ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <KeyRound className="w-3 h-3 mr-1" />}Get Admin Access {revealedAccess === item.id ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                    </Button>
+                  )}
+                  {(!item.adminAccess?.type || item.adminAccess?.type === "none") && item.adminAccess?.provisionEndpointUrl && (
+                    <Button size="sm" variant="ghost" disabled={provisioning === item.id} onClick={() => provisionAccess(item)} className="h-7 text-[10px] text-orange-400">
+                      {provisioning === item.id ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <KeyRound className="w-3 h-3 mr-1" />}Get Admin Access
                     </Button>
                   )}
                 </div>

@@ -295,6 +295,10 @@
         "info": {
           "type": "string",
           "description": "Admin access instructions/credentials revealed inline when type is 'info'"
+        },
+        "provisionEndpointUrl": {
+          "type": "string",
+          "description": "Optional per-product provisioning endpoint URL inherited from the DFY preset. When set, clicking 'Get Admin Access' POSTs the owner's name & email here, signed with the universal PLATFORM_WEBHOOK_SECRET."
         }
       }
     },
