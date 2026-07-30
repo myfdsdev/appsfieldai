@@ -511,7 +511,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
           {/* PRODUCTS */}
           {activeTab === "products" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Products</h2>
-            <SoftwareManager marketplaceId={marketplace?.id} marketplaceType={marketplace?.type} /></div>
+            <SoftwareManager marketplaceId={marketplace?.id} marketplaceType={marketplace?.type} marketplace={marketplace} /></div>
           )}
 
           {/* ORDERS */}

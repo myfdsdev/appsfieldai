@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
 import AddProductForm from "@/components/marketplace/AddProductForm";
 import ImportDFYDialog from "@/components/marketplace/ImportDFYDialog";
 import { useDfyLimit } from "@/hooks/useDfyLimit";
+import { buildStoreLink } from "@/lib/storeLink";
 
 const statusBadge = (status) => {
   const map = {
@@ -35,7 +35,12 @@ const dealTypeBadge = (type) => {
   return <Badge className={`text-[10px] border ${cfg.color}`}>{cfg.label}</Badge>;
 };
 
-export default function SoftwareManager({ marketplaceId, marketplaceType }) {
+export default function SoftwareManager({ marketplaceId, marketplaceType, marketplace }) {
+  // Public store base URL (custom domain → subdomain → /store/:slug).
+  const storeBase = buildStoreLink(marketplace);
+  // Opens the actual public product page buyers see, in a new tab.
+  const viewProductUrl = (item) =>
+    storeBase ? `${storeBase.replace(/\/$/, "")}/saas/${item.id}` : `/saas/${item.id}`;
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -263,7 +268,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => { setEditing(item); setShowForm(true); }} className="h-7 text-[10px]"><Edit3 className="w-3 h-3 mr-1" />Edit</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleFeatureToggle(item)} className={`h-7 text-[10px] ${item.featured ? "text-amber-400" : ""}`}><Star className="w-3 h-3 mr-1" />{item.featured ? "Unfeature" : "Feature"}</Button>
-                  <Link to={`/saas/${item.id}`} target="_blank"><Button size="sm" variant="ghost" className="h-7 text-[10px]"><ExternalLink className="w-3 h-3 mr-1" />View</Button></Link>
+                  <a href={viewProductUrl(item)} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="ghost" className="h-7 text-[10px]"><ExternalLink className="w-3 h-3 mr-1" />View</Button></a>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(item)} disabled={actionLoading === item.id} className="h-7 text-[10px] text-red-400"><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
                   {item.adminAccess?.type === "url" && item.adminAccess?.url && (
                     <Button size="sm" variant="ghost" disabled={provisioning === item.id} onClick={async () => {
