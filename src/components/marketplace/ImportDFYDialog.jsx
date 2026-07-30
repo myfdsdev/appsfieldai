@@ -141,10 +141,15 @@ function ProductMedia({ p, onPlay }) {
 }
 
 // Popup that lets a store owner pick which DFY products to import (multi-select grid).
-export default function ImportDFYDialog({ open, onClose, existingNames = [], importing, onImport }) {
+export default function ImportDFYDialog({ open, onClose, existingNames = [], importing, onImport, dfyLimit }) {
   const [selected, setSelected] = useState(new Set());
   const [query, setQuery] = useState("");
   const [videoUrl, setVideoUrl] = useState(null); // demo video playing in the lightbox
+
+  // Plan cap: how many more DFY products the owner may still import (across all stores).
+  const unlimited = !dfyLimit || dfyLimit.unlimited;
+  const remaining = unlimited ? Infinity : Math.max(0, dfyLimit.remaining ?? 0);
+  const reachedCap = !unlimited && selected.size >= remaining;
 
   const { data: presets = [], isLoading } = useQuery({
     queryKey: ["dfyProductsActive"],
@@ -171,7 +176,12 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
   const toggle = (id) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        if (!unlimited && next.size >= remaining) return prev; // block beyond plan cap
+        next.add(id);
+      }
       return next;
     });
   };
@@ -181,7 +191,10 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
     .map((p) => p.id);
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
 
-  const toggleAll = () => setSelected(() => (allSelected ? new Set() : new Set(selectableIds)));
+  const toggleAll = () =>
+    setSelected(() =>
+      allSelected ? new Set() : new Set(unlimited ? selectableIds : selectableIds.slice(0, remaining))
+    );
 
   const handleImport = () => onImport(presets.filter((p) => selected.has(p.id)));
 
@@ -219,6 +232,7 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
               {filtered.map((p) => {
                 const already = existing.has((p.softwareName || "").trim().toLowerCase());
                 const isSel = selected.has(p.id);
+                const capped = reachedCap && !isSel && !already;
                 return (
                   <div
                     key={p.id}
@@ -227,6 +241,8 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
                         ? "border-border/20 bg-secondary/20 opacity-60"
                         : isSel
                         ? "border-orange-500/60 bg-orange-500/5 ring-1 ring-orange-500/40"
+                        : capped
+                        ? "border-border/20 bg-secondary/20 opacity-50"
                         : "border-border/40 bg-card/40 hover:border-orange-500/30"
                     }`}
                   >
@@ -234,9 +250,9 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
                       <ProductMedia p={p} onPlay={setVideoUrl} />
                     </div>
                     <button
-                      disabled={already}
+                      disabled={already || capped}
                       onClick={() => toggle(p.id)}
-                      className={`w-full text-left p-3 flex items-start gap-2 ${already ? "cursor-not-allowed" : ""}`}
+                      className={`w-full text-left p-3 flex items-start gap-2 ${already || capped ? "cursor-not-allowed" : ""}`}
                     >
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{p.softwareName}</p>
@@ -264,7 +280,17 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
         </div>
 
         <div className="p-4 border-t border-border/40 flex items-center justify-between gap-3">
-          <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+            {dfyLimit && !unlimited && (
+              <span className={`text-[11px] font-medium ${reachedCap ? "text-orange-400" : "text-muted-foreground"}`}>
+                {dfyLimit.used} of {dfyLimit.limit} DFY imports used · {remaining} left
+              </span>
+            )}
+            {dfyLimit && unlimited && (
+              <span className="text-[11px] font-medium text-emerald-400">Unlimited DFY imports</span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={onClose} className="rounded-xl">Cancel</Button>
             <Button

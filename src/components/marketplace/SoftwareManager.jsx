@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import AddProductForm from "@/components/marketplace/AddProductForm";
 import ImportDFYDialog from "@/components/marketplace/ImportDFYDialog";
+import { useDfyLimit } from "@/hooks/useDfyLimit";
 
 const statusBadge = (status) => {
   const map = {
@@ -55,6 +56,8 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
     enabled: !!marketplaceId,
   });
 
+  const { data: dfy } = useDfyLimit();
+
   const handleAction = async (listing, status) => {
     setActionLoading(listing.id);
     await base44.entities.SaaSListing.update(listing.id, { status });
@@ -81,6 +84,10 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
 
   const handleImportDFY = async (chosen) => {
     if (!marketplaceId || !chosen?.length) return;
+    if (dfy && !dfy.unlimited && chosen.length > dfy.remaining) {
+      toast.error(`You can import ${dfy.remaining} more DFY product${dfy.remaining === 1 ? "" : "s"} on your plan.`);
+      return;
+    }
     setImporting(true);
     try {
       await base44.entities.SaaSListing.bulkCreate(chosen.map(p => ({
@@ -113,6 +120,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
         },
       })));
       queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
+      queryClient.invalidateQueries({ queryKey: ["dfyLimit"] });
       toast.success(`${chosen.length} DFY product${chosen.length === 1 ? "" : "s"} imported into your store.`);
       setImportOpen(false);
     } catch (e) {
@@ -265,6 +273,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType }) {
         existingNames={listings.map(l => l.softwareName)}
         importing={importing}
         onImport={handleImportDFY}
+        dfyLimit={dfy}
       />
     </div>
   );
