@@ -278,7 +278,7 @@ export default function UserManager() {
                 <SelectTrigger className="w-full bg-secondary/50 border-border/30 rounded-xl mt-1"><SelectValue placeholder="No plan" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No plan (0 stores)</SelectItem>
-                  {allPlans.map(p => <SelectItem key={p.id} value={p.id}>{p.name} — {p.storeLimit ?? 0} stores</SelectItem>)}
+                  {allPlans.map(p => <SelectItem key={p.id} value={p.id}>{p.name} — {p.storeLimit === -1 ? "Unlimited" : (p.storeLimit ?? 0) + " stores"}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
