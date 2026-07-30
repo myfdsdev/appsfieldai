@@ -127,8 +127,18 @@ export default function PlanManager() {
                 <p className="font-display font-bold text-sm">{p.name}</p>
                 <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{p.description || "—"}</p>
                 <div className="mt-3 space-y-1.5">
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Monthly</span><span className="font-bold text-amber-400">${p.monthlyPrice}/mo</span></div>
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Yearly</span><span className="font-bold text-amber-400">${p.yearlyPrice}/yr</span></div>
+                  {p.durationType === "lifetime" ? (
+                    <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Lifetime</span><span className="font-bold text-amber-400">${p.monthlyPrice}</span></div>
+                  ) : p.durationType === "one_time" ? (
+                    <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">One-Time</span><span className="font-bold text-amber-400">${p.monthlyPrice}</span></div>
+                  ) : p.durationType === "yearly" ? (
+                    <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Yearly</span><span className="font-bold text-amber-400">${p.yearlyPrice}/yr</span></div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Monthly</span><span className="font-bold text-amber-400">${p.monthlyPrice}/mo</span></div>
+                      <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Yearly</span><span className="font-bold text-amber-400">${p.yearlyPrice}/yr</span></div>
+                    </>
+                  )}
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Stores</span><span className="font-medium">{p.storeLimit ?? 0}</span></div>
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Products/store</span><span className="font-medium">{p.productLimit ?? 0}</span></div>
                   <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">DFY Products</span><span className="font-medium">{p.dfyAllowed ? (p.dfyProductLimit ?? 0) : "—"}</span></div>
