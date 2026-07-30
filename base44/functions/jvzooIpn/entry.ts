@@ -161,7 +161,9 @@ Deno.serve(async (req) => {
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email });
     let user = existingUsers[0] || null;
 
-    if (transaction === 'SALE' || transaction === 'BILL') {
+    // JVZoo's "Test IPN" button sends ctransaction=TEST. Treat it like a sale so the
+    // provisioning webhook & plan assignment can be verified end-to-end from JVZoo.
+    if (transaction === 'SALE' || transaction === 'BILL' || transaction === 'TEST') {
       const isNewUser = !user;
       if (!user) {
         // Invite the user so they get a real, login-capable account.
@@ -326,7 +328,7 @@ Deno.serve(async (req) => {
       cproditem: fields['cproditem'] || '',
       cprodtitle: fields['cprodtitle'] || '',
       cprodtype: fields['cprodtype'] || '',
-      ctransaction: ['SALE', 'RFND', 'CGBK', 'INSF', 'CANCEL-REBILL', 'BILL'].includes(transaction) ? transaction : 'OTHER',
+      ctransaction: ['SALE', 'RFND', 'CGBK', 'INSF', 'CANCEL-REBILL', 'BILL', 'TEST'].includes(transaction) ? transaction : 'OTHER',
       ctransaffiliate: fields['ctransaffiliate'] || '',
       ctransamount: parseFloat(fields['ctransamount']) || 0,
       ctranspaymentmethod: fields['ctranspaymentmethod'] || '',

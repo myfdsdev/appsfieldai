@@ -43,6 +43,7 @@
         "INSF",
         "CANCEL-REBILL",
         "BILL",
+        "TEST",
         "OTHER"
       ],
       "description": "Transaction type from JVZoo"
