@@ -99,10 +99,28 @@ export default async function (req: Request): Promise<Response> {
     const sales = allSales.filter((s) => norm(s.ccustemail) === targetEmail);
     if (!sales.length) return Response.json({ ok: true, changed: false, reason: 'no sales' });
 
+    // Map JVZoo product id -> SubscriptionPlan id, resolved fresh at sync time.
+    // This is critical: the IPN stores assignedPlanId only if a plan mapping
+    // existed at purchase time. If the vendor mapped (or fixed) a plan's
+    // jvzooProductId AFTER the sale arrived, the old sale still has a blank
+    // assignedPlanId. Re-resolving here means the plan is granted as long as the
+    // product->plan mapping exists when the user logs in.
+    const plans = await base44.asServiceRole.entities.SubscriptionPlan.list('', 500);
+    const productToPlan = new Map<string, string>();
+    for (const p of plans) {
+      if (p.jvzooProductId) productToPlan.set(String(p.jvzooProductId).trim(), p.id);
+    }
+
+    const planForSale = (s) => {
+      // Prefer a live mapping from the product id; fall back to the stored id.
+      const fromProduct = s.cproditem ? productToPlan.get(String(s.cproditem).trim()) : undefined;
+      return fromProduct || s.assignedPlanId || '';
+    };
+
     // Build the set of plans this user should currently have.
     const planSet = new Set<string>(Array.isArray(user.jvzooPlanIds) ? user.jvzooPlanIds : []);
     for (const s of sales) {
-      const planId = s.assignedPlanId;
+      const planId = planForSale(s);
       if (!planId) continue;
       if (GRANT_TXNS.includes(s.ctransaction)) planSet.add(planId);
       else if (REMOVE_TXNS.includes(s.ctransaction)) planSet.delete(planId);
