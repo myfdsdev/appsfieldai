@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Eye, X } from "lucide-react";
+import { Check, Eye, X, Lock, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { STORE_STYLES } from "./storeStyles";
 
@@ -8,8 +8,13 @@ import { STORE_STYLES } from "./storeStyles";
 // mock (font + header + product blocks) plus a "Preview" button that opens a
 // full-width, scrollable popup of the theme's full-page screenshot (managed by
 // the admin under Marketplace Preset → Marketplace Templates).
-export default function StoreStylePicker({ value, onChange }) {
+// `allowedSlugs` (optional): list of theme slugs this plan can use. When empty
+// or omitted, every theme is allowed. Locked themes are shown but can't be
+// selected, with an upgrade hint.
+export default function StoreStylePicker({ value, onChange, allowedSlugs }) {
   const [preview, setPreview] = useState(null); // { name, url }
+  const hasRestriction = Array.isArray(allowedSlugs) && allowedSlugs.length > 0;
+  const isLocked = (slug) => hasRestriction && !allowedSlugs.includes(slug);
 
   // Cached app-wide so theme thumbnails are fetched once and reused across
   // navigations — no flash/reload each time the Store Theme tab is opened.
@@ -47,20 +52,27 @@ export default function StoreStylePicker({ value, onChange }) {
           const selected = value === s.slug;
           const thumb = thumbnails[s.slug];
           const displayName = names[s.slug] || s.name;
+          const locked = isLocked(s.slug);
           return (
             <div
               key={s.slug}
               className={`relative text-left rounded-2xl border-2 overflow-hidden transition-all ${
                 selected ? "border-violet-500 ring-2 ring-violet-500/30" : "border-border/40 hover:border-border"
-              }`}
+              } ${locked ? "opacity-60" : ""}`}
             >
-              {selected && (
+              {locked && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 bg-black/45 backdrop-blur-[1px]">
+                  <span className="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center"><Lock className="w-4 h-4" /></span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-300"><Crown className="w-3 h-3" /> Upgrade to unlock</span>
+                </div>
+              )}
+              {selected && !locked && (
                 <span className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-violet-600 text-white flex items-center justify-center">
                   <Check className="w-3.5 h-3.5" />
                 </span>
               )}
 
-              <button type="button" onClick={() => onChange(s.slug)} className="block w-full text-left">
+              <button type="button" onClick={() => !locked && onChange(s.slug)} disabled={locked} className={`block w-full text-left ${locked ? "cursor-not-allowed" : ""}`}>
                 {thumb ? (
                   /* Actual thumbnail — top-aligned so the header part is visible */
                   <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-900">

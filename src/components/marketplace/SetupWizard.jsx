@@ -58,6 +58,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   });
   const canMultiVendor = isAdmin || !!userPlan?.multiVendorAllowed;
   const canWorkspace = isAdmin || !!userPlan?.workspaceAllowed;
+  // Themes this plan may use — empty means all (admins are always unrestricted).
+  const allowedThemeSlugs = isAdmin ? [] : (userPlan?.allowedThemeSlugs || []);
 
   // Store type options — Multi-Vendor & Workspace are hidden when the plan doesn't allow them.
   const TYPE_OPTIONS = [
@@ -98,6 +100,14 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
 
   const isWorkspace = data.type === "workspace";
   const update = (field, value) => setData(d => ({ ...d, [field]: value }));
+
+  // If this plan restricts themes and the selected one isn't allowed, snap the
+  // selection to the first allowed theme so a new store never starts locked.
+  React.useEffect(() => {
+    if (allowedThemeSlugs.length > 0 && !allowedThemeSlugs.includes(data.storeStyle)) {
+      update("storeStyle", allowedThemeSlugs[0]);
+    }
+  }, [allowedThemeSlugs, data.storeStyle]); // eslint-disable-line
   const updateBranding = (field, value) => setData(d => ({ ...d, branding: { ...d.branding, [field]: value } }));
   const updateSettings = (field, value) => setData(d => ({ ...d, settings: { ...d.settings, [field]: value } }));
   const updatePayment = (field, value) => setData(d => ({ ...d, payment: { ...d.payment, [field]: value } }));
@@ -300,7 +310,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
             <div className="space-y-4">
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Sparkles className="w-5 h-5 text-violet-400" />Choose Store Style</h3>
               <p className="text-xs text-muted-foreground -mt-2">Each style gives your store a completely different look — fonts, header size and product layout. You can change it any time from settings.</p>
-              <StoreStylePicker value={data.storeStyle} onChange={(slug) => update("storeStyle", slug)} />
+              <StoreStylePicker value={data.storeStyle} onChange={(slug) => update("storeStyle", slug)} allowedSlugs={allowedThemeSlugs} />
             </div>
           )}
 

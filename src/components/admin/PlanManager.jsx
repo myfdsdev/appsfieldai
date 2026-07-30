@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import { STORE_STYLES } from "@/components/store/storeStyles";
 import { toast } from "sonner";
 
 const FEATURE_TOGGLES = [
@@ -62,8 +63,13 @@ export default function PlanManager() {
     return { ...f, allowedDfyProductIds: current.includes(id) ? current.filter((x) => x !== id) : [...current, id] };
   });
 
+  const toggleTheme = (slug) => setForm((f) => {
+    const current = f.allowedThemeSlugs || [];
+    return { ...f, allowedThemeSlugs: current.includes(slug) ? current.filter((x) => x !== slug) : [...current, slug] };
+  });
+
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, marketingStudioAllowed: false, customApiKeyAllowed: false, monthlyImageLimit: 0, monthlyVideoLimit: 0, telegramAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], allowedThemeSlugs: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, marketingStudioAllowed: false, customApiKeyAllowed: false, monthlyImageLimit: 0, monthlyVideoLimit: 0, telegramAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };
@@ -71,7 +77,7 @@ export default function PlanManager() {
 
   const handleSave = async () => {
     if (!form.name?.trim()) { toast.error("Plan name is required"); return; }
-    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed, allowedDfyProductIds: form.allowedDfyProductIds || [], monthlyImageLimit: parseInt(form.monthlyImageLimit) || 0, monthlyVideoLimit: parseInt(form.monthlyVideoLimit) || 0 };
+    const data = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0, sortOrder: parseInt(form.sortOrder) || 0, storeLimit: parseInt(form.storeLimit) || 0, productLimit: parseInt(form.productLimit) || 0, dfyProductLimit: parseInt(form.dfyProductLimit) || 0, dfyAllowed: !!form.dfyAllowed, allowedDfyProductIds: form.allowedDfyProductIds || [], allowedThemeSlugs: form.allowedThemeSlugs || [], monthlyImageLimit: parseInt(form.monthlyImageLimit) || 0, monthlyVideoLimit: parseInt(form.monthlyVideoLimit) || 0 };
     if (editPlan) {
       await base44.entities.SubscriptionPlan.update(editPlan.id, data);
       toast.success(`Plan "${data.name}" updated`);
@@ -211,6 +217,29 @@ export default function PlanManager() {
                   <p className="text-[10px] text-muted-foreground mt-1">Leave all unchecked to allow every DFY product on this plan.</p>
                 </div>
               )}
+
+              {/* Allowed store themes */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-medium">Allowed Store Themes</label>
+                  <span className="text-[10px] text-muted-foreground">{(form.allowedThemeSlugs || []).length === 0 ? "All themes allowed" : `${(form.allowedThemeSlugs || []).length} selected`}</span>
+                </div>
+                <div className="rounded-xl border border-border/30 bg-secondary/20 max-h-56 overflow-y-auto divide-y divide-border/20">
+                  {STORE_STYLES.map((s) => {
+                    const checked = (form.allowedThemeSlugs || []).includes(s.slug);
+                    return (
+                      <label key={s.slug} className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-secondary/40 transition-colors">
+                        <input type="checkbox" checked={checked} onChange={() => toggleTheme(s.slug)} className="accent-orange-500 w-4 h-4" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{s.name}</p>
+                          {s.tagline && <p className="text-[11px] text-muted-foreground truncate">{s.tagline}</p>}
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1">Leave all unchecked to allow every store theme on this plan.</p>
+              </div>
             </div>
 
             {/* Enabled Features */}

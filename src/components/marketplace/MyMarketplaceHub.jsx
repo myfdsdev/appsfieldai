@@ -133,6 +133,22 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
 
+  // Resolve the store OWNER's plan so we can gate which themes they may use.
+  // Admins bypass the restriction entirely (they can apply any theme).
+  const { data: ownerUser } = useQuery({
+    queryKey: ["hubOwnerUser", marketplace?.ownerId],
+    queryFn: () => base44.entities.User.filter({ id: marketplace.ownerId }).then(r => r[0] || null),
+    enabled: !!marketplace?.ownerId && marketplace.ownerId !== currentUser?.id,
+  });
+  const planOwner = marketplace?.ownerId === currentUser?.id ? currentUser : ownerUser;
+  const { data: ownerPlan } = useQuery({
+    queryKey: ["hubOwnerPlan", planOwner?.planId],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: planOwner.planId }).then(r => r[0] || null),
+    enabled: !!planOwner?.planId,
+  });
+  // Only gate for non-admins; admins get an empty (unrestricted) list.
+  const allowedThemeSlugs = isAdmin ? [] : (ownerPlan?.allowedThemeSlugs || []);
+
   const [pageForm, setPageForm] = useState({
     storeStyle: marketplace?.pageSections?.storeStyle || "",
     headerEnabled: marketplace?.pageSections?.headerEnabled ?? true,
@@ -408,7 +424,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
             <div className="space-y-4">
               <div><h2 className="text-lg font-display font-bold">Store Theme</h2>
               <p className="text-sm text-muted-foreground">Pick a complete visual theme — it changes your fonts, header size and product layout. Save to apply it live.</p></div>
-              <StoreStylePicker value={pageForm.storeStyle} onChange={(slug) => setPageForm(f => ({ ...f, storeStyle: slug }))} />
+              <StoreStylePicker value={pageForm.storeStyle} onChange={(slug) => setPageForm(f => ({ ...f, storeStyle: slug }))} allowedSlugs={allowedThemeSlugs} />
               <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
                 <Save className="w-4 h-4" /> Save Store Theme
               </Button>

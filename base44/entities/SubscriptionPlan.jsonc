@@ -65,6 +65,13 @@
       },
       "description": "IDs of the specific DFY products this plan can import. Empty = all DFY products allowed."
     },
+    "allowedThemeSlugs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Slugs of the store themes this plan can use. Empty = all themes allowed."
+    },
     "marketplaceLimit": {
       "type": "number",
       "default": 1,
