@@ -164,6 +164,10 @@ Deno.serve(async (req) => {
     // JVZoo's "Test IPN" button sends ctransaction=TEST. Treat it like a sale so the
     // provisioning webhook & plan assignment can be verified end-to-end from JVZoo.
     if (transaction === 'SALE' || transaction === 'BILL' || transaction === 'TEST') {
+      // A customer is "new to the platform" if there's no registered User record for
+      // them yet. inviteUser does NOT create an immediately-queryable User (invited
+      // users only materialize once they accept), so we can't rely on a refetch —
+      // gate the welcome/signup email on whether a real User already exists instead.
       const isNewUser = !user;
       if (!user) {
         // Invite the user so they get a real, login-capable account.
@@ -177,6 +181,8 @@ Deno.serve(async (req) => {
       }
 
       // Send a welcome / signup email to the customer for new purchases.
+      // Always send when there is no registered User yet (the common JVZoo case),
+      // so the prospect coming from the IPN reliably gets their signup link.
       if (isNewUser) {
         try {
           // Pull branding from AppConfig (site name, support email, logo).
