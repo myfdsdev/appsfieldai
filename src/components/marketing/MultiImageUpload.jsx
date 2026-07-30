@@ -23,6 +23,11 @@ export default function MultiImageUpload({ value = [], onChange, max = 5 }) {
     const uploaded = [];
     try {
       for (const file of toUpload) {
+        // Only real image files can be used as a reference.
+        if (!file.type.startsWith("image/")) {
+          toast.error(`"${file.name}" isn't an image file.`);
+          continue;
+        }
         if (file.size > 10 * 1024 * 1024) {
           toast.error(`"${file.name}" is too large (max 10MB).`);
           continue;
@@ -40,7 +45,13 @@ export default function MultiImageUpload({ value = [], onChange, max = 5 }) {
           campaignId: "marketing-studio",
         });
         const url = res.data?.fileUrl;
-        if (url) uploaded.push(url);
+        // Surface a real failure instead of silently dropping the image — otherwise
+        // generation runs with no reference and looks like "image input isn't working".
+        if (url) {
+          uploaded.push(url);
+        } else {
+          toast.error(res.data?.error || `Couldn't upload "${file.name}". Please try again.`);
+        }
       }
       if (uploaded.length) {
         onChange([...value, ...uploaded]);
