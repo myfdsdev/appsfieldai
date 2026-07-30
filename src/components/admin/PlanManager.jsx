@@ -139,9 +139,11 @@ export default function PlanManager() {
                       <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Yearly</span><span className="font-bold text-amber-400">${p.yearlyPrice}/yr</span></div>
                     </>
                   )}
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Stores</span><span className="font-medium">{p.storeLimit === -1 ? "Unlimited" : (p.storeLimit ?? 0)}</span></div>
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Products/store</span><span className="font-medium">{p.productLimit === -1 ? "Unlimited" : (p.productLimit ?? 0)}</span></div>
-                  <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">DFY Products</span><span className="font-medium">{p.dfyAllowed ? (p.dfyProductLimit ?? 0) : "—"}</span></div>
+                  {(p.storeLimit === -1 || (p.storeLimit ?? 0) > 0) && <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Stores</span><span className="font-medium">{p.storeLimit === -1 ? "Unlimited" : p.storeLimit}</span></div>}
+                  {(p.productLimit === -1 || (p.productLimit ?? 0) > 0) && <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Products/store</span><span className="font-medium">{p.productLimit === -1 ? "Unlimited" : p.productLimit}</span></div>}
+                  {p.dfyAllowed && (p.dfyProductLimit ?? 0) > 0 && <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">DFY Products</span><span className="font-medium">{p.dfyProductLimit}</span></div>}
+                  {(p.monthlyImageLimit === -1 || (p.monthlyImageLimit ?? 0) > 0) && <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Images/mo</span><span className="font-medium">{p.monthlyImageLimit === -1 ? "Unlimited" : p.monthlyImageLimit}</span></div>}
+                  {(p.monthlyVideoLimit === -1 || (p.monthlyVideoLimit ?? 0) > 0) && <div className="flex justify-between text-[11px]"><span className="text-muted-foreground">Videos/mo</span><span className="font-medium">{p.monthlyVideoLimit === -1 ? "Unlimited" : p.monthlyVideoLimit}</span></div>}
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {p.customDomainAllowed && <Badge className="text-[9px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Domain</Badge>}
