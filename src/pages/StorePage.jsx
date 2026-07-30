@@ -21,7 +21,7 @@ import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
-import { fetchAffiliateApplications, capturePaypalOrder } from "@/lib/storeCustomerAuth";
+import { fetchAffiliateApplications, capturePaypalOrder, confirmStripeOrder } from "@/lib/storeCustomerAuth";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
 import StoreCartDrawer from "@/components/store/StoreCartDrawer";
 import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
@@ -133,6 +133,27 @@ export default function StorePage() {
         setAccountPanel({ open: true, tab: "account" });
       })
       .catch((e) => toast.error(e.message || "We couldn't confirm your PayPal payment."));
+  }, [marketplaceId]);
+
+  // Returning from Stripe Checkout (?stripe=<orderId>) → confirm the payment.
+  useEffect(() => {
+    if (!marketplaceId) return;
+    const params = new URLSearchParams(window.location.search);
+    const stripeOrderId = params.get("stripe");
+    if (params.get("stripe_cancel")) {
+      toast.error("Card payment was cancelled.");
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
+    if (!stripeOrderId) return;
+    // Clean the URL so a refresh doesn't re-trigger.
+    window.history.replaceState({}, "", window.location.pathname);
+    confirmStripeOrder({ marketplaceId, orderId: stripeOrderId })
+      .then(() => {
+        toast.success("Payment successful! Your order is confirmed.");
+        setAccountPanel({ open: true, tab: "account" });
+      })
+      .catch((e) => toast.error(e.message || "We couldn't confirm your card payment."));
   }, [marketplaceId]);
 
   // Inject the store owner's custom head/body code (FB/Google pixel, analytics, etc.).

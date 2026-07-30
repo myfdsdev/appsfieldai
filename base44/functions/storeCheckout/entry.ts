@@ -26,9 +26,12 @@ Deno.serve(async (req) => {
     }
 
     const payment = marketplace.payment || {};
-    const method = paymentMethod === 'paypal' ? 'paypal' : 'cod';
+    const method = ['paypal', 'stripe', 'cod'].includes(paymentMethod) ? paymentMethod : 'cod';
     if (method === 'paypal' && !payment.paypalEnabled) {
       return Response.json({ error: 'PayPal is not enabled for this store' }, { status: 400 });
+    }
+    if (method === 'stripe' && !payment.stripeEnabled) {
+      return Response.json({ error: 'Stripe is not enabled for this store' }, { status: 400 });
     }
     if (method === 'cod' && !payment.codEnabled) {
       return Response.json({ error: 'Manual payment is not enabled for this store' }, { status: 400 });
@@ -204,7 +207,7 @@ Deno.serve(async (req) => {
           `<b>Amount:</b> ${marketplace.currency || 'USD'} ${total.toLocaleString()}\n` +
           `<b>Customer:</b> ${buyerName || '—'} (${customer.email || '—'})\n` +
           `<b>Items:</b> ${itemsSummary}\n` +
-          `<b>Payment:</b> ${method === 'paypal' ? 'PayPal' : 'Manual / COD'}`,
+          `<b>Payment:</b> ${method === 'paypal' ? 'PayPal' : method === 'stripe' ? 'Stripe (Card)' : 'Manual / COD'}`,
       });
     } catch (e) { console.error('storeCheckout telegram failed:', e); }
 

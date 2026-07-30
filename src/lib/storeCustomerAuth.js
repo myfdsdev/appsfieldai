@@ -133,6 +133,24 @@ export async function capturePaypalOrder({ marketplaceId, paypalOrderId }) {
   return res.data;
 }
 
+// Create a Stripe Checkout Session for a pending StoreOrder and get the hosted checkout URL.
+export async function createStripeCheckout({ marketplaceId, orderId, returnUrl, cancelUrl }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in to pay");
+  const res = await base44.functions.invoke("storeStripeCreateCheckout", { marketplaceId, token, orderId, returnUrl, cancelUrl });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
+// Confirm a Stripe payment after the buyer returns to the store from Stripe Checkout.
+export async function confirmStripeOrder({ marketplaceId, orderId }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("storeStripeConfirm", { marketplaceId, token, orderId });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
 // Fetch the store customer's reserved products with live status.
 export async function fetchStoreCustomerProducts(marketplaceId) {
   const token = getStoredToken(marketplaceId);

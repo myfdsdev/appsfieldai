@@ -687,7 +687,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
           {activeTab === "payments" && (
             <div className="space-y-4">
               <div><h2 className="text-lg font-display font-bold">Payment Settings</h2>
-              <p className="text-sm text-muted-foreground">Accept payments on your store via PayPal or Cash on Delivery.</p></div>
+              <p className="text-sm text-muted-foreground">Accept payments on your store via PayPal, Stripe, or Cash on Delivery.</p></div>
               <PaymentSettingsManager marketplace={marketplace} />
             </div>
           )}

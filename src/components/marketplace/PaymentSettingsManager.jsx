@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Save, CreditCard, Banknote, ShieldCheck, ExternalLink } from "lucide-react";
+import { Save, CreditCard, Banknote, ShieldCheck, ExternalLink, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 // Store payment settings — PayPal (sandbox/live with Client ID & Secret) + Cash on Delivery.
@@ -17,6 +17,9 @@ export default function PaymentSettingsManager({ marketplace }) {
     paypalClientId: marketplace?.payment?.paypalClientId || "",
     paypalSecret: marketplace?.payment?.paypalSecret || "",
     paypalEmail: marketplace?.payment?.paypalEmail || "",
+    stripeEnabled: marketplace?.payment?.stripeEnabled ?? false,
+    stripeSecretKey: marketplace?.payment?.stripeSecretKey || "",
+    stripePublishableKey: marketplace?.payment?.stripePublishableKey || "",
     codEnabled: marketplace?.payment?.codEnabled ?? false,
     codInstructions: marketplace?.payment?.codInstructions || "",
   });
@@ -67,6 +70,32 @@ export default function PaymentSettingsManager({ marketplace }) {
               Get your {form.paypalMode === "live" ? "Live" : "Sandbox"} credentials from the{" "}
               <a href="https://developer.paypal.com/dashboard/applications/sandbox" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-2 inline-flex items-center gap-0.5">
                 PayPal Developer Dashboard → Apps &amp; Credentials <ExternalLink className="w-3 h-3" />
+              </a>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Stripe */}
+      <div className={`rounded-2xl border transition-all ${form.stripeEnabled ? "border-orange-500/20 bg-orange-500/5" : "border-border/30 bg-card/60"}`}>
+        <label className="flex items-center justify-between p-5 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Zap className="w-4.5 h-4.5 text-indigo-400" /></div>
+            <div><p className="text-sm font-semibold">Stripe</p><p className="text-[11px] text-muted-foreground">Accept credit &amp; debit card payments via Stripe Checkout</p></div>
+          </div>
+          <input type="checkbox" checked={form.stripeEnabled} onChange={e => set("stripeEnabled", e.target.checked)} className="accent-orange-500 w-4 h-4" />
+        </label>
+
+        {form.stripeEnabled && (
+          <div className="px-5 pb-5 space-y-4 border-t border-border/20 pt-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div><label className="text-xs text-muted-foreground">Secret Key</label><Input type="password" value={form.stripeSecretKey} onChange={e => set("stripeSecretKey", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 font-mono text-xs" placeholder="sk_live_... or sk_test_..." /></div>
+              <div><label className="text-xs text-muted-foreground">Publishable Key <span className="opacity-60">(optional)</span></label><Input value={form.stripePublishableKey} onChange={e => set("stripePublishableKey", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 font-mono text-xs" placeholder="pk_live_... or pk_test_..." /></div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Use a live key (<span className="font-mono">sk_live_…</span>) to accept real payments, or a test key (<span className="font-mono">sk_test_…</span>) to try it out. Get your keys from the{" "}
+              <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-2 inline-flex items-center gap-0.5">
+                Stripe Dashboard → API keys <ExternalLink className="w-3 h-3" />
               </a>
             </p>
           </div>
