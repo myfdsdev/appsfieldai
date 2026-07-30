@@ -191,7 +191,14 @@ export async function applyAsAffiliate({ marketplaceId, listingId, answers }) {
 export async function updateAffiliatePayout({ marketplaceId, payoutMethod, payoutDetails }) {
   const token = getStoredToken(marketplaceId);
   if (!token) throw new Error("Please sign in");
-  const res = await base44.functions.invoke("affiliateUpdatePayout", { marketplaceId, token, payoutMethod, payoutDetails });
+  let res;
+  try {
+    res = await base44.functions.invoke("affiliateUpdatePayout", { marketplaceId, token, payoutMethod, payoutDetails });
+  } catch (err) {
+    // Non-2xx (e.g. 404 "not an affiliate yet") throws — surface the server's real error message.
+    const serverError = err?.response?.data?.error;
+    throw new Error(serverError || err.message || "Could not save your payout details.");
+  }
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }
