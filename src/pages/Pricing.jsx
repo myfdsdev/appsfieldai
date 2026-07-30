@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 
 const planIcons = { starter: Zap, pro: Building2, agency: Crown, enterprise: Sparkles };
 
+// A limit of -1 (or 0/blank) means unlimited → show the infinity icon instead of the raw number.
+const isUnlimited = (v) => v === -1 || v === 0 || v === null || v === undefined;
+
 export default function Pricing() {
   const navigate = useNavigate();
   const [billing, setBilling] = useState("monthly");
@@ -81,10 +84,10 @@ export default function Pricing() {
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <ul className="space-y-2 text-xs flex-1">
-                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{plan.marketplaceLimit || <Infinity className="w-3 h-3 inline" />} marketplace{plan.marketplaceLimit !== 1 && "s"}</li>
-                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{plan.vendorLimit || <Infinity className="w-3 h-3 inline" />} vendor{plan.vendorLimit !== 1 && "s"}</li>
-                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{plan.productLimit || <Infinity className="w-3 h-3 inline" />} listings</li>
-                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{plan.customerLimit || <Infinity className="w-3 h-3 inline" />} customers</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{isUnlimited(plan.marketplaceLimit) ? <Infinity className="w-3 h-3 inline" /> : plan.marketplaceLimit} marketplace{plan.marketplaceLimit !== 1 && "s"}</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{isUnlimited(plan.vendorLimit) ? <Infinity className="w-3 h-3 inline" /> : plan.vendorLimit} vendor{plan.vendorLimit !== 1 && "s"}</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{isUnlimited(plan.productLimit) ? <Infinity className="w-3 h-3 inline" /> : plan.productLimit} listings</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />{isUnlimited(plan.customerLimit) ? <Infinity className="w-3 h-3 inline" /> : plan.customerLimit} customers</li>
                       {plan.customDomainAllowed && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />Custom Domain</li>}
                       {plan.multiVendorAllowed && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />Multi-Vendor</li>}
                       {plan.whiteLabelAllowed && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-400" />White-Label</li>}
