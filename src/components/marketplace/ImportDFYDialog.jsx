@@ -236,24 +236,21 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
                 return (
                   <div
                     key={p.id}
+                    onClick={() => { if (!already && !capped) toggle(p.id); }}
                     className={`rounded-xl border overflow-hidden transition-all ${
                       already
-                        ? "border-border/20 bg-secondary/20 opacity-60"
+                        ? "border-border/20 bg-secondary/20 opacity-60 cursor-not-allowed"
                         : isSel
-                        ? "border-orange-500/60 bg-orange-500/5 ring-1 ring-orange-500/40"
+                        ? "border-orange-500/60 bg-orange-500/5 ring-1 ring-orange-500/40 cursor-pointer"
                         : capped
-                        ? "border-border/20 bg-secondary/20 opacity-50"
-                        : "border-border/40 bg-card/40 hover:border-orange-500/30"
+                        ? "border-border/20 bg-secondary/20 opacity-50 cursor-not-allowed"
+                        : "border-border/40 bg-card/40 hover:border-orange-500/30 cursor-pointer"
                     }`}
                   >
                     <div className="p-2 pb-0">
                       <ProductMedia p={p} onPlay={setVideoUrl} />
                     </div>
-                    <button
-                      disabled={already || capped}
-                      onClick={() => toggle(p.id)}
-                      className={`w-full text-left p-3 flex items-start gap-2 ${already || capped ? "cursor-not-allowed" : ""}`}
-                    >
+                    <div className="w-full text-left p-3 flex items-start gap-2">
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{p.softwareName}</p>
                         <p className="text-[10px] text-muted-foreground truncate">
@@ -271,7 +268,7 @@ export default function ImportDFYDialog({ open, onClose, existingNames = [], imp
                           {isSel && <Check className="w-3.5 h-3.5 text-white" />}
                         </div>
                       )}
-                    </button>
+                    </div>
                   </div>
                 );
               })}
