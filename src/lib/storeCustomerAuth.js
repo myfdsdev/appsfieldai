@@ -106,20 +106,21 @@ export async function reserveStoreSpot({ marketplaceId, listingId, spots, phone,
   return res.data.reservation;
 }
 
-// Place a store order (cart checkout) as the logged-in store customer.
-export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, fullName, phone, notes, refCode }) {
-  const token = getStoredToken(marketplaceId);
-  if (!token) throw new Error("Please sign in to checkout");
-  const res = await base44.functions.invoke("storeCheckout", { marketplaceId, token, items, paymentMethod, fullName, phone, notes, refCode });
+// Place a store order (cart checkout). Works for logged-in customers AND guests:
+// guests pass name + email (no session required) and get a fresh token back.
+export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, fullName, email, phone, notes, refCode }) {
+  const token = getStoredToken(marketplaceId) || undefined;
+  const res = await base44.functions.invoke("storeCheckout", { marketplaceId, token, items, paymentMethod, fullName, email, phone, notes, refCode });
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }
 
 // Create a PayPal order for a pending StoreOrder and get the approval URL to redirect to.
-export async function createPaypalOrder({ marketplaceId, orderId, returnUrl, cancelUrl }) {
-  const token = getStoredToken(marketplaceId);
-  if (!token) throw new Error("Please sign in to pay");
-  const res = await base44.functions.invoke("storePaypalCreateOrder", { marketplaceId, token, orderId, returnUrl, cancelUrl });
+// Accepts an explicit token (guest checkout) falling back to the stored session.
+export async function createPaypalOrder({ marketplaceId, orderId, returnUrl, cancelUrl, token }) {
+  const useToken = token || getStoredToken(marketplaceId);
+  if (!useToken) throw new Error("Please sign in to pay");
+  const res = await base44.functions.invoke("storePaypalCreateOrder", { marketplaceId, token: useToken, orderId, returnUrl, cancelUrl });
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }
@@ -134,10 +135,11 @@ export async function capturePaypalOrder({ marketplaceId, paypalOrderId }) {
 }
 
 // Create a Stripe Checkout Session for a pending StoreOrder and get the hosted checkout URL.
-export async function createStripeCheckout({ marketplaceId, orderId, returnUrl, cancelUrl }) {
-  const token = getStoredToken(marketplaceId);
-  if (!token) throw new Error("Please sign in to pay");
-  const res = await base44.functions.invoke("storeStripeCreateCheckout", { marketplaceId, token, orderId, returnUrl, cancelUrl });
+// Accepts an explicit token (guest checkout) falling back to the stored session.
+export async function createStripeCheckout({ marketplaceId, orderId, returnUrl, cancelUrl, token }) {
+  const useToken = token || getStoredToken(marketplaceId);
+  if (!useToken) throw new Error("Please sign in to pay");
+  const res = await base44.functions.invoke("storeStripeCreateCheckout", { marketplaceId, token: useToken, orderId, returnUrl, cancelUrl });
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }

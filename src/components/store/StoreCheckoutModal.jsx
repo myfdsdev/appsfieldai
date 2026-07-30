@@ -16,15 +16,20 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
 
   const [method, setMethod] = useState(methods[0]?.id || "");
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(null); // { codInstructions }
 
+  // Guests (no logged-in store account) must supply an email at checkout.
+  const isGuest = !customer;
+
   useEffect(() => {
     if (open) {
       setMethod(methods[0]?.id || "");
       setFullName(customer?.fullName || "");
+      setEmail(customer?.email || "");
       setPhone(customer?.phone || "");
       setNotes("");
       setDone(null);
@@ -36,6 +41,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
   const place = async () => {
     if (!method) { toast.error("This store has no payment method enabled yet."); return; }
     if (!fullName.trim()) { toast.error("Please enter your name."); return; }
+    if (isGuest && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { toast.error("Please enter a valid email."); return; }
     setLoading(true);
     try {
       const res = await checkoutStoreOrder({
@@ -43,10 +49,13 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
         items: items.map((i) => ({ listingId: i.listingId, quantity: i.quantity })),
         paymentMethod: method,
         fullName: fullName.trim(),
+        email: isGuest ? email.trim() : undefined,
         phone,
         notes,
         refCode: getAffiliateRef(marketplace.id) || undefined,
       });
+      // Guest checkout returns a fresh session token for the payment redirect step.
+      const guestToken = res.token;
       // Attribution recorded — clear the stored ref so it isn't reused on a later unrelated order.
       clearAffiliateRef(marketplace.id);
 
@@ -59,6 +68,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
           orderId: res.order.id,
           returnUrl: `${base}?paypal=${res.order.id}`,
           cancelUrl: `${base}?paypal_cancel=1`,
+          token: guestToken,
         });
         onPlaced?.();
         window.location.href = pay.approveUrl;
@@ -74,6 +84,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
           orderId: res.order.id,
           returnUrl: `${base}?stripe=${res.order.id}`,
           cancelUrl: `${base}?stripe_cancel=1`,
+          token: guestToken,
         });
         onPlaced?.();
         window.location.href = pay.checkoutUrl;
@@ -143,13 +154,11 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
               <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name"
                 className="w-full px-3 py-2.5 rounded-xl bg-secondary/60 border border-border/40 text-sm focus:outline-none" />
             </div>
-            {customer?.email && (
-              <div className="mb-3">
-                <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
-                <input value={customer.email} readOnly
-                  className="w-full px-3 py-2.5 rounded-xl bg-secondary/40 border border-border/40 text-sm text-muted-foreground focus:outline-none cursor-not-allowed" />
-              </div>
-            )}
+            <div className="mb-3">
+              <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} readOnly={!isGuest} type="email" placeholder="you@email.com"
+                className={`w-full px-3 py-2.5 rounded-xl border border-border/40 text-sm focus:outline-none ${isGuest ? "bg-secondary/60" : "bg-secondary/40 text-muted-foreground cursor-not-allowed"}`} />
+            </div>
             <div className="mb-3">
               <label className="text-xs text-muted-foreground mb-1.5 block">Phone (optional)</label>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number"

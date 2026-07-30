@@ -174,16 +174,15 @@ export default function StorePage() {
     toast.success(`${listing.softwareName} added to cart`);
   };
 
-  // Buy Now — add to cart then go straight to checkout (must be signed in).
+  // Buy Now — add to cart then go straight to checkout.
+  // Guests can check out with just name + email (no login required).
   const handleBuyNow = (listing) => {
     cart.addItem(listing, 1);
-    if (!customer) { setAuthModal({ open: true, mode: "login" }); return; }
     setCheckoutOpen(true);
   };
 
-  // Checkout from the cart drawer — requires sign-in.
+  // Checkout from the cart drawer — open to everyone (guest checkout supported).
   const handleCheckout = () => {
-    if (!customer) { setCartOpen(false); setAuthModal({ open: true, mode: "login" }); return; }
     setCartOpen(false);
     setCheckoutOpen(true);
   };
@@ -401,8 +400,9 @@ export default function StorePage() {
         onAddToCart={(l) => { handleAddToCart(l); setViewDetailListing(null); }}
         onBuyNow={(l) => { setViewDetailListing(null); handleBuyNow(l); }}
         requireAuth={() => {
+          // Buying no longer requires an account — the checkout collects name + email.
+          // (Reserve-a-spot still requires login and is gated separately.)
           if (customer) return true;
-          // Visitor must log in / sign up before buying or reserving a spot.
           setAuthModal({ open: true, mode: "login" });
           return false;
         }}

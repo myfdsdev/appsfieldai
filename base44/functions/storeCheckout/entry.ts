@@ -1,22 +1,82 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // Store visitor places an order for single-purchase products in their cart.
-// Validates the store-customer session, recomputes prices server-side from the
-// real listings, then records a StoreOrder. PayPal capture is a later step —
-// for now PayPal orders are marked pending and COD orders are placed directly.
+// Works BOTH for logged-in customers (via session token) AND for guests who
+// simply provide a name + email — in the guest case a StoreCustomer account is
+// silently created (or reused by email), exactly like the Deal Maker chat.
+// Recomputes prices server-side from the real listings, then records a StoreOrder.
+
+function makeToken() {
+  return crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+}
+async function hashPassword(password: string, salt: string) {
+  const data = new TextEncoder().encode(salt + password);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { marketplaceId, token, items, paymentMethod, fullName, phone, notes, refCode } = await req.json();
+    const svc = base44.asServiceRole;
+    const { marketplaceId, token, items, paymentMethod, fullName, email, phone, notes, refCode } = await req.json();
 
-    if (!marketplaceId || !token || !Array.isArray(items) || items.length === 0) {
+    if (!marketplaceId || !Array.isArray(items) || items.length === 0) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const matches = await base44.asServiceRole.entities.StoreCustomer.filter({ marketplaceId, sessionToken: token });
-    const customer = matches[0];
-    if (!customer || customer.status === 'suspended') {
-      return Response.json({ error: 'Please sign in to checkout' }, { status: 401 });
+    // ── Resolve the customer ──
+    // 1) A valid session token identifies a logged-in customer.
+    // 2) Otherwise fall back to guest checkout: reuse or create an account from name + email.
+    let customer = null;
+    let createdNewAccount = false;
+    if (token) {
+      const matches = await svc.entities.StoreCustomer.filter({ marketplaceId, sessionToken: token });
+      customer = matches[0] || null;
+      if (customer && customer.status === 'suspended') {
+        return Response.json({ error: 'Your account is suspended.' }, { status: 401 });
+      }
+    }
+
+    if (!customer) {
+      const cleanEmail = String(email || '').toLowerCase().trim();
+      const guestName = String(fullName || '').trim();
+      if (!cleanEmail || !guestName) {
+        return Response.json({ error: 'Please enter your name and email to checkout.' }, { status: 400 });
+      }
+      const existing = await svc.entities.StoreCustomer.filter({ marketplaceId, email: cleanEmail });
+      if (existing.length) {
+        customer = existing[0];
+        if (customer.status === 'suspended') {
+          return Response.json({ error: 'Your account is suspended.' }, { status: 401 });
+        }
+        if (!customer.sessionToken) {
+          const sessionToken = makeToken();
+          await svc.entities.StoreCustomer.update(customer.id, { sessionToken });
+          customer.sessionToken = sessionToken;
+        }
+      } else {
+        // Random password — the buyer sets their real one via the access email link.
+        const salt = makeToken().slice(0, 24);
+        const tempPassword = makeToken().slice(0, 16);
+        const passwordHash = await hashPassword(tempPassword, salt);
+        const sessionToken = makeToken();
+        customer = await svc.entities.StoreCustomer.create({
+          marketplaceId,
+          fullName: guestName,
+          email: cleanEmail,
+          passwordHash,
+          passwordSalt: salt,
+          phone: phone || '',
+          status: 'active',
+          sessionToken,
+        });
+        createdNewAccount = true;
+      }
+    }
+
+    if (!customer) {
+      return Response.json({ error: 'Could not start checkout. Please enter your name and email.' }, { status: 400 });
     }
 
     const mpList = await base44.asServiceRole.entities.Marketplace.filter({ id: marketplaceId });
@@ -214,6 +274,9 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       order,
+      createdNewAccount,
+      // Session token so guest checkout can continue to the PayPal/Stripe step.
+      token: customer.sessionToken || undefined,
       // COD: instructions to display. PayPal: signal the frontend the next step is payment.
       codInstructions: method === 'cod' ? (payment.codInstructions || '') : '',
     });

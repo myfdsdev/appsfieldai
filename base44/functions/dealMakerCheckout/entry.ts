@@ -188,9 +188,12 @@ Deno.serve(async (req) => {
     }
 
     if (method === 'stripe') {
-      const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+      // Use the STORE OWNER's own Stripe secret key (configured in the store's
+      // Payment Settings), exactly like the cart checkout — NOT the platform key.
+      const payment = marketplace.payment || {};
+      const stripeKey = payment.stripeEnabled ? payment.stripeSecretKey : '';
       if (!stripeKey) {
-        return Response.json({ success: true, order, createdNewAccount, paymentPending: true, message: 'Order placed — the store will send payment details.' });
+        return Response.json({ success: true, order, createdNewAccount, paymentPending: true, message: 'Card payment isn\'t set up on this store — your order is placed and the store will reach out with payment details.' });
       }
       const successUrl = accessUrl ? `${accessUrl}?order=${order.id}` : (returnUrl || '');
       const cancelUrl = accessUrl || returnUrl || '';
