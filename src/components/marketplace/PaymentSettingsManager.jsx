@@ -20,6 +20,9 @@ export default function PaymentSettingsManager({ marketplace }) {
     stripeEnabled: marketplace?.payment?.stripeEnabled ?? false,
     stripeSecretKey: marketplace?.payment?.stripeSecretKey || "",
     stripePublishableKey: marketplace?.payment?.stripePublishableKey || "",
+    razorpayEnabled: marketplace?.payment?.razorpayEnabled ?? false,
+    razorpayKeyId: marketplace?.payment?.razorpayKeyId || "",
+    razorpayKeySecret: marketplace?.payment?.razorpayKeySecret || "",
     codEnabled: marketplace?.payment?.codEnabled ?? false,
     codInstructions: marketplace?.payment?.codInstructions || "",
   });
@@ -96,6 +99,32 @@ export default function PaymentSettingsManager({ marketplace }) {
               Use a live key (<span className="font-mono">sk_live_…</span>) to accept real payments, or a test key (<span className="font-mono">sk_test_…</span>) to try it out. Get your keys from the{" "}
               <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-2 inline-flex items-center gap-0.5">
                 Stripe Dashboard → API keys <ExternalLink className="w-3 h-3" />
+              </a>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Razorpay */}
+      <div className={`rounded-2xl border transition-all ${form.razorpayEnabled ? "border-orange-500/20 bg-orange-500/5" : "border-border/30 bg-card/60"}`}>
+        <label className="flex items-center justify-between p-5 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><CreditCard className="w-4.5 h-4.5 text-blue-400" /></div>
+            <div><p className="text-sm font-semibold">Razorpay</p><p className="text-[11px] text-muted-foreground">Accept cards, UPI &amp; netbanking via Razorpay Checkout</p></div>
+          </div>
+          <input type="checkbox" checked={form.razorpayEnabled} onChange={e => set("razorpayEnabled", e.target.checked)} className="accent-orange-500 w-4 h-4" />
+        </label>
+
+        {form.razorpayEnabled && (
+          <div className="px-5 pb-5 space-y-4 border-t border-border/20 pt-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div><label className="text-xs text-muted-foreground">Key ID</label><Input value={form.razorpayKeyId} onChange={e => set("razorpayKeyId", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 font-mono text-xs" placeholder="rzp_live_... or rzp_test_..." /></div>
+              <div><label className="text-xs text-muted-foreground">Key Secret</label><Input type="password" value={form.razorpayKeySecret} onChange={e => set("razorpayKeySecret", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 font-mono text-xs" placeholder="your-razorpay-key-secret" /></div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Razorpay charges in your store currency (INR works best). Get your keys from the{" "}
+              <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-2 inline-flex items-center gap-0.5">
+                Razorpay Dashboard → Settings → API Keys <ExternalLink className="w-3 h-3" />
               </a>
             </p>
           </div>

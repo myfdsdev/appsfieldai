@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Loader2, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
-import { checkoutStoreOrder, createPaypalOrder, createStripeCheckout } from "@/lib/storeCustomerAuth";
+import { checkoutStoreOrder, createPaypalOrder, createStripeCheckout, createRazorpayOrder, verifyRazorpayOrder } from "@/lib/storeCustomerAuth";
+import { openRazorpayCheckout } from "@/lib/razorpayCheckout";
 import { getAffiliateRef, clearAffiliateRef } from "@/lib/affiliateRef";
 import { toast } from "sonner";
 
@@ -12,6 +13,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
   const methods = [];
   if (payment.paypalEnabled) methods.push({ id: "paypal", label: "PayPal", desc: "Pay securely with card or PayPal", icon: CreditCard });
   if (payment.stripeEnabled) methods.push({ id: "stripe", label: "Credit / Debit Card", desc: "Pay securely with card via Stripe", icon: CreditCard });
+  if (payment.razorpayEnabled) methods.push({ id: "razorpay", label: "Razorpay", desc: "Card, UPI & netbanking via Razorpay", icon: CreditCard });
   if (payment.codEnabled) methods.push({ id: "cod", label: "Pay Your Own Way", desc: "Bank transfer / manual payment", icon: Banknote });
 
   const [method, setMethod] = useState(methods[0]?.id || "");
@@ -91,6 +93,27 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
         return;
       }
 
+      // Razorpay → open the Checkout popup in place, then verify the signature server-side.
+      if (method === "razorpay") {
+        const rzpOrder = await createRazorpayOrder({
+          marketplaceId: marketplace.id,
+          orderId: res.order.id,
+          token: guestToken,
+        });
+        const resp = await openRazorpayCheckout({ order: rzpOrder, brandColor });
+        await verifyRazorpayOrder({
+          marketplaceId: marketplace.id,
+          orderId: res.order.id,
+          razorpayPaymentId: resp.razorpay_payment_id,
+          razorpayOrderId: resp.razorpay_order_id,
+          razorpaySignature: resp.razorpay_signature,
+          token: guestToken,
+        });
+        setDone({});
+        onPlaced?.();
+        return;
+      }
+
       setDone({ codInstructions: res.codInstructions });
       onPlaced?.();
     } catch (e) {
@@ -116,6 +139,8 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
                 ? "Your order is recorded. The store will confirm your PayPal payment."
                 : method === "stripe"
                 ? "Your order is recorded. The store will confirm your card payment."
+                : method === "razorpay"
+                ? "Payment received — your order is confirmed! Check your email for the details."
                 : "Your order is recorded. Follow the payment instructions below."}
             </p>
             {method === "cod" && done.codInstructions && (

@@ -153,6 +153,26 @@ export async function confirmStripeOrder({ marketplaceId, orderId }) {
   return res.data;
 }
 
+// Create a Razorpay Order for a pending StoreOrder. Returns the details needed to
+// open the Razorpay Checkout popup (no page redirect). Accepts an explicit token
+// (guest checkout) falling back to the stored session.
+export async function createRazorpayOrder({ marketplaceId, orderId, token }) {
+  const useToken = token || getStoredToken(marketplaceId);
+  if (!useToken) throw new Error("Please sign in to pay");
+  const res = await base44.functions.invoke("storeRazorpayCreateOrder", { marketplaceId, token: useToken, orderId });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
+// Verify a Razorpay payment after the buyer completes the Checkout popup.
+export async function verifyRazorpayOrder({ marketplaceId, orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature, token }) {
+  const useToken = token || getStoredToken(marketplaceId);
+  if (!useToken) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("storeRazorpayVerify", { marketplaceId, token: useToken, orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
 // Fetch the store customer's reserved products with live status.
 export async function fetchStoreCustomerProducts(marketplaceId) {
   const token = getStoredToken(marketplaceId);

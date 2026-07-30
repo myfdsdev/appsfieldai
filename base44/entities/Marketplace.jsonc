@@ -187,6 +187,19 @@
           "type": "string",
           "description": "The store owner's Stripe Publishable Key (pk_live_... or pk_test_...), optional / for reference"
         },
+        "razorpayEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Razorpay card/UPI/netbanking payments are enabled for this store"
+        },
+        "razorpayKeyId": {
+          "type": "string",
+          "description": "The store owner's Razorpay Key ID (rzp_live_... or rzp_test_...) used to open Checkout and create orders"
+        },
+        "razorpayKeySecret": {
+          "type": "string",
+          "description": "The store owner's Razorpay Key Secret used to create orders and verify payment signatures"
+        },
         "codEnabled": {
           "type": "boolean",
           "default": false,
