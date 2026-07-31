@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play, KeyRound, ChevronDown, ChevronUp } from "lucide-react";
+import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play, KeyRound, ChevronDown, ChevronUp, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import AddProductForm from "@/components/marketplace/AddProductForm";
 import ImportDFYDialog from "@/components/marketplace/ImportDFYDialog";
+import BulkImportProductsDialog from "@/components/marketplace/BulkImportProductsDialog";
 import { useDfyLimit } from "@/hooks/useDfyLimit";
 import { buildStoreLink } from "@/lib/storeLink";
 
@@ -47,6 +48,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
   const [actionLoading, setActionLoading] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [revealedAccess, setRevealedAccess] = useState(null); // listing id whose admin info is shown
   const [provisioning, setProvisioning] = useState(null); // listing id currently being provisioned
 
@@ -185,6 +187,9 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
           <Package className="w-5 h-5 text-orange-400" /> Software Listings
         </h3>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setBulkOpen(true)} className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-xl text-xs h-8">
+            <FileSpreadsheet className="w-3 h-3 mr-1" /> Bulk Import
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setImportOpen(true)} className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-xl text-xs h-8">
             <Download className="w-3 h-3 mr-1" /> Import DFY Products
           </Button>
@@ -314,6 +319,12 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
         importing={importing}
         onImport={handleImportDFY}
         dfyLimit={dfy}
+      />
+
+      <BulkImportProductsDialog
+        open={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        marketplaceId={marketplaceId}
       />
     </div>
   );
