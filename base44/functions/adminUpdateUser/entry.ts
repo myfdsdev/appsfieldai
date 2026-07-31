@@ -26,7 +26,16 @@ Deno.serve(async (req) => {
     if (data && typeof data === 'object') {
       if ('full_name' in data) allowed.full_name = data.full_name;
       if ('role' in data) allowed.role = data.role;
-      if ('planId' in data) allowed.planId = data.planId || null;
+      // Multi-plan assignment: jvzooPlanIds holds every plan the user has; planId
+      // is the primary (first) one. Admins can tick several plans at once.
+      if ('jvzooPlanIds' in data) {
+        const ids = Array.isArray(data.jvzooPlanIds) ? [...new Set(data.jvzooPlanIds.filter(Boolean))] : [];
+        allowed.jvzooPlanIds = ids;
+        allowed.planId = ids[0] || null;
+        allowed.billingStatus = ids.length ? 'active' : 'trial';
+      } else if ('planId' in data) {
+        allowed.planId = data.planId || null;
+      }
     }
     const updated = await base44.asServiceRole.entities.User.update(userId, allowed);
     return Response.json({ ok: true, user: updated });

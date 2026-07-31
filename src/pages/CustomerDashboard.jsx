@@ -7,6 +7,8 @@ import UserAccountSettings from "@/components/dashboard/UserAccountSettings";
 import LeadSmtpSettings from "@/components/leadfinder/LeadSmtpSettings";
 import TelegramSettings from "@/components/dashboard/TelegramSettings";
 import CustomApiKeysSettings from "@/components/dashboard/CustomApiKeysSettings";
+import MyPlansCard from "@/components/dashboard/MyPlansCard";
+import { useEffectivePlan } from "@/hooks/useEffectivePlan";
 
 export default function CustomerDashboard() {
   // Deep-link support: /my-account?tab=smtp opens the Outreach Email tab directly.
@@ -20,11 +22,8 @@ export default function CustomerDashboard() {
 
   // Telegram is a plan-gated feature. Admins always have access.
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
-  const { data: userPlan = null } = useQuery({
-    queryKey: ["userPlan", currentUser?.planId],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: currentUser.planId }).then((r) => r[0] || null),
-    enabled: !!currentUser?.planId,
-  });
+  // Merge ALL held plans (primary + JVZoo-stacked) so bundle + bump features combine.
+  const { plans: myPlans, effectivePlan: userPlan } = useEffectivePlan(currentUser);
   const telegramAllowed = isAdmin || !!userPlan?.telegramAllowed;
   const customApiKeyAllowed = isAdmin || !!userPlan?.customApiKeyAllowed;
   const activeTab =
@@ -74,6 +73,7 @@ export default function CustomerDashboard() {
         </div>
       ) : (
         <div className="space-y-6">
+          <MyPlansCard plans={myPlans} primaryPlanId={currentUser?.planId} />
           <UserAccountSettings user={currentUser} />
         </div>
       )}

@@ -38,6 +38,7 @@ import ProjectClients from "@/components/marketplace/ProjectClients";
 import StoreVendorsPanel from "@/components/marketplace/StoreVendorsPanel";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import StoreStylePicker from "@/components/store/StoreStylePicker";
+import { mergePlans } from "@/hooks/useEffectivePlan";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -141,11 +142,14 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
     enabled: !!marketplace?.ownerId && marketplace.ownerId !== currentUser?.id,
   });
   const planOwner = marketplace?.ownerId === currentUser?.id ? currentUser : ownerUser;
-  const { data: ownerPlan } = useQuery({
-    queryKey: ["hubOwnerPlan", planOwner?.planId],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: planOwner.planId }).then(r => r[0] || null),
-    enabled: !!planOwner?.planId,
+  // Merge ALL of the owner's held plans (primary + JVZoo-stacked) so theme access stacks.
+  const ownerPlanIds = [...new Set([planOwner?.planId, ...(planOwner?.jvzooPlanIds || [])].filter(Boolean))];
+  const { data: ownerPlans = [] } = useQuery({
+    queryKey: ["hubOwnerPlans", ownerPlanIds.sort().join(",")],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: { $in: ownerPlanIds } }),
+    enabled: ownerPlanIds.length > 0,
   });
+  const ownerPlan = mergePlans(ownerPlans);
   // Only gate for non-admins; admins get an empty (unrestricted) list.
   const allowedThemeSlugs = isAdmin ? [] : (ownerPlan?.allowedThemeSlugs || []);
 

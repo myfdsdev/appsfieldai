@@ -13,6 +13,7 @@ import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import StoreStylePicker from "@/components/store/StoreStylePicker";
 import { DEFAULT_STORE_STYLE } from "@/components/store/storeStyles";
 import { ensureUniqueMarketplaceSlug } from "@/lib/uniqueSlug";
+import { useEffectivePlan } from "@/hooks/useEffectivePlan";
 
 const TEMPLATES = [
   { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600", primaryColor: "#7c3aed", accentColor: "#06b6d4" },
@@ -51,11 +52,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   // The owner's plan gates which store types they can pick. Admins are unlimited.
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
-  const { data: userPlan = null } = useQuery({
-    queryKey: ["userPlan", currentUser?.planId],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: currentUser.planId }).then(r => r[0] || null),
-    enabled: !!currentUser?.planId,
-  });
+  // Merge ALL held plans (primary + JVZoo-stacked) so bundle + bump entitlements combine.
+  const { effectivePlan: userPlan } = useEffectivePlan(currentUser);
   const canMultiVendor = isAdmin || !!userPlan?.multiVendorAllowed;
   const canWorkspace = isAdmin || !!userPlan?.workspaceAllowed;
   // Themes this plan may use — empty means all (admins are always unrestricted).

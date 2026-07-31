@@ -10,6 +10,7 @@ import WalkthroughButton from "@/components/WalkthroughButton";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
+import { useEffectivePlan } from "@/hooks/useEffectivePlan";
 
 const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
 
@@ -68,12 +69,8 @@ export default function Topbar() {
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
 
-  // Resolve the user's plan to gate paid features in the profile menu.
-  const { data: userPlan = null } = useQuery({
-    queryKey: ["userPlan", user?.planId],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: user.planId }).then((r) => r[0] || null),
-    enabled: !!user?.planId,
-  });
+  // Resolve the user's MERGED plan (primary + JVZoo-stacked) to gate paid features.
+  const { effectivePlan: userPlan } = useEffectivePlan(user);
   const visibleProfileItems = profileMenuItems.filter(
     (item) => !item.feature || isAdmin || userPlan?.[item.feature]
   );

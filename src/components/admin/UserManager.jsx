@@ -16,7 +16,7 @@ const PAGE_SIZE = 5;
 export default function UserManager() {
   const queryClient = useQueryClient();
   const [editUser, setEditUser] = useState(null);
-  const [editForm, setEditForm] = useState({ full_name: "", role: "user", planId: "" });
+  const [editForm, setEditForm] = useState({ full_name: "", role: "user", planIds: [] });
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [inviting, setInviting] = useState(false);
@@ -68,12 +68,16 @@ export default function UserManager() {
     );
   };
 
-  const openEdit = (u) => { setEditUser(u); setEditForm({ full_name: u.full_name || "", role: u.role || "user", planId: u.planId || "" }); };
+  // Every plan a user currently holds (primary + JVZoo-stacked, deduped).
+  const heldPlanIds = (u) => [...new Set([u?.planId, ...(u?.jvzooPlanIds || [])].filter(Boolean))];
+  const openEdit = (u) => { setEditUser(u); setEditForm({ full_name: u.full_name || "", role: u.role || "user", planIds: heldPlanIds(u) }); };
   const [savingEdit, setSavingEdit] = useState(false);
   const handleEditSave = async () => {
     if (!editUser) return;
     setSavingEdit(true);
-    const planChanged = (editForm.planId || "") !== (editUser.planId || "");
+    const prevIds = heldPlanIds(editUser);
+    const nextIds = editForm.planIds;
+    const newlyAdded = nextIds.filter(id => !prevIds.includes(id));
     const targetEmail = editUser.email;
     const targetName = editForm.full_name;
     try {
@@ -83,7 +87,7 @@ export default function UserManager() {
         data: {
           full_name: editForm.full_name,
           role: editForm.role,
-          planId: editForm.planId || null,
+          jvzooPlanIds: nextIds,
         },
       });
       queryClient.invalidateQueries({ queryKey: ["allUsers"] });
@@ -92,9 +96,9 @@ export default function UserManager() {
       setEditUser(null);
       toast.success(`User updated: ${targetName || targetEmail}`);
 
-      // Notify the user by email when their plan is newly assigned/changed (fire-and-forget).
-      if (planChanged && editForm.planId && targetEmail) {
-        const planLabel = allPlans.find(p => p.id === editForm.planId)?.name || "your new plan";
+      // Notify the user by email when plans are newly assigned (fire-and-forget).
+      if (newlyAdded.length && targetEmail) {
+        const planLabel = newlyAdded.map(id => allPlans.find(p => p.id === id)?.name).filter(Boolean).join(" + ") || "your new plan";
         base44.functions.invoke("sendEmail", {
           to: targetEmail,
           subject: `Your plan has been updated to ${planLabel}`,
@@ -196,7 +200,9 @@ export default function UserManager() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium truncate">{u.full_name || "Unnamed"}</p>
                     {roleBadge(u.role)}
-                    {planName(u.planId) && <Badge className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/20 flex items-center gap-1"><Package className="w-2.5 h-2.5" />{planName(u.planId)}</Badge>}
+                    {heldPlanIds(u).map(pid => planName(pid) && (
+                      <Badge key={pid} className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/20 flex items-center gap-1"><Package className="w-2.5 h-2.5" />{planName(pid)}</Badge>
+                    ))}
                   </div>
                   <div className="flex items-center gap-1">
                     <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
@@ -274,13 +280,32 @@ export default function UserManager() {
             <div><label className="text-xs text-muted-foreground">Role</label><Select value={editForm.role} onValueChange={v => setEditForm(f => ({ ...f, role: v }))}><SelectTrigger className="w-full bg-secondary/50 border-border/30 rounded-xl mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">Admin</SelectItem><SelectItem value="marketplace_owner">Marketplace Owner</SelectItem><SelectItem value="vendor">Vendor</SelectItem><SelectItem value="user">User</SelectItem></SelectContent></Select></div>
             <div>
               <label className="text-xs text-muted-foreground">Plan Assignment</label>
-              <Select value={editForm.planId || "none"} onValueChange={v => setEditForm(f => ({ ...f, planId: v === "none" ? "" : v }))}>
-                <SelectTrigger className="w-full bg-secondary/50 border-border/30 rounded-xl mt-1"><SelectValue placeholder="No plan" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No plan (0 stores)</SelectItem>
-                  {allPlans.map(p => <SelectItem key={p.id} value={p.id}>{p.name} — {p.storeLimit === -1 ? "Unlimited" : (p.storeLimit ?? 0) + " stores"}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <p className="text-[10px] text-muted-foreground/70 mb-1.5">Tick every plan this user has — features stack (e.g. Bundle + Bundle Bump).</p>
+              <div className="max-h-56 overflow-y-auto rounded-xl border border-border/30 bg-secondary/30 p-1 space-y-0.5">
+                {allPlans.map(p => {
+                  const checked = editForm.planIds.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setEditForm(f => ({
+                        ...f,
+                        planIds: checked ? f.planIds.filter(id => id !== p.id) : [...f.planIds, p.id],
+                      }))}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors ${checked ? "bg-amber-500/10" : "hover:bg-secondary/60"}`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${checked ? "bg-amber-500 border-amber-500" : "border-border/60"}`}>
+                        {checked && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{p.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.storeLimit === -1 ? "Unlimited" : (p.storeLimit ?? 0)} stores · {p.productLimit === -1 ? "Unlimited" : (p.productLimit ?? 0)} products</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {editForm.planIds.length === 0 && <p className="text-[10px] text-muted-foreground mt-1">No plans selected (0 stores).</p>}
             </div>
           </div>
           <DialogFooter>

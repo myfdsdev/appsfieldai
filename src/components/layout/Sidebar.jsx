@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
+import { useEffectivePlan } from "@/hooks/useEffectivePlan";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -22,12 +23,8 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
 
-  // Resolve the user's plan so paid features can be gated in the nav.
-  const { data: userPlan = null } = useQuery({
-    queryKey: ["userPlan", user?.planId],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: user.planId }).then((r) => r[0] || null),
-    enabled: !!user?.planId,
-  });
+  // Resolve the user's MERGED plan (primary + JVZoo-stacked) so paid features can be gated.
+  const { effectivePlan: userPlan } = useEffectivePlan(user);
 
   const filteredItems = navItems.filter((item) => {
     if (item.adminOnly && !isAdmin) return false;

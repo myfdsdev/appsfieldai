@@ -17,6 +17,7 @@ import MarketplaceStoreCard from "@/components/dashboard/MarketplaceStoreCard";
 import MarketplaceDashboardBanner from "@/components/dashboard/MarketplaceDashboardBanner";
 import RecentReservations from "@/components/dashboard/RecentReservations";
 import UpgradePlanDialog from "@/components/marketplace/UpgradePlanDialog";
+import { useEffectivePlan } from "@/hooks/useEffectivePlan";
 
 export default function MarketplaceDashboard() {
   const queryClient = useQueryClient();
@@ -32,12 +33,8 @@ export default function MarketplaceDashboard() {
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
 
-  // Resolve the user's plan to know how many stores they're allowed (admins are unlimited).
-  const { data: userPlan = null } = useQuery({
-    queryKey: ["userPlan", currentUser?.planId],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: currentUser.planId }).then(r => r[0] || null),
-    enabled: !!currentUser?.planId,
-  });
+  // Resolve the user's MERGED plan (primary + JVZoo-stacked) so store limits stack across bundles.
+  const { effectivePlan: userPlan } = useEffectivePlan(currentUser);
   const storeLimit = userPlan?.storeLimit ?? 0;
 
   // Admins see ALL marketplaces across every owner; regular owners see only their own.
