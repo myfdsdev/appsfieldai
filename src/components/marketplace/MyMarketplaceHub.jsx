@@ -781,12 +781,6 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Localization</p>
                   <div className="grid grid-cols-2 gap-4 max-w-xl">
                     <div>
-                      <label className="text-xs text-muted-foreground">Store Language</label>
-                      <select value={storeForm.language} onChange={e => setStoreForm(f => ({ ...f, language: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
-                        {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-                      </select>
-                    </div>
-                    <div>
                       <label className="text-xs text-muted-foreground">Currency</label>
                       <select value={storeForm.currency} onChange={e => setStoreForm(f => ({ ...f, currency: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
                         {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
