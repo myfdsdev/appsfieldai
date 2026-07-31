@@ -341,7 +341,7 @@ export default function StorePage() {
           {/* Best Sellers / 🔥 Deals Ending Soon — Binasea shows these in the header instead */}
           {sections.storeStyle !== "monolith" && (
             <div id="store-best-sellers">
-              <DealsEndingSoon listings={software} styleSlug={sections.storeStyle} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
+              <DealsEndingSoon listings={software} styleSlug={sections.storeStyle} currency={marketplace.currency} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
             </div>
           )}
 

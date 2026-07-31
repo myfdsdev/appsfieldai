@@ -4,8 +4,7 @@ import { Star, ExternalLink, ShoppingCart, Link2, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-const CUR = { USD: "$", INR: "₹", EUR: "€", GBP: "£" };
+import { CURRENCY_SYMBOLS as CUR } from "@/lib/currency";
 
 // Horizontal "editorial" product row used by the Monolith store style — a wide
 // media-object: large image on the left, generous copy + actions on the right.

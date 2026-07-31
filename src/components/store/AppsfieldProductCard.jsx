@@ -2,8 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Star, Heart, ShoppingCart, ExternalLink, Link2, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
-
-const CUR = { USD: "$", INR: "₹", EUR: "€", GBP: "£" };
+import { CURRENCY_SYMBOLS as CUR } from "@/lib/currency";
 
 // Light "Appsfield" product card: image with badges + wishlist heart, category +
 // rating row, title/description, price with strikethrough original + access pill,

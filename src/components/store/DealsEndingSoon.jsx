@@ -31,7 +31,7 @@ function CountdownPill({ endDate }) {
   );
 }
 
-export default function DealsEndingSoon({ listings = [], styleSlug, onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
+export default function DealsEndingSoon({ listings = [], styleSlug, currency = "USD", onViewDetails, onReserveSpot, onAddToCart, onBuyNow, affiliateLinkFor }) {
   const scrollRef = useRef(null);
   const style = getStoreStyle(styleSlug);
   const pal = style.palette;
@@ -80,9 +80,9 @@ export default function DealsEndingSoon({ listings = [], styleSlug, onViewDetail
                 <CountdownPill endDate={l.dealEndDate} />
               </div>
               {isNexus ? (
-                <NexusProductCard listing={l} delay={0} onViewDetails={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
+                <NexusProductCard listing={l} delay={0} currency={currency} onViewDetails={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
               ) : (
-                <SaaSCard listing={l} delay={0} styleSpec={styleSpec} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
+                <SaaSCard listing={l} delay={0} styleSpec={styleSpec} currency={currency} onViewDetails={onViewDetails} onBuySpot={onViewDetails} onReserveSpot={onReserveSpot || onViewDetails} onAddToCart={onAddToCart} onBuyNow={onBuyNow} affiliateLink={affiliateLinkFor?.(l)} />
               )}
             </div>
           </motion.div>

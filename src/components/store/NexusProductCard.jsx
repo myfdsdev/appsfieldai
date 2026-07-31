@@ -2,8 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart, ExternalLink, Link2, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-
-const CUR = { USD: "$", INR: "₹", EUR: "€", GBP: "£" };
+import { CURRENCY_SYMBOLS as CUR } from "@/lib/currency";
 
 // Clean, light "productized services" product card for the Nexus store style:
 // white card, top image with a CATEGORY pill, a floating gradient icon badge,

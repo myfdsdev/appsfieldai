@@ -125,6 +125,7 @@ export default function OneInALifetimeDeals({ listings = [], title, subtitle, st
                 listing={l}
                 delay={i * 0.04}
                 styleSpec={p}
+                currency={currency}
                 onViewDetails={onViewDetails}
                 onBuySpot={onViewDetails}
                 onReserveSpot={onReserveSpot || onViewDetails}
