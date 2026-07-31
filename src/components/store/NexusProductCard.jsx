@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ShoppingCart, ExternalLink, Link2, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { CURRENCY_SYMBOLS as CUR } from "@/lib/currency";
+import { useCurrencyRates } from "@/lib/useCurrencyRates";
 
 // Clean, light "productized services" product card for the Nexus store style:
 // white card, top image with a CATEGORY pill, a floating gradient icon badge,
@@ -21,6 +22,7 @@ export default function NexusProductCard({
 }) {
   const [linkCopied, setLinkCopied] = React.useState(false);
   const cur = CUR[currency] || "$";
+  const { format: fmtPrice } = useCurrencyRates(currency);
   const {
     softwareName, category, shortDescription, logo, screenshots, price = 0,
     sharePrice = 0, totalShares = 0, soldShares = 0, imageGradient,
@@ -106,7 +108,7 @@ export default function NexusProductCard({
 
         <div className="mt-auto">
           <div className="flex items-baseline gap-1.5 mb-5">
-            <span className="text-3xl font-extrabold tracking-tight">{cur}{fullPrice.toLocaleString()}</span>
+            <span className="text-3xl font-extrabold tracking-tight">{fmtPrice(fullPrice)}</span>
           </div>
 
           <button
@@ -126,7 +128,7 @@ export default function NexusProductCard({
               className="w-full mt-2 py-3 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 disabled:opacity-40"
               style={{ background: `linear-gradient(135deg, ${accent}, ${accent2})` }}
             >
-              Buy Now — {cur}{fullPrice.toLocaleString()}
+              Buy Now — {fmtPrice(fullPrice)}
             </button>
           )}
 

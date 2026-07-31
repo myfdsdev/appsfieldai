@@ -7,6 +7,7 @@ import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalL
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { currencySymbol } from "@/lib/currency";
+import { useCurrencyRates } from "@/lib/useCurrencyRates";
 import { toast } from "sonner";
 
 function CountdownTimer({ endDate }) {
@@ -59,6 +60,7 @@ function AIScoreBadge({ score }) {
 export default function SaaSCard({ listing, marketplaceName, delay = 0, currency = "USD", onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot, onAddToCart, onBuyNow, affiliateLink, styleSpec }) {
   const navigate = useNavigate();
   const cur = currencySymbol(currency);
+  const { format: fmtPrice } = useCurrencyRates(currency);
   // Store style overrides (card radius, image height, button shape). Defaults
   // preserve the original marketplace look when no styleSpec is passed.
   const cardRadius = styleSpec?.radius || "rounded-2xl";
@@ -210,18 +212,18 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
           {dealType === "single_purchase" ? (
             <div className="rounded-lg bg-secondary/40 p-3 text-center" style={boxStyle}>
               <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Deal Price</p>
-              <p className="text-lg font-display font-bold" style={{ color: priceColor }}>{cur}{fullPrice.toLocaleString()}</p>
+              <p className="text-lg font-display font-bold" style={{ color: priceColor }}>{fmtPrice(fullPrice)}</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="rounded-lg bg-secondary/40 p-2.5" style={boxStyle}>
                   <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Full Price</p>
-                  <p className="text-sm font-display font-bold" style={palText ? { color: palText } : undefined}>{cur}{fullPrice.toLocaleString()}</p>
+                  <p className="text-sm font-display font-bold" style={palText ? { color: palText } : undefined}>{fmtPrice(fullPrice)}</p>
                 </div>
                 <div className="rounded-lg bg-secondary/40 p-2.5" style={boxStyle}>
                   <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Per Spot</p>
-                  <p className="text-sm font-display font-bold" style={{ color: priceColor }}>{cur}{sharePrice}</p>
+                  <p className="text-sm font-display font-bold" style={{ color: priceColor }}>{fmtPrice(sharePrice)}</p>
                 </div>
               </div>
 
@@ -240,7 +242,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
         {/* Revenue & Growth */}
         <div className="flex items-center justify-between text-xs text-muted-foreground" style={mutedStyle}>
           <span>+{growthRate}% growth</span>
-          <span>{cur}{monthlyRevenue}/mo</span>
+          <span>{fmtPrice(monthlyRevenue)}/mo</span>
         </div>
 
         {/* Buttons */}
@@ -266,7 +268,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
                   <ShoppingCart className="w-3.5 h-3.5" />
                 </Button>
                 <Button size="sm" onClick={() => onBuyNow?.(listing)} disabled={isSold} className={primaryBtnClass} style={primaryBtnStyle}>
-                  Buy Now — {cur}{fullPrice.toLocaleString()}
+                  Buy Now — {fmtPrice(fullPrice)}
                 </Button>
               </>
             )}
@@ -278,11 +280,11 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
           <div className="flex gap-2 pt-1 mt-auto">
             {(dealType !== "single_purchase") ? (
               <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-                {sharesLeft <= 0 ? "Sold Out" : `Buy Spot — ${cur}${sharePrice}`}
+                {sharesLeft <= 0 ? "Sold Out" : `Buy Spot — ${fmtPrice(sharePrice)}`}
               </Button>
             ) : (
               <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
-                Buy Now — {cur}{fullPrice.toLocaleString()}
+                Buy Now — {fmtPrice(fullPrice)}
               </Button>
             )}
             <Button size="sm" variant="outline" onClick={() => onReserveSpot?.(listing)} disabled={isSold} className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40 px-2.5">

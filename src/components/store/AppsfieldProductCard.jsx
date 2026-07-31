@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Star, Heart, ShoppingCart, ExternalLink, Link2, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { CURRENCY_SYMBOLS as CUR } from "@/lib/currency";
+import { useCurrencyRates } from "@/lib/useCurrencyRates";
 
 // Light "Appsfield" product card: image with badges + wishlist heart, category +
 // rating row, title/description, price with strikethrough original + access pill,
@@ -22,6 +23,7 @@ export default function AppsfieldProductCard({
   const [linkCopied, setLinkCopied] = React.useState(false);
   const [wished, setWished] = React.useState(false);
   const cur = CUR[currency] || "$";
+  const { format: fmtPrice } = useCurrencyRates(currency);
   const {
     softwareName, category, shortDescription, logo, screenshots, price = 0,
     discountPrice = 0, sharePrice = 0, totalShares = 0, soldShares = 0, rating = 5,
@@ -134,8 +136,8 @@ export default function AppsfieldProductCard({
         <div className="mt-auto">
           <div className="flex items-end justify-between mb-3 border-t border-[#F7F7F7] pt-3">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-bold text-xl text-[#161616]" style={{ fontFamily: "'Outfit', sans-serif" }}>{cur}{dealPrice.toLocaleString()}</span>
-              {hasDiscount && <span className="text-xs text-[#6B7280] line-through">{cur}{fullPrice.toLocaleString()}</span>}
+              <span className="font-bold text-xl text-[#161616]" style={{ fontFamily: "'Outfit', sans-serif" }}>{fmtPrice(dealPrice)}</span>
+              {hasDiscount && <span className="text-xs text-[#6B7280] line-through">{fmtPrice(fullPrice)}</span>}
             </div>
             <span className="text-[10px] font-medium bg-[#F7F7F7] text-[#6B7280] px-2 py-1 rounded">{access}</span>
           </div>
@@ -168,7 +170,7 @@ export default function AppsfieldProductCard({
               className="w-full mt-2 py-2 rounded bg-[#161616] text-white text-xs font-semibold hover:bg-[#FF6B00] transition disabled:opacity-40"
               style={{ fontFamily: "'Outfit', sans-serif" }}
             >
-              Buy Now — {cur}{dealPrice.toLocaleString()}
+              Buy Now — {fmtPrice(dealPrice)}
             </button>
           )}
 

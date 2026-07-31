@@ -4,7 +4,7 @@ import { Star, ExternalLink, ShoppingCart, Link2, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CURRENCY_SYMBOLS as CUR } from "@/lib/currency";
+import { useCurrencyRates } from "@/lib/useCurrencyRates";
 
 // Horizontal "editorial" product row used by the Monolith store style — a wide
 // media-object: large image on the left, generous copy + actions on the right.
@@ -20,7 +20,7 @@ export default function StoreEditorialCard({
   affiliateLink,
 }) {
   const [linkCopied, setLinkCopied] = React.useState(false);
-  const cur = CUR[currency] || "$";
+  const { format: fmtPrice } = useCurrencyRates(currency);
   const {
     softwareName, category, shortDescription, logo, screenshots, price = 0,
     sharePrice = 0, totalShares = 0, soldShares = 0, rating = 5, imageGradient,
@@ -69,7 +69,7 @@ export default function StoreEditorialCard({
         <div className="mt-auto flex items-end justify-between gap-4">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Deal Price</p>
-            <p className="text-2xl font-display font-bold text-[#f79a1b]">{cur}{fullPrice.toLocaleString()}</p>
+            <p className="text-2xl font-display font-bold text-[#f79a1b]">{fmtPrice(fullPrice)}</p>
           </div>
           <div className="flex gap-2">
             {dealType !== "single_purchase" ? (
