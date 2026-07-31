@@ -155,16 +155,6 @@ export default function UserManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-      {/* Invite */}
-      <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-        <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Mail className="w-4 h-4 text-violet-400" />Invite User</CardTitle></CardHeader>
-        <CardContent className="flex gap-3 flex-wrap items-end">
-          <div className="flex-1 min-w-[200px]"><label className="text-xs text-muted-foreground">Email</label><Input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="user@email.com" type="email" className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-          <div><label className="text-xs text-muted-foreground">Role</label><Select value={inviteRole} onValueChange={setInviteRole}><SelectTrigger className="w-36 bg-secondary/50 border-border/30 rounded-xl mt-1 h-9 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="user">User</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="marketplace_owner">Owner</SelectItem><SelectItem value="vendor">Vendor</SelectItem></SelectContent></Select></div>
-          <Button onClick={handleInvite} disabled={inviting || !inviteEmail} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl h-9">{inviting ? "Sending..." : "Send Invite"}</Button>
-        </CardContent>
-      </Card>
-
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
@@ -227,6 +217,16 @@ export default function UserManager() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Invite */}
+      <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+        <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Mail className="w-4 h-4 text-violet-400" />Invite User</CardTitle></CardHeader>
+        <CardContent className="flex gap-3 flex-wrap items-end">
+          <div className="flex-1 min-w-[200px]"><label className="text-xs text-muted-foreground">Email</label><Input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="user@email.com" type="email" className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+          <div><label className="text-xs text-muted-foreground">Role</label><Select value={inviteRole} onValueChange={setInviteRole}><SelectTrigger className="w-36 bg-secondary/50 border-border/30 rounded-xl mt-1 h-9 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="user">User</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="marketplace_owner">Owner</SelectItem><SelectItem value="vendor">Vendor</SelectItem></SelectContent></Select></div>
+          <Button onClick={handleInvite} disabled={inviting || !inviteEmail} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl h-9">{inviting ? "Sending..." : "Send Invite"}</Button>
         </CardContent>
       </Card>
 
