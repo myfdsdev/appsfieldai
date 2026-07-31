@@ -49,6 +49,7 @@ import Home from '@/pages/Home';
 import LeadFinder from '@/pages/LeadFinder';
 import Training from '@/pages/Training';
 import MarketingStudio from '@/pages/MarketingStudio';
+import Bonus from '@/pages/Bonus';
 // Add page imports here
 
 // When the app is served from a customer store subdomain (wildcard DNS),
@@ -138,6 +139,7 @@ const AuthenticatedApp = () => {
           <Route path="/lead-finder" element={<LeadFinder />} />
           <Route path="/marketing-studio" element={<MarketingStudio />} />
           <Route path="/training" element={<Training />} />
+          <Route path="/bonus" element={<Bonus />} />
           <Route path="/investments" element={<MyInvestments />} />
         </Route>
       </Route>

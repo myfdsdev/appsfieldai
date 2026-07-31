@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings, Package, Radar, GraduationCap, Wand2 } from "lucide-react";
+import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings, Package, Radar, GraduationCap, Wand2, Gift, LifeBuoy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -32,6 +32,8 @@ const profileMenuItems = [
   { to: "/marketing-studio", label: "Marketing Studio", icon: Wand2, feature: "marketingStudioAllowed" },
   { to: "/vendor/dashboard", label: "Vendor Dashboard", icon: Settings, feature: "vendorManagementAllowed" },
   { to: "/training", label: "Training", icon: GraduationCap },
+  { to: "/bonus", label: "Bonus", icon: Gift },
+  { href: "https://appsfieldai.com/support", label: "Support", icon: LifeBuoy, external: true },
   { to: "/pricing", label: "Plans", icon: Package },
 ];
 
@@ -141,11 +143,18 @@ export default function Topbar() {
                       </div>
                     </div>
 
-                    {visibleProfileItems.map(({ to, label, icon: Icon }) => (
-                      <button key={to} onClick={() => { setProfileOpen(false); navigate(to); }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                        <Icon className="w-4 h-4" /> {label}
-                      </button>
+                    {visibleProfileItems.map(({ to, href, label, icon: Icon, external }) => (
+                      external ? (
+                        <a key={label} href={href} target="_blank" rel="noopener noreferrer" onClick={() => setProfileOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                          <Icon className="w-4 h-4" /> {label} <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+                        </a>
+                      ) : (
+                        <button key={label} onClick={() => { setProfileOpen(false); navigate(to); }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                          <Icon className="w-4 h-4" /> {label}
+                        </button>
+                      )
                     ))}
 
                     {isAdmin && (
@@ -202,11 +211,18 @@ export default function Topbar() {
             <p className="px-4 py-1 text-[10px] uppercase text-muted-foreground tracking-wider">Account</p>
             {isAuthenticated && user ? (
               <>
-                {visibleProfileItems.map(({ to, label, icon: Icon }) => (
-                  <NavLink key={to} to={to} onClick={() => setMobileOpen(false)}
-                    className={({ isActive }) => cn("flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors", isActive ? "text-orange-400 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")}>
-                    <Icon className="w-4 h-4" /> {label}
-                  </NavLink>
+                {visibleProfileItems.map(({ to, href, label, icon: Icon, external }) => (
+                  external ? (
+                    <a key={label} href={href} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors text-muted-foreground hover:text-foreground hover:bg-secondary/50">
+                      <Icon className="w-4 h-4" /> {label} <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+                    </a>
+                  ) : (
+                    <NavLink key={label} to={to} onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => cn("flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors", isActive ? "text-orange-400 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")}>
+                      <Icon className="w-4 h-4" /> {label}
+                    </NavLink>
+                  )
                 ))}
                 {isAdmin && (
                   <NavLink to="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium rounded-xl text-orange-400 hover:bg-orange-500/10">
