@@ -166,7 +166,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
                 <button key={m.id} onClick={() => setMethod(m.id)}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${method === m.id ? "border-orange-500 bg-orange-500/10" : "border-border/40 hover:border-border"}`}>
                   <m.icon className="w-5 h-5 shrink-0" style={{ color: brandColor }} />
-                  <div className="flex-1"><p className="text-sm font-medium">{m.label}</p><p className="text-[11px] text-muted-foreground">{m.desc}</p></div>
+                  <div className="flex-1"><p className="text-sm font-medium text-foreground">{m.label}</p><p className="text-[11px] text-muted-foreground">{m.desc}</p></div>
                   <div className={`w-4 h-4 rounded-full border-2 ${method === m.id ? "border-orange-500" : "border-border"}`}>
                     {method === m.id && <div className="w-full h-full rounded-full scale-50" style={{ background: brandColor }} />}
                   </div>
