@@ -46,6 +46,20 @@ const LANGUAGES = [
   "Indonesian", "German", "Japanese", "Turkish", "Korean"
 ];
 
+// Up to 10 supported store currencies.
+const CURRENCIES = [
+  { code: "USD", label: "USD ($) — US Dollar" },
+  { code: "EUR", label: "EUR (€) — Euro" },
+  { code: "GBP", label: "GBP (£) — British Pound" },
+  { code: "INR", label: "INR (₹) — Indian Rupee" },
+  { code: "AUD", label: "AUD (A$) — Australian Dollar" },
+  { code: "CAD", label: "CAD (C$) — Canadian Dollar" },
+  { code: "JPY", label: "JPY (¥) — Japanese Yen" },
+  { code: "AED", label: "AED (د.إ) — UAE Dirham" },
+  { code: "BRL", label: "BRL (R$) — Brazilian Real" },
+  { code: "SGD", label: "SGD (S$) — Singapore Dollar" },
+];
+
 const Toggle = ({ value, onChange }) => (
   <button onClick={e => { e.stopPropagation(); onChange(!value); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${value ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-secondary/50 text-muted-foreground border border-border/30"}`}>
     {value ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
@@ -211,6 +225,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
     subdomain: marketplace?.subdomain || "",
     customDomain: marketplace?.customDomain || "",
     language: marketplace?.language || "English",
+    currency: marketplace?.currency || "USD",
     branding: {
       logo: marketplace?.branding?.logo || "",
       logoDark: marketplace?.branding?.logoDark || "",
@@ -245,6 +260,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
       subdomain: freshMarketplace.subdomain || f.subdomain,
       customDomain: freshMarketplace.customDomain || f.customDomain,
       language: freshMarketplace.language || f.language,
+      currency: freshMarketplace.currency || f.currency,
       branding: { ...f.branding, ...(freshMarketplace.branding || {}) },
     }));
     if (freshMarketplace.taxInfo) setTaxForm(f => ({ ...f, ...freshMarketplace.taxInfo }));
@@ -276,6 +292,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
       subdomain: storeForm.subdomain,
       customDomain: storeForm.customDomain,
       language: storeForm.language,
+      currency: storeForm.currency,
       branding: { ...marketplace.branding, ...storeForm.branding },
     });
     queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
@@ -762,11 +779,20 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Localization</p>
-                  <div className="max-w-xs">
-                    <label className="text-xs text-muted-foreground">Store Language</label>
-                    <select value={storeForm.language} onChange={e => setStoreForm(f => ({ ...f, language: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
-                      {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
+                  <div className="grid grid-cols-2 gap-4 max-w-xl">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Store Language</label>
+                      <select value={storeForm.language} onChange={e => setStoreForm(f => ({ ...f, language: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
+                        {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Currency</label>
+                      <select value={storeForm.currency} onChange={e => setStoreForm(f => ({ ...f, currency: e.target.value }))} className="w-full bg-secondary/50 border border-border/30 rounded-xl mt-1 px-3 py-2 text-sm">
+                        {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                      </select>
+                      <p className="text-[11px] text-muted-foreground mt-1">Currency used for product prices across your store.</p>
+                    </div>
                   </div>
                 </div>
                 <Button onClick={handleSaveStore} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
