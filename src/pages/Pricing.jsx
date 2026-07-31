@@ -66,7 +66,8 @@ export default function Pricing() {
           {plans.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map((plan, i) => {
             const Icon = planIcons[plan.name.toLowerCase().replace(/\s+/g, "_")] || Zap;
             const price = billing === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-            const isCurrent = currentUser?.planId === plan.id;
+            const heldPlanIds = [currentUser?.planId, ...(currentUser?.jvzooPlanIds || [])].filter(Boolean);
+            const isCurrent = heldPlanIds.includes(plan.id);
             return (
               <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                 <Card className="border-border/40 bg-card/60 backdrop-blur-xl h-full flex flex-col relative overflow-hidden">
