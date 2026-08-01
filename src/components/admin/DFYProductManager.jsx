@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Edit3, Trash2, Save, X, ToggleLeft, ToggleRight } from "lucide-react";
+import { Package, Plus, Edit3, Trash2, Save, X, ToggleLeft, ToggleRight, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,11 +34,19 @@ export default function DFYProductManager() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
   const { data: presets = [], isLoading } = useQuery({
     queryKey: ["dfyProducts"],
     queryFn: () => base44.entities.DFYProduct.list("-created_date"),
   });
+
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? presets.filter(p =>
+        [p.softwareName, p.category, p.shortDescription].some(v => (v || "").toLowerCase().includes(q))
+      )
+    : presets;
 
   const openCreate = () => { setForm(emptyForm); setEditingId(null); setShowForm(true); };
   const openEdit = (p) => {
@@ -183,6 +191,12 @@ export default function DFYProductManager() {
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-xs text-muted-foreground -mt-1 mb-2">These "done-for-you" products can be imported by store owners into their stores as starter products.</p>
+          {presets.length > 0 && (
+            <div className="relative mb-1">
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search apps by name, category..." className="bg-[#252525] border-border/30 rounded-xl pl-9 h-9 text-sm" />
+            </div>
+          )}
           {isLoading ? (
             <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
           ) : presets.length === 0 ? (
@@ -190,7 +204,9 @@ export default function DFYProductManager() {
               <Package className="w-8 h-8 mx-auto mb-2 text-orange-400/40" />
               <p className="text-sm text-muted-foreground">No DFY products yet. Add presets store owners can import.</p>
             </div>
-          ) : presets.map(p => (
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No products match "{search}".</p>
+          ) : filtered.map(p => (
             <div key={p.id} className="flex items-center justify-between p-3 rounded-xl border border-border/30 bg-card/40 gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${p.imageGradient || GRADIENTS[0]} flex items-center justify-center shrink-0`}>
