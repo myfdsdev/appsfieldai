@@ -123,7 +123,7 @@ export default function Topbar() {
                       <User className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-foreground max-w-[120px] truncate">{user.full_name || user.email}</span>
+                  <span className="text-sm font-medium text-foreground max-w-[120px] truncate">{user.displayName || user.full_name || user.email}</span>
                   <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", profileOpen && "rotate-180")} />
                 </button>
 
@@ -138,7 +138,7 @@ export default function Topbar() {
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{user.full_name || "User"}</p>
+                        <p className="text-sm font-medium truncate">{user.displayName || user.full_name || "User"}</p>
                         <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export default function Topbar() {
                 <div className="pt-2 border-t border-white/5">
                   <div className="flex items-center justify-between px-4 py-2">
                     <div className="flex items-center gap-2 text-sm text-foreground">
-                      <User className="w-4 h-4 text-orange-400" /> {user.full_name || user.email}
+                      <User className="w-4 h-4 text-orange-400" /> {user.displayName || user.full_name || user.email}
                     </div>
                     <NotificationBell />
                   </div>
