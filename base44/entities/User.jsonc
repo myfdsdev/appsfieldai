@@ -27,6 +27,10 @@
       "type": "string",
       "description": "Phone number"
     },
+    "displayName": {
+      "type": "string",
+      "description": "User-editable display name. The built-in full_name is read-only, so account settings save the chosen name here."
+    },
     "avatarUrl": {
       "type": "string",
       "description": "Profile picture URL"

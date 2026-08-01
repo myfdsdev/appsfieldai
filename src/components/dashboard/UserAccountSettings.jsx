@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/AuthContext";
 export default function UserAccountSettings({ user }) {
   const queryClient = useQueryClient();
   const { checkUserAuth } = useAuth();
-  const [fullName, setFullName] = useState(user?.full_name || "");
+  const [fullName, setFullName] = useState(user?.displayName || user?.full_name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const [uploading, setUploading] = useState(false);
@@ -36,7 +36,7 @@ export default function UserAccountSettings({ user }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.auth.updateMe({ full_name: fullName, phone, avatarUrl });
+      await base44.auth.updateMe({ displayName: fullName, phone, avatarUrl });
       await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       await checkUserAuth?.();
       toast.success("Profile updated.");
@@ -63,7 +63,7 @@ export default function UserAccountSettings({ user }) {
           </label>
         </div>
         <div>
-          <p className="text-sm font-medium">{user?.full_name || "Your account"}</p>
+          <p className="text-sm font-medium">{user?.displayName || user?.full_name || "Your account"}</p>
           <p className="text-xs text-muted-foreground">{user?.email}</p>
         </div>
       </div>
