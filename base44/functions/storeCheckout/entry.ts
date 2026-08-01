@@ -163,6 +163,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid items to checkout' }, { status: 400 });
     }
 
+    // Prices are stored in USD but the store charges in its own currency. Convert the
+    // USD total to the store currency at the live rate so the amount actually charged
+    // matches what the buyer saw on the product card (e.g. $1 → £0.74). We also convert
+    // each line's unit price so the recorded invoice lines add up to the charged total.
+    const storeCurrency = (marketplace.currency || 'USD').toUpperCase();
+    let fxRate = 1;
+    if (storeCurrency !== 'USD') {
+      try {
+        const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+        const fxData = await fxRes.json();
+        const r = fxData?.rates?.[storeCurrency];
+        if (r && r > 0) fxRate = r;
+      } catch (e) {
+        console.error('storeCheckout FX fetch failed, charging in USD amount:', e);
+      }
+    }
+    const noDecimals = ['JPY', 'INR'].includes(storeCurrency);
+    const roundMoney = (n) => noDecimals ? Math.round(n) : Math.round(n * 100) / 100;
+    if (fxRate !== 1) {
+      lineItems.forEach((li) => { li.unitPrice = roundMoney(li.unitPrice * fxRate); });
+      total = roundMoney(total * fxRate);
+      // Commissions are recorded in the store currency too — convert their USD amounts.
+      commissionDrafts.forEach((d) => {
+        d.orderTotal = roundMoney(d.orderTotal * fxRate);
+        d.amount = roundMoney(d.amount * fxRate);
+      });
+    }
+
     // Use the name supplied at checkout; fall back to the account's stored name.
     const buyerName = (fullName || '').trim() || customer.fullName || '';
     // Backfill the customer's account name if it was blank.

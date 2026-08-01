@@ -3,6 +3,7 @@ import { X, Loader2, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
 import { checkoutStoreOrder, createPaypalOrder, createStripeCheckout, createRazorpayOrder, verifyRazorpayOrder } from "@/lib/storeCustomerAuth";
 import { openRazorpayCheckout } from "@/lib/razorpayCheckout";
 import { getAffiliateRef, clearAffiliateRef } from "@/lib/affiliateRef";
+import { useCurrencyRates } from "@/lib/useCurrencyRates";
 import { toast } from "sonner";
 
 // Final checkout step: pick a payment method (based on what the store enabled)
@@ -23,6 +24,10 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(null); // { codInstructions }
+
+  // Prices are stored in USD; convert to the store's currency for display so the
+  // checkout matches the product cards (and what the buyer is actually charged).
+  const { format } = useCurrencyRates(marketplace?.currency || "USD");
 
   // Guests (no logged-in store account) must supply an email at checkout.
   const isGuest = !customer;
@@ -154,7 +159,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
         ) : (
           <>
             <h2 className="text-lg font-display font-bold mb-1">Checkout</h2>
-            <p className="text-xs text-muted-foreground mb-4">{items.length} item{items.length > 1 ? "s" : ""} · ${total.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mb-4">{items.length} item{items.length > 1 ? "s" : ""} · {format(total)}</p>
 
             <div className="space-y-2 mb-4">
               <label className="text-xs text-muted-foreground">Payment Method</label>
@@ -197,7 +202,7 @@ export default function StoreCheckoutModal({ open, onClose, items, total, market
 
             <div className="flex items-center justify-between rounded-xl bg-secondary/40 px-4 py-3 mb-4">
               <span className="text-sm text-muted-foreground">Total</span>
-              <span className="text-lg font-display font-bold" style={{ color: brandColor }}>${total.toLocaleString()}</span>
+              <span className="text-lg font-display font-bold" style={{ color: brandColor }}>{format(total)}</span>
             </div>
 
             <button onClick={place} disabled={loading || methods.length === 0}
