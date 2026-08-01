@@ -52,18 +52,41 @@ Deno.serve(async (req) => {
       headers: {
         Authorization: `Bearer ${authData.access_token}`,
         'Content-Type': 'application/json',
+        // Idempotency: a retried capture returns the SAME result instead of double-charging.
+        'PayPal-Request-Id': `cap-${order.id}`,
       },
     });
     const capData = await capRes.json();
-    if (capData.status !== 'COMPLETED') {
-      console.error('PayPal capture not completed:', capData);
-      return Response.json({ error: 'Payment was not completed', status: capData.status }, { status: 402 });
+
+    // Pull the actual capture object from the response. A real, completed capture
+    // has a capture id and status COMPLETED. Anything else means the money did NOT
+    // land in the account (e.g. order still APPROVED, DECLINED, PENDING, or an error).
+    const captureObj = capData?.purchase_units?.[0]?.payments?.captures?.[0];
+    const captureId = captureObj?.id;
+    const captureStatus = captureObj?.status;
+
+    if (capData.status !== 'COMPLETED' || !captureId || captureStatus !== 'COMPLETED') {
+      console.error('PayPal capture did not finalize:', JSON.stringify({
+        httpStatus: capRes.status,
+        orderStatus: capData?.status,
+        captureId,
+        captureStatus,
+        name: capData?.name,
+        details: capData?.details,
+      }));
+      // Never mark the order paid — the buyer was NOT charged (any hold auto-voids).
+      await base44.asServiceRole.entities.StoreOrder.update(order.id, { paymentStatus: 'failed' });
+      return Response.json({
+        error: 'Your payment could not be completed and you were not charged. Please try again.',
+        status: capData?.status || 'unknown',
+      }, { status: 402 });
     }
 
     const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, {
       paymentStatus: 'paid',
       status: 'processing',
       paidAt: new Date().toISOString(),
+      paypalCaptureId: captureId,
     });
 
     // Fire-and-forget order confirmation email with a full branded invoice.
