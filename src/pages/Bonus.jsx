@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import { Gift, ExternalLink, Download, Mail, Sparkles } from "lucide-react";
 
 const FRONT_END_BONUSES = [
@@ -32,19 +34,27 @@ const DOWNLOAD_BONUSES = [
   { title: "NewsPro AI Mobile Suite", desc: "Value $425. Turn any WordPress news site into sleek Android and iOS apps.", url: "https://mega.nz/file/XnYwwLpL#e3yzhZHkWtzK6HCWJV9Kofs__4iGixf3jO3j1zwxXEI" },
 ];
 
-const LinkRow = ({ title, url, cta = "Open" }) => (
+const Thumb = ({ url }) => (
+  url ? <img src={url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" /> : null
+);
+
+const LinkRow = ({ title, url, cta = "Open", thumbnailUrl }) => (
   <a href={url} target="_blank" rel="noopener noreferrer"
     className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border/40 bg-card/60 hover:border-orange-500/40 hover:bg-orange-500/5 transition-colors">
-    <span className="text-sm font-medium">{title}</span>
+    <span className="flex items-center gap-3 min-w-0">
+      <Thumb url={thumbnailUrl} />
+      <span className="text-sm font-medium truncate">{title}</span>
+    </span>
     <span className="flex items-center gap-1.5 text-xs font-medium text-orange-400 shrink-0">
       {cta} <ExternalLink className="w-3.5 h-3.5" />
     </span>
   </a>
 );
 
-const DownloadCard = ({ title, desc, url }) => (
+const DownloadCard = ({ title, desc, url, thumbnailUrl }) => (
   <a href={url} target="_blank" rel="noopener noreferrer"
     className="flex flex-col p-4 rounded-xl border border-border/40 bg-card/60 hover:border-orange-500/40 hover:bg-orange-500/5 transition-colors">
+    {thumbnailUrl && <img src={thumbnailUrl} alt="" className="w-full h-28 rounded-lg object-cover mb-3" />}
     <p className="text-sm font-semibold">{title}</p>
     {desc && <p className="text-xs text-muted-foreground mt-1 flex-1">{desc}</p>}
     <span className="flex items-center gap-1.5 text-xs font-medium text-orange-400 mt-3">
@@ -61,6 +71,26 @@ const Section = ({ title, children }) => (
 );
 
 export default function Bonus() {
+  // Load admin-managed bonuses; fall back to built-in defaults per section when none exist.
+  const { data: custom = [], isFetched } = useQuery({
+    queryKey: ["bonusItems"],
+    queryFn: () => base44.entities.BonusItem.list("sortOrder"),
+  });
+
+  const active = custom.filter((b) => b.isActive !== false);
+  const bySection = (id) => active.filter((b) => (b.section || "front_end") === id);
+
+  const frontEnd = bySection("front_end");
+  const bundle = bySection("bundle");
+  const download = bySection("download");
+
+  const frontEndItems = frontEnd.length ? frontEnd : FRONT_END_BONUSES;
+  const bundleItems = bundle.length ? bundle : BUNDLE_BONUSES;
+  const downloadItems = download.length ? download : DOWNLOAD_BONUSES;
+
+  // Normalize field names (custom records use `description`, defaults use `desc`).
+  const mapDesc = (b) => ({ ...b, desc: b.desc ?? b.description });
+
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 space-y-8">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
@@ -77,7 +107,7 @@ export default function Bonus() {
 
       <Section title="Front End Bonuses">
         <div className="grid gap-3">
-          {FRONT_END_BONUSES.map((b) => <LinkRow key={b.title} {...b} />)}
+          {frontEndItems.map((b, i) => <LinkRow key={b.id || b.title || i} {...b} />)}
         </div>
       </Section>
 
@@ -90,13 +120,13 @@ export default function Bonus() {
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {BUNDLE_BONUSES.map((b) => <LinkRow key={b.title} {...b} />)}
+          {bundleItems.map((b, i) => <LinkRow key={b.id || b.title || i} {...b} />)}
         </div>
       </Section>
 
       <Section title="Downloadable Bonuses">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {DOWNLOAD_BONUSES.map((b) => <DownloadCard key={b.title} {...b} />)}
+          {downloadItems.map((b, i) => <DownloadCard key={b.id || b.title || i} {...mapDesc(b)} />)}
         </div>
       </Section>
 

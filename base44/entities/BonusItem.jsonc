@@ -1,0 +1,50 @@
+{
+  "name": "BonusItem",
+  "type": "object",
+  "properties": {
+    "section": {
+      "type": "string",
+      "enum": [
+        "front_end",
+        "bundle",
+        "download"
+      ],
+      "default": "front_end",
+      "description": "Which section of the Bonus page this item appears in: Front End Bonuses, Bundle & Affiliate Bonuses, or Downloadable Bonuses"
+    },
+    "title": {
+      "type": "string",
+      "description": "Bonus title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional short description (mainly for downloadable bonuses)"
+    },
+    "url": {
+      "type": "string",
+      "description": "Link the bonus opens"
+    },
+    "cta": {
+      "type": "string",
+      "default": "Open",
+      "description": "Call-to-action label for link rows (e.g. Open, Sign Up)"
+    },
+    "thumbnailUrl": {
+      "type": "string",
+      "description": "Optional thumbnail image URL shown on the bonus card"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order within the section (lower appears first)"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this bonus is shown on the Bonus page"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

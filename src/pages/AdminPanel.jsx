@@ -17,6 +17,7 @@ import JvzooManager from "@/components/admin/JvzooManager";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
 import MarketingTemplateManager from "@/components/admin/MarketingTemplateManager";
+import BonusManager from "@/components/admin/BonusManager";
 import MarketplaceThemeManager from "@/components/admin/MarketplaceThemeManager";
 import TrainingSettings from "@/components/admin/settings/TrainingSettings";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
@@ -612,6 +613,8 @@ export default function AdminPanel() {
         return <StorePageDefaultManager />;
       case "mktpl_theme":
         return <MarketplaceThemeManager />;
+      case "bonus_manager":
+        return <BonusManager />;
       case "training_videos":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
