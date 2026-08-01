@@ -32,7 +32,7 @@ const profileMenuItems = [
   { to: "/marketing-studio", label: "Marketing Studio", icon: Wand2, feature: "marketingStudioAllowed" },
   { to: "/vendor/dashboard", label: "Vendor Dashboard", icon: Settings, feature: "vendorManagementAllowed" },
   { to: "/training", label: "Training", icon: GraduationCap },
-  { to: "/bonus", label: "Bonus", icon: Gift },
+  { to: "/bonus", label: "Bonuses", icon: Gift },
   { href: "https://appsfieldai.com/support", label: "Support", icon: LifeBuoy, external: true },
   { to: "/pricing", label: "Plans", icon: Package },
 ];
