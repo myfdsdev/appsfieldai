@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import MultiImageUpload from "@/components/marketing/MultiImageUpload";
 import { toast } from "sonner";
 
 const GRADIENTS = [
@@ -20,12 +21,12 @@ const GRADIENTS = [
 ];
 
 const emptyForm = {
-  softwareName: "", logo: "", thumbnail: "", demoVideoUrl: "", shortDescription: "", fullDescription: "",
+  softwareName: "", logo: "", thumbnail: "", screenshots: [], demoVideoUrl: "", shortDescription: "", fullDescription: "",
   category: "", featuresText: "", price: "", discountPrice: "", sharePrice: "",
   totalShares: "", monthlyRevenue: "", growthRate: "", rating: 5,
   dealType: "single_purchase", pricingType: "lifetime_deal",
   imageGradient: GRADIENTS[0], isActive: true,
-  adminAccessType: "none", adminAccessUrl: "", adminAccessInfo: "", provisionEndpointUrl: "",
+  adminAccessType: "none", adminAccessUrl: "", adminAccessInfo: "", adminDemoVideoUrl: "", provisionEndpointUrl: "",
 };
 
 export default function DFYProductManager() {
@@ -51,7 +52,7 @@ export default function DFYProductManager() {
   const openCreate = () => { setForm(emptyForm); setEditingId(null); setShowForm(true); };
   const openEdit = (p) => {
     setForm({
-      softwareName: p.softwareName || "", logo: p.logo || "", thumbnail: p.thumbnail || "", demoVideoUrl: p.demoVideoUrl || "", shortDescription: p.shortDescription || "",
+      softwareName: p.softwareName || "", logo: p.logo || "", thumbnail: p.thumbnail || "", screenshots: p.screenshots || [], demoVideoUrl: p.demoVideoUrl || "", shortDescription: p.shortDescription || "",
       fullDescription: p.fullDescription || "", category: p.category || "",
       featuresText: (p.features || []).join(", "), price: p.price ?? "", discountPrice: p.discountPrice ?? "",
       sharePrice: p.sharePrice ?? "", totalShares: p.totalShares ?? "", monthlyRevenue: p.monthlyRevenue ?? "",
@@ -59,7 +60,7 @@ export default function DFYProductManager() {
       pricingType: p.pricingType || "lifetime_deal", imageGradient: p.imageGradient || GRADIENTS[0],
       isActive: p.isActive ?? true,
       adminAccessType: p.adminAccessType || "none", adminAccessUrl: p.adminAccessUrl || "", adminAccessInfo: p.adminAccessInfo || "",
-      provisionEndpointUrl: p.provisionEndpointUrl || "",
+      adminDemoVideoUrl: p.adminDemoVideoUrl || "", provisionEndpointUrl: p.provisionEndpointUrl || "",
     });
     setEditingId(p.id);
     setShowForm(true);
@@ -69,7 +70,7 @@ export default function DFYProductManager() {
     if (!form.softwareName.trim()) return toast.error("Product name is required");
     setSaving(true);
     const payload = {
-      softwareName: form.softwareName, logo: form.logo, thumbnail: form.thumbnail, demoVideoUrl: form.demoVideoUrl, shortDescription: form.shortDescription,
+      softwareName: form.softwareName, logo: form.logo, thumbnail: form.thumbnail, screenshots: form.screenshots || [], demoVideoUrl: form.demoVideoUrl, shortDescription: form.shortDescription,
       fullDescription: form.fullDescription, category: form.category,
       features: form.featuresText.split(",").map(f => f.trim()).filter(Boolean),
       price: parseFloat(form.price) || 0, discountPrice: parseFloat(form.discountPrice) || 0,
@@ -80,6 +81,7 @@ export default function DFYProductManager() {
       adminAccessType: form.adminAccessType,
       adminAccessUrl: form.adminAccessType === "url" ? form.adminAccessUrl : "",
       adminAccessInfo: form.adminAccessType === "info" ? form.adminAccessInfo : "",
+      adminDemoVideoUrl: form.adminDemoVideoUrl.trim(),
       provisionEndpointUrl: form.provisionEndpointUrl.trim(),
     };
     if (editingId) await base44.entities.DFYProduct.update(editingId, payload);
@@ -115,6 +117,11 @@ export default function DFYProductManager() {
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-xs text-muted-foreground">Logo</label><div className="mt-1"><R2ImageUpload value={form.logo} onChange={url => setForm(f => ({ ...f, logo: url }))} placeholder="https://... or upload logo" /></div></div>
               <div><label className="text-xs text-muted-foreground">Thumbnail (cover image)</label><div className="mt-1"><R2ImageUpload value={form.thumbnail} onChange={url => setForm(f => ({ ...f, thumbnail: url }))} placeholder="https://... or upload cover" /></div></div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Product Images (feature gallery)</label>
+              <p className="text-[10px] text-muted-foreground mb-1.5">Shown on the storefront product page as product features after import.</p>
+              <MultiImageUpload value={form.screenshots} onChange={imgs => setForm(f => ({ ...f, screenshots: imgs }))} max={8} />
             </div>
             <div><label className="text-xs text-muted-foreground">Demo Video</label><div className="mt-1"><R2ImageUpload value={form.demoVideoUrl} onChange={url => setForm(f => ({ ...f, demoVideoUrl: url }))} accept="video/*" placeholder="https://...mp4, YouTube or upload video" /></div></div>
             <div><label className="text-xs text-muted-foreground">Short Description</label><Input value={form.shortDescription} onChange={e => setForm(f => ({ ...f, shortDescription: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
@@ -164,6 +171,11 @@ export default function DFYProductManager() {
               {form.adminAccessType === "info" && (
                 <div><label className="text-xs text-muted-foreground">Admin Access Info</label><Textarea value={form.adminAccessInfo} onChange={e => setForm(f => ({ ...f, adminAccessInfo: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1 h-24 resize-none" placeholder="Admin panel: https://...&#10;Username: ...&#10;Password: ...&#10;Notes on managing user access" /></div>
               )}
+              <div className="pt-1 border-t border-orange-500/10">
+                <label className="text-xs text-muted-foreground">Admin Demo Video (optional)</label>
+                <p className="text-[10px] text-muted-foreground mb-1.5">Only the store owner sees this in the Get Admin Access panel — shows how to create/manage user access.</p>
+                <R2ImageUpload value={form.adminDemoVideoUrl} onChange={url => setForm(f => ({ ...f, adminDemoVideoUrl: url }))} accept="video/*" placeholder="https://...mp4, YouTube or upload video" />
+              </div>
               <div className="pt-1 border-t border-orange-500/10">
                 <label className="text-xs text-muted-foreground">Provisioning Endpoint URL (optional)</label>
                 <Input value={form.provisionEndpointUrl} onChange={e => setForm(f => ({ ...f, provisionEndpointUrl: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" placeholder="https://yourapp.com/api/v1/platform/provision" />

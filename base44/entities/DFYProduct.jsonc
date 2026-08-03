@@ -14,6 +14,13 @@
       "type": "string",
       "description": "Product thumbnail/cover image URL shown in the import grid"
     },
+    "screenshots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Gallery of product feature images shown on the storefront product page after import"
+    },
     "demoVideoUrl": {
       "type": "string",
       "description": "Demo video URL (mp4 or YouTube link) previewed in the import grid"
@@ -117,6 +124,10 @@
     "adminAccessInfo": {
       "type": "string",
       "description": "Admin access instructions/credentials revealed inline when adminAccessType is 'info'"
+    },
+    "adminDemoVideoUrl": {
+      "type": "string",
+      "description": "Demo video (mp4 or YouTube link) shown only to the store owner in the Get Admin Access panel, explaining how to create/manage user access on the underlying software"
     },
     "provisionEndpointUrl": {
       "type": "string",

@@ -12,6 +12,12 @@ import BulkImportProductsDialog from "@/components/marketplace/BulkImportProduct
 import { useDfyLimit } from "@/hooks/useDfyLimit";
 import { buildStoreLink } from "@/lib/storeLink";
 
+// Extract the 11-char YouTube video ID (or null for non-YouTube URLs).
+const youtubeId = (url = "") => {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([\w-]{11})/);
+  return m ? m[1] : null;
+};
+
 const statusBadge = (status) => {
   const map = {
     pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -50,6 +56,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
   const [importOpen, setImportOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [revealedAccess, setRevealedAccess] = useState(null); // listing id whose admin info is shown
+  const [videoOpen, setVideoOpen] = useState(null); // listing id whose admin demo video is shown
   const [provisioning, setProvisioning] = useState(null); // listing id currently being provisioned
 
   // Fire the on-demand provisioning webhook for a listing (if it has an endpoint configured).
@@ -123,6 +130,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
         marketplaceId,
         softwareName: p.softwareName,
         logo: p.logo,
+        screenshots: p.screenshots || [],
         demoVideoUrl: p.demoVideoUrl || "",
         shortDescription: p.shortDescription,
         fullDescription: p.fullDescription,
@@ -146,6 +154,7 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
           type: p.adminAccessType || "none",
           url: p.adminAccessUrl || "",
           info: p.adminAccessInfo || "",
+          demoVideoUrl: p.adminDemoVideoUrl || "",
           provisionEndpointUrl: p.provisionEndpointUrl || "",
         },
       })));
@@ -297,6 +306,11 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
                       {provisioning === item.id ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <KeyRound className="w-3 h-3 mr-1" />}Get Admin Access
                     </Button>
                   )}
+                  {item.adminAccess?.demoVideoUrl && (
+                    <Button size="sm" variant="ghost" onClick={() => setVideoOpen(videoOpen === item.id ? null : item.id)} className="h-7 text-[10px] text-cyan-400">
+                      <Play className="w-3 h-3 mr-1" />How to create access {videoOpen === item.id ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                    </Button>
+                  )}
                 </div>
 
                 {/* Revealed admin access info */}
@@ -304,6 +318,26 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
                   <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3">
                     <p className="text-[10px] font-semibold text-orange-400 mb-1.5 flex items-center gap-1"><KeyRound className="w-3 h-3" /> Admin Access</p>
                     <pre className="text-[11px] text-muted-foreground whitespace-pre-wrap font-body leading-relaxed">{item.adminAccess.info}</pre>
+                  </div>
+                )}
+
+                {/* Admin demo video — shown only to the store owner */}
+                {item.adminAccess?.demoVideoUrl && videoOpen === item.id && (
+                  <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3 space-y-2">
+                    <p className="text-[10px] font-semibold text-cyan-400 flex items-center gap-1"><Play className="w-3 h-3" /> How to create access</p>
+                    <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
+                      {youtubeId(item.adminAccess.demoVideoUrl) ? (
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${youtubeId(item.adminAccess.demoVideoUrl)}?rel=0`}
+                          className="w-full h-full"
+                          allow="autoplay; encrypted-media; fullscreen"
+                          allowFullScreen
+                          title="Admin access demo"
+                        />
+                      ) : (
+                        <video src={item.adminAccess.demoVideoUrl} className="w-full h-full object-contain bg-black" controls />
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

@@ -296,6 +296,10 @@
           "type": "string",
           "description": "Admin access instructions/credentials revealed inline when type is 'info'"
         },
+        "demoVideoUrl": {
+          "type": "string",
+          "description": "Demo video (mp4 or YouTube link) shown only to the store owner in the Get Admin Access panel, explaining how to create/manage user access on the underlying software"
+        },
         "provisionEndpointUrl": {
           "type": "string",
           "description": "Optional per-product provisioning endpoint URL inherited from the DFY preset. When set, clicking 'Get Admin Access' POSTs the owner's name & email here, signed with the universal PLATFORM_WEBHOOK_SECRET."
