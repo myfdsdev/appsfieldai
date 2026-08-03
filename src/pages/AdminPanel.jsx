@@ -54,6 +54,15 @@ export default function AdminPanel() {
   const { data: allReservations = [] } = useQuery({ queryKey: ["allReservations"], queryFn: () => base44.entities.DealReservations.list("-created_date", 100) });
   const { data: allAcquisitions = [] } = useQuery({ queryKey: ["allAcquisitions"], queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100) });
   const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 100) });
+  const { data: allJvzooSales = [] } = useQuery({ queryKey: ["allJvzooSales"], queryFn: () => base44.entities.JvzooSale.list("-created_date", 5000) });
+
+  // Total app sale revenue from JVZoo — sum sale/rebill amounts, subtract refunds/chargebacks.
+  const appSaleRevenue = useMemo(() => allJvzooSales.reduce((sum, s) => {
+    const amt = Number(s.ctransamount) || 0;
+    if (["SALE", "BILL"].includes(s.ctransaction)) return sum + amt;
+    if (["RFND", "CGBK", "INSF"].includes(s.ctransaction)) return sum - amt;
+    return sum;
+  }, 0), [allJvzooSales]);
 
   const enrichedBids = useMemo(() => {
     const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Untitled");
@@ -71,7 +80,7 @@ export default function AdminPanel() {
     { icon: Users, label: "Total Users", value: allUsers.length, color: "from-violet-500 to-purple-500", iconBg: "bg-violet-500/10", iconColor: "text-violet-400" },
     { icon: Globe, label: "Active Users", value: activeUsers.length, color: "from-emerald-500 to-teal-500", iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
     { icon: Store, label: "Total Listings", value: allListings.length, color: "from-cyan-500 to-blue-500", iconBg: "bg-cyan-500/10", iconColor: "text-cyan-400" },
-    { icon: Gavel, label: "Active Auctions", value: auctionListings.length, color: "from-amber-500 to-orange-500", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
+    { icon: DollarSign, label: "App Sale Revenue", value: `$${appSaleRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, color: "from-amber-500 to-orange-500", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
   ];
 
   const handleRefresh = () => {
