@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Palette, Save, Image as ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,19 +18,23 @@ export default function MarketplaceThemeManager() {
   const [recordId, setRecordId] = useState(null);
   const [thumbnails, setThumbnails] = useState({});
   const [names, setNames] = useState({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // React Query gives us automatic retries + caching so a transient network
+  // hiccup on load no longer leaves the panel silently empty.
+  const { data: rows, isLoading, isError, refetch } = useQuery({
+    queryKey: ["storePageDefault"],
+    queryFn: () => base44.entities.StorePageDefault.filter({ key: "default" }),
+    retry: 3,
+  });
+
   useEffect(() => {
-    base44.entities.StorePageDefault.filter({ key: "default" }).then(rows => {
-      if (rows?.[0]) {
-        setRecordId(rows[0].id);
-        setThumbnails(rows[0].themeThumbnails || {});
-        setNames(rows[0].themeNames || {});
-      }
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    if (rows?.[0]) {
+      setRecordId(rows[0].id);
+      setThumbnails(rows[0].themeThumbnails || {});
+      setNames(rows[0].themeNames || {});
+    }
+  }, [rows]);
 
   const setThumb = (slug, url) => setThumbnails(t => ({ ...t, [slug]: url }));
   const setName = (slug, name) => setNames(n => ({ ...n, [slug]: name }));
@@ -53,7 +57,13 @@ export default function MarketplaceThemeManager() {
     setSaving(false);
   };
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>;
+  if (isLoading) return <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>;
+  if (isError) return (
+    <div className="py-10 text-center space-y-3">
+      <p className="text-sm text-muted-foreground">Couldn't load themes.</p>
+      <Button onClick={() => refetch()} variant="outline" className="border-border/40 rounded-xl">Retry</Button>
+    </div>
+  );
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">

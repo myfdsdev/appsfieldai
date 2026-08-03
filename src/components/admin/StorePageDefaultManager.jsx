@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Globe, Save, Plus, Trash2, LayoutTemplate } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,18 +28,22 @@ const TOGGLES = [
 export default function StorePageDefaultManager() {
   const [recordId, setRecordId] = useState(null);
   const [form, setForm] = useState(EMPTY);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // React Query gives us automatic retries + caching so a transient network
+  // hiccup on load no longer leaves the panel silently empty.
+  const { data: rows, isLoading, isError, refetch } = useQuery({
+    queryKey: ["storePageDefault"],
+    queryFn: () => base44.entities.StorePageDefault.filter({ key: "default" }),
+    retry: 3,
+  });
+
   useEffect(() => {
-    base44.entities.StorePageDefault.filter({ key: "default" }).then(rows => {
-      if (rows?.[0]) {
-        setRecordId(rows[0].id);
-        setForm({ ...EMPTY, ...(rows[0].pageSections || {}) });
-      }
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    if (rows?.[0]) {
+      setRecordId(rows[0].id);
+      setForm({ ...EMPTY, ...(rows[0].pageSections || {}) });
+    }
+  }, [rows]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setBox = (i, k, v) => setForm(f => ({ ...f, customBoxes: f.customBoxes.map((b, idx) => idx === i ? { ...b, [k]: v } : b) }));
@@ -61,7 +66,13 @@ export default function StorePageDefaultManager() {
     setSaving(false);
   };
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>;
+  if (isLoading) return <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>;
+  if (isError) return (
+    <div className="py-10 text-center space-y-3">
+      <p className="text-sm text-muted-foreground">Couldn't load the default store page.</p>
+      <Button onClick={() => refetch()} variant="outline" className="border-border/40 rounded-xl">Retry</Button>
+    </div>
+  );
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
