@@ -30,6 +30,7 @@ const FEATURE_TOGGLES = [
   { key: "marketingStudioAllowed", label: "Marketing Studio", desc: "Access to the AI promotional image & video studio" },
   { key: "customApiKeyAllowed", label: "Custom API Key", desc: "Users can add their own Kie.ai API key for unlimited image/video generation" },
   { key: "telegramAllowed", label: "Telegram", desc: "Access to Telegram notifications & bot commands" },
+  { key: "firstClientPackAllowed", label: "First Client Pack", desc: "Shows the First Client Pack resource link in the user account menu" },
 ];
 
 const SwitchRow = ({ label, desc, checked, onChange }) => (
@@ -69,7 +70,7 @@ export default function PlanManager() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], allowedThemeSlugs: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, marketingStudioAllowed: false, customApiKeyAllowed: false, monthlyImageLimit: 0, monthlyVideoLimit: 0, telegramAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
+    setForm({ name: "", description: "", conditionBoxDescription: "", monthlyPrice: 0, yearlyPrice: 0, durationType: "monthly", sortOrder: 0, storeLimit: 1, productLimit: 10, dfyAllowed: false, dfyProductLimit: 0, allowedDfyProductIds: [], allowedThemeSlugs: [], premiumTemplatesAccess: false, customDomainAllowed: false, multiVendorAllowed: false, workspaceAllowed: false, whiteLabelAllowed: false, commissionModuleAllowed: false, featuredListingsAllowed: false, liveAuctionsAllowed: false, vendorManagementAllowed: false, myRequestsAllowed: false, investmentsAllowed: false, leadFinderAllowed: false, marketingStudioAllowed: false, customApiKeyAllowed: false, monthlyImageLimit: 0, monthlyVideoLimit: 0, telegramAllowed: false, firstClientPackAllowed: false, jvzooProductId: "", purchaseUrl: "", thumbnailUrl: "", isActive: true, visibleToUsers: true });
   };
 
   const openCreate = () => { resetForm(); setEditPlan(null); setShowForm(true); };

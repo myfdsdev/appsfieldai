@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings, Package, Radar, GraduationCap, Wand2, Gift, LifeBuoy, ExternalLink } from "lucide-react";
+import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings, Package, Radar, GraduationCap, Wand2, Gift, LifeBuoy, Briefcase, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -33,6 +33,7 @@ const profileMenuItems = [
   { to: "/vendor/dashboard", label: "Vendor Dashboard", icon: Settings, feature: "vendorManagementAllowed" },
   { to: "/training", label: "Training", icon: GraduationCap },
   { to: "/bonus", label: "Bonuses", icon: Gift },
+  { href: "https://appsfieldai.com/client-pack", label: "First Client Pack", icon: Briefcase, external: true, feature: "firstClientPackAllowed" },
   { href: "https://appsfieldai.com/support", label: "Support", icon: LifeBuoy, external: true },
   { to: "/pricing", label: "Plans", icon: Package },
 ];

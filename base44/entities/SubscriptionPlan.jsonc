@@ -177,6 +177,11 @@
       "default": false,
       "description": "Access to the Telegram notifications & bot commands feature"
     },
+    "firstClientPackAllowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to the First Client Pack feature (external resource link shown in the user account menu)"
+    },
     "premiumTemplatesAccess": {
       "type": "boolean",
       "default": false,
