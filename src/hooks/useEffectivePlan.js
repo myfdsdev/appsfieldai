@@ -19,6 +19,7 @@ const BOOLEAN_FEATURES = [
   "marketingStudioAllowed",
   "customApiKeyAllowed",
   "telegramAllowed",
+  "firstClientPackAllowed",
   "premiumTemplatesAccess",
 ];
 
