@@ -1,19 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { resolveStoreCustomer } from '../../shared/storeCustomers.ts';
 
 // Store visitor places an order for single-purchase products in their cart.
 // Works BOTH for logged-in customers (via session token) AND for guests who
 // simply provide a name + email — in the guest case a StoreCustomer account is
 // silently created (or reused by email), exactly like the Deal Maker chat.
 // Recomputes prices server-side from the real listings, then records a StoreOrder.
-
-function makeToken() {
-  return crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
-}
-async function hashPassword(password: string, salt: string) {
-  const data = new TextEncoder().encode(salt + password);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
 
 Deno.serve(async (req) => {
   try {
@@ -28,52 +20,10 @@ Deno.serve(async (req) => {
     // ── Resolve the customer ──
     // 1) A valid session token identifies a logged-in customer.
     // 2) Otherwise fall back to guest checkout: reuse or create an account from name + email.
-    let customer = null;
-    let createdNewAccount = false;
-    if (token) {
-      const matches = await svc.entities.StoreCustomer.filter({ marketplaceId, sessionToken: token });
-      customer = matches[0] || null;
-      if (customer && customer.status === 'suspended') {
-        return Response.json({ error: 'Your account is suspended.' }, { status: 401 });
-      }
-    }
-
-    if (!customer) {
-      const cleanEmail = String(email || '').toLowerCase().trim();
-      const guestName = String(fullName || '').trim();
-      if (!cleanEmail || !guestName) {
-        return Response.json({ error: 'Please enter your name and email to checkout.' }, { status: 400 });
-      }
-      const existing = await svc.entities.StoreCustomer.filter({ marketplaceId, email: cleanEmail });
-      if (existing.length) {
-        customer = existing[0];
-        if (customer.status === 'suspended') {
-          return Response.json({ error: 'Your account is suspended.' }, { status: 401 });
-        }
-        if (!customer.sessionToken) {
-          const sessionToken = makeToken();
-          await svc.entities.StoreCustomer.update(customer.id, { sessionToken });
-          customer.sessionToken = sessionToken;
-        }
-      } else {
-        // Random password — the buyer sets their real one via the access email link.
-        const salt = makeToken().slice(0, 24);
-        const tempPassword = makeToken().slice(0, 16);
-        const passwordHash = await hashPassword(tempPassword, salt);
-        const sessionToken = makeToken();
-        customer = await svc.entities.StoreCustomer.create({
-          marketplaceId,
-          fullName: guestName,
-          email: cleanEmail,
-          passwordHash,
-          passwordSalt: salt,
-          phone: phone || '',
-          status: 'active',
-          sessionToken,
-        });
-        createdNewAccount = true;
-      }
-    }
+    const resolved = await resolveStoreCustomer({ svc, marketplaceId, token, fullName, email, phone });
+    if (resolved.error) return Response.json({ error: resolved.error }, { status: resolved.status });
+    const customer = resolved.customer;
+    const createdNewAccount = resolved.createdNewAccount;
 
     if (!customer) {
       return Response.json({ error: 'Could not start checkout. Please enter your name and email.' }, { status: 400 });

@@ -8,6 +8,7 @@ import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDas
 import StoreOrderCard from "@/components/store/StoreOrderCard";
 import BecomeAffiliateModal from "@/components/store/BecomeAffiliateModal";
 import StoreAccountSettings from "@/components/store/StoreAccountSettings";
+import StorePlansSection from "@/components/store/StorePlansSection";
 
 const RES_STATUS = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -227,7 +228,7 @@ export default function StoreDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border/40">
-          {[{ id: "overview", label: "Overview" }, { id: "account", label: "My Account" }].map((t) => (
+          {[{ id: "overview", label: "Overview" }, { id: "plans", label: "Plans" }, { id: "account", label: "My Account" }].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
@@ -241,7 +242,9 @@ export default function StoreDashboard() {
           ))}
         </div>
 
-        {tab === "account" ? (
+        {tab === "plans" ? (
+          <StorePlansSection marketplace={marketplace} customer={customer} brandColor={brandColor} />
+        ) : tab === "account" ? (
           <StoreAccountSettings
             marketplaceId={marketplaceId}
             customer={customer}

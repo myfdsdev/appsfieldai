@@ -1,0 +1,88 @@
+{
+  "name": "StoreSubscription",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace/store this subscription belongs to"
+    },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "ID of the StoreCustomer who subscribed"
+    },
+    "customerName": {
+      "type": "string",
+      "description": "Subscriber name at time of purchase"
+    },
+    "customerEmail": {
+      "type": "string",
+      "description": "Subscriber email at time of purchase"
+    },
+    "planId": {
+      "type": "string",
+      "description": "ID of the StorePlan subscribed to"
+    },
+    "planName": {
+      "type": "string",
+      "description": "Plan name at time of purchase"
+    },
+    "billingType": {
+      "type": "string",
+      "enum": [
+        "one_time",
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly",
+      "description": "Billing cycle purchased"
+    },
+    "price": {
+      "type": "number",
+      "description": "Amount charged per cycle, in the store currency"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "productLimit": {
+      "type": "number",
+      "default": 0,
+      "description": "Product allowance snapshot from the plan at purchase time (-1 = unlimited)"
+    },
+    "orderId": {
+      "type": "string",
+      "description": "The StoreOrder recording the payment for the current cycle"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "past_due",
+        "cancelled",
+        "expired"
+      ],
+      "default": "pending",
+      "description": "Subscription lifecycle status. Becomes 'active' once the linked order is paid."
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the subscription first became active"
+    },
+    "currentPeriodEnd": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the current paid cycle ends (renewal due date). Empty for one-time plans."
+    },
+    "cancelledAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the subscription was cancelled"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "planId"
+  ]
+}

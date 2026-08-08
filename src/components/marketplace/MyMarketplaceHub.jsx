@@ -28,6 +28,8 @@ import SeoGrowthManager from "@/components/marketplace/SeoGrowthManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
 import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
+import StorePlanManager from "@/components/marketplace/StorePlanManager";
+import StoreSubscribersList from "@/components/marketplace/StoreSubscribersList";
 import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
 import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
 import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
@@ -97,6 +99,7 @@ const NAV_GROUPS = [
     label: "Products", items: [
       { id: "products", label: "Products", icon: Package },
       { id: "orders", label: "Orders", icon: ShoppingBag },
+      { id: "subscriptions", label: "Subscription Plans", icon: CreditCard },
       { id: "project_requests", label: "Project Requests", icon: FolderKanban },
       { id: "project_clients", label: "Client Management", icon: Contact },
       { id: "categories", label: "Categories", icon: Tags },
@@ -541,6 +544,24 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
               <div><h2 className="text-lg font-display font-bold">Orders</h2>
               <p className="text-sm text-muted-foreground">Store orders placed through the cart and checkout.</p></div>
               <StoreOrderManager marketplaceId={marketplace?.id} />
+            </div>
+          )}
+
+          {/* SUBSCRIPTION PLANS */}
+          {activeTab === "subscriptions" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-display font-bold">Subscription Plans</h2>
+                <p className="text-sm text-muted-foreground">
+                  Sell recurring or one-time access to your store. Customers are charged with the payment methods you already
+                  enabled in Payment Settings — a plan activates as soon as its payment is confirmed.
+                </p>
+              </div>
+              <StorePlanManager marketplaceId={marketplace?.id} currency={marketplace?.currency || "USD"} />
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Subscribers</p>
+                <StoreSubscribersList marketplaceId={marketplace?.id} />
+              </div>
             </div>
           )}
 

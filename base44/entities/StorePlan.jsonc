@@ -1,0 +1,79 @@
+{
+  "name": "StorePlan",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace/store this subscription plan belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Plan name shown to customers (e.g. Starter, Pro, Agency)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short plan description / positioning line"
+    },
+    "billingType": {
+      "type": "string",
+      "enum": [
+        "one_time",
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly",
+      "description": "How the customer is billed: a single one-time payment, or a recurring monthly/yearly cycle"
+    },
+    "price": {
+      "type": "number",
+      "default": 0,
+      "description": "Price per billing cycle, in the store's own currency"
+    },
+    "productLimit": {
+      "type": "number",
+      "default": 0,
+      "description": "How many products the subscriber may access/redeem on this plan. 0 = none, -1 = unlimited"
+    },
+    "includedListingIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific products included with this plan. Empty = all store products are available up to the product limit."
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bullet points describing what the subscriber gets"
+    },
+    "accessUrl": {
+      "type": "string",
+      "description": "Access link delivered to the subscriber once the plan is active"
+    },
+    "accessInstructions": {
+      "type": "string",
+      "description": "Login details, license info or onboarding instructions delivered once the plan is active"
+    },
+    "highlighted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show this plan as the recommended/most popular option"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order (lower appears first)"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the plan is offered to customers"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "name"
+  ]
+}

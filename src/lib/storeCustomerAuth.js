@@ -115,6 +115,34 @@ export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, 
   return res.data;
 }
 
+// ── Store subscription plans ──
+
+// The store's public subscription plans, plus the signed-in customer's own subscriptions.
+export async function fetchStorePlans(marketplaceId) {
+  const token = getStoredToken(marketplaceId) || undefined;
+  const res = await base44.functions.invoke("storeSubscriptions", { marketplaceId, token });
+  if (res.data?.error) return { plans: [], subscriptions: [] };
+  return { plans: res.data.plans || [], subscriptions: res.data.subscriptions || [] };
+}
+
+// Subscribe to a store plan. Works for signed-in customers and guests (name + email),
+// and returns the StoreOrder used to charge the first billing cycle.
+export async function subscribeToStorePlan({ marketplaceId, planId, paymentMethod, fullName, email, phone }) {
+  const token = getStoredToken(marketplaceId) || undefined;
+  const res = await base44.functions.invoke("storeSubscribe", { marketplaceId, token, planId, paymentMethod, fullName, email, phone });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
+// Cancel one of the customer's own subscriptions.
+export async function cancelStoreSubscription({ marketplaceId, subscriptionId }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("storeSubscriptions", { marketplaceId, token, action: "cancel", subscriptionId });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data.subscription;
+}
+
 // Create a PayPal order for a pending StoreOrder and get the approval URL to redirect to.
 // Accepts an explicit token (guest checkout) falling back to the stored session.
 export async function createPaypalOrder({ marketplaceId, orderId, returnUrl, cancelUrl, token }) {
