@@ -253,6 +253,7 @@
         "templates": {
           "type": "object",
           "description": "Transactional email templates keyed by action",
+          "additionalProperties": true,
           "properties": {
             "welcome": {
               "type": "object",
@@ -316,6 +317,19 @@
           "type": "string",
           "description": "Optional subtitle shown under the products section title"
         },
+        "plansEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the subscription plans section is shown on the store page (right after Categories)"
+        },
+        "plansTitle": {
+          "type": "string",
+          "description": "Heading for the subscription plans section on the store page"
+        },
+        "plansSubtitle": {
+          "type": "string",
+          "description": "Subtitle shown under the subscription plans section heading"
+        },
         "dealMakerVoice": {
           "type": "string",
           "description": "Text-to-speech voice name used by the Deal Maker agent"
@@ -346,12 +360,12 @@
             "spotlight"
           ],
           "default": "centered",
-          "description": "Deal Maker immersive layout: centered (orb on top), avatar_left (character left / chat right), avatar_right (character right / chat left), spotlight (large character behind with chat overlay)"
+          "description": "Deal Maker immersive layout"
         },
         "dealMakerBgOpacity": {
           "type": "number",
           "default": 5,
-          "description": "Transparency (0-100) of the dark dim overlay behind the immersive Deal Maker chat. 0 = fully see-through, 100 = solid dark."
+          "description": "Transparency (0-100) of the dark dim overlay behind the immersive Deal Maker chat."
         },
         "dealMakerBgTheme": {
           "type": "string",
@@ -376,7 +390,7 @@
         },
         "dealMakerGuarantee": {
           "type": "string",
-          "description": "Guarantee line the agent uses when closing (e.g. 30-day money-back guarantee)"
+          "description": "Guarantee line the agent uses when closing"
         },
         "dealMakerGreeting": {
           "type": "string",
@@ -477,7 +491,7 @@
         },
         "trustBadges": {
           "type": "array",
-          "description": "Trust/policy factors shown to buyers (GDPR, verified payments, verified by AppsfieldAI, etc.)",
+          "description": "Trust/policy factors shown to buyers",
           "items": {
             "type": "object",
             "properties": {
@@ -531,7 +545,8 @@
         "customBoxes": {
           "type": "array",
           "items": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         },
         "customBannerEnabled": {
@@ -567,6 +582,10 @@
         },
         "footerText": {
           "type": "string"
+        },
+        "footerCopyright": {
+          "type": "string",
+          "description": "Bottom-bar copyright line shown on all themes"
         },
         "footerLogoUrl": {
           "type": "string",
