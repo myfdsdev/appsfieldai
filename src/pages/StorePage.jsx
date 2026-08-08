@@ -18,6 +18,7 @@ import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCarbonNavbar from "@/components/store/StoreCarbonNavbar";
 import StoreAppsfieldNavbar from "@/components/store/StoreAppsfieldNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
+import StorePlansBand from "@/components/store/StorePlansBand";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
@@ -247,6 +248,7 @@ export default function StorePage() {
   const footerEnabled = sections.footerEnabled ?? true;
   const faqEnabled = sections.faqEnabled ?? false;
   const trustBadgesEnabled = sections.trustBadgesEnabled ?? false;
+  const plansEnabled = sections.plansEnabled ?? false;
   const affiliateSettings = marketplace.affiliateSettings || null;
   const affiliateEnabled = !!affiliateSettings?.enabled;
   // Base URL for referral links — on a subdomain/custom domain it's the origin root,
@@ -347,6 +349,17 @@ export default function StorePage() {
 
           {/* Categories */}
           <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} styleSlug={sections.storeStyle} onSelect={handleSelectCategory} />
+
+          {/* Subscription plans */}
+          {plansEnabled && (
+            <StorePlansBand
+              marketplace={marketplace}
+              customer={customer}
+              brandColor={pal?.accent || brandColor}
+              title={sections.plansTitle}
+              subtitle={sections.plansSubtitle}
+            />
+          )}
 
           {/* Lifetime Deals (searchable grid of all store products) */}
           <div id="store-lifetime-deals">

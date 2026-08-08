@@ -189,6 +189,9 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
     heroBgOpacity: marketplace?.pageSections?.heroBgOpacity ?? 100,
     productsEnabled: marketplace?.pageSections?.productsEnabled ?? true,
     productsSectionTitle: marketplace?.pageSections?.productsSectionTitle || "",
+    plansEnabled: marketplace?.pageSections?.plansEnabled ?? false,
+    plansTitle: marketplace?.pageSections?.plansTitle || "",
+    plansSubtitle: marketplace?.pageSections?.plansSubtitle || "",
     testimonialsEnabled: marketplace?.pageSections?.testimonialsEnabled ?? false,
     testimonialsTitle: marketplace?.pageSections?.testimonialsTitle || "",
     faqEnabled: marketplace?.pageSections?.faqEnabled ?? false,
@@ -351,6 +354,17 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
                 <SectionCard title="Product Sections" icon={Package}
                   enabled={pageForm.productsEnabled} onToggle={() => setPageForm(f => ({ ...f, productsEnabled: !f.productsEnabled }))}>
                   <div><label className="text-xs text-muted-foreground">Section Title</label><Input value={pageForm.productsSectionTitle} onChange={e => setPageForm(f => ({ ...f, productsSectionTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Featured Deals" /></div>
+                </SectionCard>
+                <SectionCard title="Subscription Plans" icon={CreditCard}
+                  enabled={pageForm.plansEnabled} onToggle={() => setPageForm(f => ({ ...f, plansEnabled: !f.plansEnabled }))}>
+                  <div><label className="text-xs text-muted-foreground">Section Title</label><Input value={pageForm.plansTitle} onChange={e => setPageForm(f => ({ ...f, plansTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Membership Plans" /></div>
+                  <div><label className="text-xs text-muted-foreground">Subtitle</label><Input value={pageForm.plansSubtitle} onChange={e => setPageForm(f => ({ ...f, plansSubtitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Pick a plan and get access to our products." /></div>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-[11px] text-muted-foreground">Shown on your store page right after the Categories section.</p>
+                    <Button onClick={() => setActiveTab("subscriptions")} variant="outline" size="sm" className="border-border/40 rounded-lg gap-1.5 text-xs shrink-0">
+                      <CreditCard className="w-3.5 h-3.5" /> Manage Plans
+                    </Button>
+                  </div>
                 </SectionCard>
                 <SectionCard title="Testimonials" icon={MessageSquare}
                   enabled={pageForm.testimonialsEnabled} onToggle={() => setPageForm(f => ({ ...f, testimonialsEnabled: !f.testimonialsEnabled }))}>
@@ -556,6 +570,22 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
                   Sell recurring or one-time access to your store. Customers are charged with the payment methods you already
                   enabled in Payment Settings — a plan activates as soon as its payment is confirmed.
                 </p>
+              </div>
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-border/30 bg-secondary/20 px-4 py-3 flex-wrap">
+                <div>
+                  <p className="text-sm font-medium">Show plans on my store page</p>
+                  <p className="text-[11px] text-muted-foreground">Displays your plans right after the Categories section.</p>
+                </div>
+                <Toggle
+                  value={pageForm.plansEnabled}
+                  onChange={async (v) => {
+                    const next = { ...pageForm, plansEnabled: v };
+                    setPageForm(next);
+                    await base44.entities.Marketplace.update(marketplace.id, { pageSections: next });
+                    queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
+                    toast.success(v ? "Plans section enabled on your store." : "Plans section hidden.");
+                  }}
+                />
               </div>
               <StorePlanManager marketplaceId={marketplace?.id} currency={marketplace?.currency || "USD"} />
               <div>
