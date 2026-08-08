@@ -46,6 +46,18 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: 'Update on your project "{{project_title}}" — {{status_label}}',
     body: 'Hi {{customer_name}},\n\nHere is an update on your project "{{project_title}}" with {{store_name}}.\n\nCurrent status: {{status_label}}\n\n{{status_note}}\n\nWe\'ll keep you posted on the next steps.\n\n— {{store_name}}',
   },
+  subscriptionActive: {
+    subject: 'Your {{plan_name}} subscription at {{store_name}} is active',
+    body: 'Hi {{customer_name}},\n\nYour subscription to "{{plan_name}}" at {{store_name}} is now active.\n\nBilling: {{billing_label}}\nAmount: {{plan_price}}\nNext renewal: {{next_renewal}}\n\n{{access_block}}\n\n— {{store_name}}',
+  },
+  subscriptionRenewal: {
+    subject: 'Your {{plan_name}} subscription renews — payment due',
+    body: 'Hi {{customer_name}},\n\nYour "{{plan_name}}" subscription at {{store_name}} is due for renewal.\n\nAmount: {{plan_price}}\n\nOpen your dashboard to complete the payment and keep your access active.\n\n— {{store_name}}',
+  },
+  subscriptionCancelled: {
+    subject: 'Your {{plan_name}} subscription was cancelled',
+    body: 'Hi {{customer_name}},\n\nYour "{{plan_name}}" subscription at {{store_name}} has been cancelled. You keep access until {{next_renewal}}.\n\n— {{store_name}}',
+  },
   test: {
     subject: 'Test email from {{store_name}}',
     body: 'This is a test email from {{store_name}}.\n\nIf you received this, your store email sender is configured correctly.\n\n— {{store_name}}',
@@ -366,6 +378,15 @@ Deno.serve(async (req) => {
         commissionRate: mergedVars.commission_rate || '',
         dashboardUrl,
       });
+      html = shell({ brand, logo, storeName, inner, footer });
+    } else if (templateKey.startsWith('subscription')) {
+      const bodyText = applyVars((tpl?.body || def.body), mergedVars);
+      const btn = dashboardUrl
+        ? `<div style="margin:24px 0 8px;">
+            <a href="${esc(dashboardUrl)}" style="display:inline-block;background:${esc(brand)};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 26px;border-radius:10px;">Manage your subscription</a>
+          </div>`
+        : '';
+      const inner = `<div style="white-space:pre-wrap;">${esc(bodyText)}</div>${btn}`;
       html = shell({ brand, logo, storeName, inner, footer });
     } else {
       const bodyText = applyVars((tpl?.body || def.body), mergedVars);

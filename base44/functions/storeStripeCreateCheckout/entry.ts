@@ -44,8 +44,22 @@ Deno.serve(async (req) => {
     const productName = (order.items || []).map((i) => `${i.quantity}× ${i.listingTitle}`).join(', ')
       || `Order ${order.id}`;
 
+    // If this order pays for a recurring StoreSubscription, use Stripe's native
+    // subscription mode so Stripe auto-charges the customer every cycle.
+    let recurringSub = null;
+    try {
+      const linked = await base44.asServiceRole.entities.StoreSubscription.filter({ orderId: order.id });
+      const s = linked[0];
+      if (s && (s.billingType === 'monthly' || s.billingType === 'yearly')) recurringSub = s;
+    } catch (_) { /* non-fatal */ }
+
     const params = new URLSearchParams();
-    params.set('mode', 'payment');
+    params.set('mode', recurringSub ? 'subscription' : 'payment');
+    if (recurringSub) {
+      params.set('line_items[0][price_data][recurring][interval]', recurringSub.billingType === 'yearly' ? 'year' : 'month');
+      params.set('subscription_data[metadata][subscription_id]', recurringSub.id);
+      params.set('subscription_data[metadata][marketplace_id]', marketplaceId);
+    }
     params.set('success_url', returnUrl);
     params.set('cancel_url', cancelUrl);
     if (customer.email) params.set('customer_email', customer.email);

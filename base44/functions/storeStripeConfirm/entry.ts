@@ -45,6 +45,20 @@ Deno.serve(async (req) => {
       console.error('Stripe retrieve session failed:', session);
       return Response.json({ error: 'Could not verify the payment with Stripe' }, { status: 502 });
     }
+    // Recurring plan → remember the Stripe subscription so renewals bill automatically.
+    if (session.subscription) {
+      try {
+        const linked = await base44.asServiceRole.entities.StoreSubscription.filter({ orderId: order.id });
+        if (linked[0]) {
+          await base44.asServiceRole.entities.StoreSubscription.update(linked[0].id, {
+            gateway: 'stripe',
+            gatewaySubscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription.id,
+            autoRenew: true,
+          });
+        }
+      } catch (_) { /* non-fatal */ }
+    }
+
     if (session.payment_status !== 'paid') {
       return Response.json({ error: 'Payment was not completed', status: session.payment_status }, { status: 402 });
     }

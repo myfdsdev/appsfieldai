@@ -65,6 +65,35 @@
       "default": "pending",
       "description": "Subscription lifecycle status. Becomes 'active' once the linked order is paid."
     },
+    "gateway": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "paypal",
+        "razorpay",
+        "cod"
+      ],
+      "description": "Payment gateway used for this subscription"
+    },
+    "gatewaySubscriptionId": {
+      "type": "string",
+      "description": "Stripe subscription id (sub_...) when the plan is billed automatically by Stripe. Empty for manually renewed subscriptions."
+    },
+    "autoRenew": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the gateway charges the customer automatically each cycle (Stripe). False = the customer gets a renewal invoice to pay manually."
+    },
+    "cancelAtPeriodEnd": {
+      "type": "boolean",
+      "default": false,
+      "description": "Customer cancelled but keeps access until the current paid period ends"
+    },
+    "lastRenewalNoticeAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the last manual renewal invoice/reminder email was sent"
+    },
     "startedAt": {
       "type": "string",
       "format": "date-time",

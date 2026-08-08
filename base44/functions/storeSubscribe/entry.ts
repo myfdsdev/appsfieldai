@@ -89,6 +89,9 @@ export default async function (req) {
       productLimit: plan.productLimit ?? 0,
       orderId: order.id,
       status: 'pending',
+      gateway: method,
+      // Stripe bills recurring plans automatically; everything else is invoiced each cycle.
+      autoRenew: false,
     });
 
     return Response.json({

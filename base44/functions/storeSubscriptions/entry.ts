@@ -20,8 +20,28 @@ export default async function (req) {
       if (!customer) return Response.json({ error: 'Please sign in' }, { status: 401 });
       const subs = await svc.entities.StoreSubscription.filter({ id: subscriptionId, marketplaceId, storeCustomerId: customer.id });
       if (!subs.length) return Response.json({ error: 'Subscription not found' }, { status: 404 });
-      const updated = await svc.entities.StoreSubscription.update(subs[0].id, {
-        status: 'cancelled',
+      const sub = subs[0];
+
+      // Stop future automatic charges at Stripe (access stays until the period ends).
+      if (sub.gatewaySubscriptionId) {
+        try {
+          const mp = (await svc.entities.Marketplace.filter({ id: marketplaceId }))[0];
+          const key = mp?.payment?.stripeSecretKey;
+          if (key) {
+            await fetch(`https://api.stripe.com/v1/subscriptions/${sub.gatewaySubscriptionId}`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: 'cancel_at_period_end=true',
+            });
+          }
+        } catch (_) { /* non-fatal */ }
+      }
+
+      const stillPaid = sub.currentPeriodEnd && new Date(sub.currentPeriodEnd) > new Date();
+      const updated = await svc.entities.StoreSubscription.update(sub.id, {
+        status: stillPaid ? 'active' : 'cancelled',
+        cancelAtPeriodEnd: true,
+        autoRenew: false,
         cancelledAt: new Date().toISOString(),
       });
       return Response.json({ success: true, subscription: updated });

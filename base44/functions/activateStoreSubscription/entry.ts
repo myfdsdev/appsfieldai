@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { sendSubscriptionEmail } from '../../shared/storeSubscriptionMail.ts';
 
 // Entity automation target: whenever a StoreOrder's payment status changes, keep the
 // linked StoreSubscription in sync — paid → active (with the next renewal date),
@@ -33,11 +34,24 @@ export default async function (req) {
     const now = new Date().toISOString();
 
     if (fullOrder.paymentStatus === 'paid' && sub.status !== 'active') {
-      await svc.entities.StoreSubscription.update(sub.id, {
+      const updated = await svc.entities.StoreSubscription.update(sub.id, {
         status: 'active',
         startedAt: sub.startedAt || now,
         currentPeriodEnd: sub.billingType === 'one_time' ? undefined : addCycle(now, sub.billingType),
       });
+
+      // Confirmation email through the store's mailing system.
+      let marketplace = null;
+      try { marketplace = (await svc.entities.Marketplace.filter({ id: sub.marketplaceId }))[0] || null; } catch (_) {}
+      let plan = null;
+      try { plan = (await svc.entities.StorePlan.filter({ id: sub.planId }))[0] || null; } catch (_) {}
+      await sendSubscriptionEmail({
+        svc,
+        marketplace,
+        templateKey: 'subscriptionActive',
+        sub: { ...updated, accessUrl: plan?.accessUrl, accessInstructions: plan?.accessInstructions },
+      });
+
       return Response.json({ success: true, activated: sub.id });
     }
 
