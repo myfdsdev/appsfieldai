@@ -549,8 +549,14 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
 
           {/* PRODUCTS */}
           {activeTab === "products" && (
-            <div><h2 className="text-lg font-display font-bold mb-4">Products</h2>
-            <SoftwareManager marketplaceId={marketplace?.id} marketplaceType={marketplace?.type} marketplace={marketplace} /></div>
+            <div className="space-y-6">
+              <div><h2 className="text-lg font-display font-bold mb-4">Products</h2>
+              <SoftwareManager marketplaceId={marketplace?.id} marketplaceType={marketplace?.type} marketplace={marketplace} /></div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Access Requests</p>
+                <StoreAccessRequests marketplaceId={marketplace?.id} />
+              </div>
+            </div>
           )}
 
           {/* ORDERS */}
@@ -592,10 +598,6 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Subscribers</p>
                 <StoreSubscribersList marketplaceId={marketplace?.id} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Access Requests</p>
-                <StoreAccessRequests marketplaceId={marketplace?.id} />
               </div>
             </div>
           )}

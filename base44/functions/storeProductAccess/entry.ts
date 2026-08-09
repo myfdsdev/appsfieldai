@@ -39,9 +39,25 @@ export default async function (req) {
       status: 'requested',
     });
 
-    // Let the owner know a request is waiting (non-fatal).
+    // Let the owner know a request is waiting — in-app notification + email (non-fatal).
+    const who = customer.fullName || customer.email || 'A subscriber';
+    const summary = `${who} (${customer.email || 'no email'}) requested access to "${listing.softwareName}" on the ${sub.planName || 'subscription'} plan.`;
     try {
       const mp = (await svc.entities.Marketplace.filter({ id: marketplaceId }))[0];
+
+      if (mp?.ownerId) {
+        await svc.entities.Notification.create({
+          userId: mp.ownerId,
+          role: 'user',
+          type: 'product_access_request',
+          title: 'New product access request',
+          message: `${summary} Grant it from your store dashboard → Products → Access Requests.`,
+          listingId,
+          relatedRequestId: access.id,
+          isRead: false,
+        });
+      }
+
       let ownerEmail = mp?.supportEmail || '';
       if (!ownerEmail && mp?.ownerId) {
         ownerEmail = (await svc.entities.User.filter({ id: mp.ownerId }))[0]?.email || '';
@@ -49,8 +65,22 @@ export default async function (req) {
       if (ownerEmail) {
         await svc.integrations.Core.SendEmail({
           to: ownerEmail,
-          subject: `Access request: ${listing.softwareName}`,
-          body: `${customer.fullName || customer.email} requested access to "${listing.softwareName}" on their ${sub.planName || 'subscription'} plan.\n\nGrant it from your store dashboard → Subscription Plans → Access Requests.`,
+          subject: `Access request: ${listing.softwareName} — ${who}`,
+          body: [
+            `Hi,`,
+            ``,
+            `You have a new product access request on ${mp?.name || 'your store'}.`,
+            ``,
+            `Product: ${listing.softwareName}`,
+            `Customer: ${who}`,
+            `Email: ${customer.email || '—'}`,
+            `Plan: ${sub.planName || 'Subscription'}`,
+            `Requested: ${new Date().toLocaleString()}`,
+            ``,
+            `To deliver it, open your store dashboard → Products → Access Requests, add the access link and login instructions, then click "Send Access". The customer sees the details instantly in their account.`,
+            ``,
+            `— ${mp?.name || 'Your store'}`,
+          ].join('\n'),
         });
       }
     } catch (_) { /* non-fatal */ }

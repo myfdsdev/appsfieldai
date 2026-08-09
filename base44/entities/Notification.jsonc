@@ -35,7 +35,8 @@
         "affiliate_approved",
         "affiliate_rejected",
         "affiliate_message",
-        "affiliate_commission"
+        "affiliate_commission",
+        "product_access_request"
       ],
       "description": "Type of notification"
     },
