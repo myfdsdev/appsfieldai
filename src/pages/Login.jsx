@@ -23,7 +23,8 @@ export default function Login() {
     base44.entities.AppConfig.filter({ key: "main" })
       .then((cfgs) => {
         const cfg = cfgs?.[0];
-        if (cfg) setBranding({ logo: cfg.appLogoUrl || "", siteName: cfg.siteName || "" });
+        // Login sits on a dark background — prefer the dark-mode logo used in the dashboard.
+        if (cfg) setBranding({ logo: cfg.appLogoUrlDark || cfg.appLogoUrl || "", siteName: cfg.siteName || "" });
       })
       .catch(() => {});
   }, []);
