@@ -14,7 +14,7 @@ const STATUS_LABEL = {
 
 // Customer-facing subscription plans for a store: the plan cards plus the
 // customer's own subscription state when they're signed in.
-export default function StorePlansSection({ marketplace, customer, brandColor = "#f97316", pal }) {
+export default function StorePlansSection({ marketplace, customer, brandColor = "#f97316", pal, refreshCustomer }) {
   const cardStyle = pal
     ? { background: pal.card || pal.surface, borderColor: pal.cardBorder, color: pal.text }
     : undefined;
@@ -135,7 +135,7 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
         brandColor={brandColor}
         pal={pal}
         onClose={() => { setSelected(null); load({ silent: true }); }}
-        onSubscribed={() => load({ silent: true })}
+        onSubscribed={() => { refreshCustomer?.(); load({ silent: true }); }}
       />
     </div>
   );

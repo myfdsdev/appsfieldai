@@ -81,7 +81,7 @@ export default function StorePage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const marketplaceId = data?.marketplace?.id;
-  const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
+  const { customer, setCustomer, logout, refresh: refreshCustomer } = useStoreCustomer(marketplaceId);
   const cart = useStoreCart(marketplaceId);
 
   // Load the customer's affiliate applications so approved products show a "Grab affiliate link" button.
@@ -393,6 +393,7 @@ export default function StorePage() {
           title={sections.plansTitle}
           subtitle={sections.plansSubtitle}
           styleSlug={sections.storeStyle}
+          refreshCustomer={refreshCustomer}
         />
       )}
 

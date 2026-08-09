@@ -3,7 +3,7 @@ import StorePlansSection from "@/components/store/StorePlansSection";
 import { getStoreStyle } from "@/components/store/storeStyles";
 
 // Storefront band that presents the store's subscription plans to visitors.
-export default function StorePlansBand({ marketplace, customer, brandColor, title, subtitle, styleSlug }) {
+export default function StorePlansBand({ marketplace, customer, brandColor, title, subtitle, styleSlug, refreshCustomer }) {
   const style = getStoreStyle(styleSlug);
   const pal = style.palette;
 
@@ -20,7 +20,7 @@ export default function StorePlansBand({ marketplace, customer, brandColor, titl
           {subtitle || "Pick a plan and get access to our products."}
         </p>
       </div>
-      <StorePlansSection marketplace={marketplace} customer={customer} brandColor={brandColor} pal={pal} />
+      <StorePlansSection marketplace={marketplace} customer={customer} brandColor={brandColor} pal={pal} refreshCustomer={refreshCustomer} />
     </section>
   );
 }

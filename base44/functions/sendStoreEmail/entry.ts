@@ -50,6 +50,14 @@ const DEFAULTS: Record<string, { subject: string; body: string }> = {
     subject: 'Your {{plan_name}} subscription at {{store_name}} is active',
     body: 'Hi {{customer_name}},\n\nYour subscription to "{{plan_name}}" at {{store_name}} is now active.\n\nBilling: {{billing_label}}\nAmount: {{plan_price}}\nNext renewal: {{next_renewal}}\n\n{{access_block}}\n\n— {{store_name}}',
   },
+  subscriptionPlaced: {
+    subject: 'We received your {{plan_name}} subscription at {{store_name}}',
+    body: 'Hi {{customer_name}},\n\nThanks for subscribing to "{{plan_name}}" at {{store_name}}.\n\nBilling: {{billing_label}}\nAmount: {{plan_price}}\nPayment method: {{payment_method}}\n\nYour subscription activates as soon as your payment is confirmed. You can manage it from your dashboard.\n\n— {{store_name}}',
+  },
+  subscriptionOwner: {
+    subject: 'New subscription: {{plan_name}} — {{customer_name}}',
+    body: 'You have a new subscriber at {{store_name}}.\n\nPlan: {{plan_name}}\nBilling: {{billing_label}}\nAmount: {{plan_price}}\nPayment method: {{payment_method}}\n\nCustomer:\nName: {{customer_name}}\nEmail: {{customer_email}}\nPhone: {{customer_phone}}',
+  },
   subscriptionRenewal: {
     subject: 'Your {{plan_name}} subscription renews — payment due',
     body: 'Hi {{customer_name}},\n\nYour "{{plan_name}}" subscription at {{store_name}} is due for renewal.\n\nAmount: {{plan_price}}\n\nOpen your dashboard to complete the payment and keep your access active.\n\n— {{store_name}}',

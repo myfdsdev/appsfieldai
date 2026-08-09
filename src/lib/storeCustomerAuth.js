@@ -131,6 +131,8 @@ export async function subscribeToStorePlan({ marketplaceId, planId, paymentMetho
   const token = getStoredToken(marketplaceId) || undefined;
   const res = await base44.functions.invoke("storeSubscribe", { marketplaceId, token, planId, paymentMethod, fullName, email, phone });
   if (res.data?.error) throw new Error(res.data.error);
+  // Guests get a session token back — log them in so the subscription shows in their account.
+  if (res.data.token) setStoredToken(marketplaceId, res.data.token);
   return res.data;
 }
 

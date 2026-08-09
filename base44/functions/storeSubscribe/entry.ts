@@ -94,6 +94,42 @@ export default async function (req) {
       autoRenew: false,
     });
 
+    // ── Notify the subscriber and the store owner (non-fatal) ──
+    const priceLabel = `${currency} ${price.toLocaleString()}`;
+    const methodLabel = method === 'cod' ? 'Manual / bank transfer' : method;
+    const baseVars = {
+      customer_name: buyerName || 'there',
+      customer_email: customer.email || '',
+      customer_phone: phone || customer.phone || '',
+      plan_name: plan.name,
+      plan_price: priceLabel,
+      billing_label: cycleLabel,
+      payment_method: methodLabel,
+    };
+    const dashboardUrl = marketplace.customDomain
+      ? `https://${marketplace.customDomain}/dashboard`
+      : marketplace.storeLink ? `${String(marketplace.storeLink).replace(/\/$/, '')}/dashboard` : undefined;
+
+    if (customer.email) {
+      try {
+        await svc.functions.invoke('sendStoreEmail', {
+          marketplaceId, templateKey: 'subscriptionPlaced', to: customer.email, dashboardUrl, vars: baseVars,
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+    try {
+      let ownerEmail = marketplace.supportEmail || '';
+      if (!ownerEmail && marketplace.ownerId) {
+        const owner = (await svc.entities.User.filter({ id: marketplace.ownerId }))[0];
+        ownerEmail = owner?.email || '';
+      }
+      if (ownerEmail) {
+        await svc.functions.invoke('sendStoreEmail', {
+          marketplaceId, templateKey: 'subscriptionOwner', to: ownerEmail, vars: baseVars,
+        });
+      }
+    } catch (_) { /* non-fatal */ }
+
     return Response.json({
       success: true,
       order,
