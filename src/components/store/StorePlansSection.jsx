@@ -133,6 +133,7 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
         marketplace={marketplace}
         customer={customer}
         brandColor={brandColor}
+        pal={pal}
         onClose={() => { setSelected(null); load({ silent: true }); }}
         onSubscribed={() => load({ silent: true })}
       />
