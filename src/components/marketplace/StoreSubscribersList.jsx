@@ -21,11 +21,14 @@ function addCycle(billingType) {
 
 export default function StoreSubscribersList({ marketplaceId }) {
   const queryClient = useQueryClient();
-  const { data: subs = [], isLoading } = useQuery({
+  const { data: subs = [], isFetching } = useQuery({
     queryKey: ["storeSubscribers", marketplaceId],
     queryFn: () => base44.entities.StoreSubscription.filter({ marketplaceId }, "-created_date"),
     enabled: !!marketplaceId,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
+  const isLoading = !marketplaceId || (isFetching && subs.length === 0);
 
   const approve = async (s) => {
     await base44.entities.StoreSubscription.update(s.id, {

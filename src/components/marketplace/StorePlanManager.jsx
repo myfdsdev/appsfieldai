@@ -35,11 +35,14 @@ export default function StorePlanManager({ marketplaceId, currency = "USD" }) {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const { data: plans = [], isLoading } = useQuery({
+  const { data: plans = [], isFetching } = useQuery({
     queryKey: ["storePlans", marketplaceId],
     queryFn: () => base44.entities.StorePlan.filter({ marketplaceId }, "sortOrder"),
     enabled: !!marketplaceId,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
+  const isLoading = !marketplaceId || (isFetching && plans.length === 0);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["storePlans", marketplaceId] });
 
