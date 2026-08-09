@@ -44,9 +44,10 @@ export default async function (req) {
     if (resolved.error) return Response.json({ error: resolved.error }, { status: resolved.status });
     const customer = resolved.customer;
 
-    // Block a duplicate live subscription to the same plan.
-    const mine = await svc.entities.StoreSubscription.filter({ marketplaceId, storeCustomerId: customer.id, planId });
-    if (mine.some((s) => s.status === 'active')) {
+    // One subscription record per customer per store — never stack duplicates.
+    const mine = await svc.entities.StoreSubscription.filter({ marketplaceId, storeCustomerId: customer.id });
+    const existing = mine.find((s) => s.status === 'active') || mine.find((s) => s.status === 'pending') || null;
+    if (existing && existing.status === 'active' && existing.planId === planId) {
       return Response.json({ error: 'You are already subscribed to this plan.' }, { status: 409 });
     }
 
@@ -76,7 +77,7 @@ export default async function (req) {
       notes: `Subscription: ${plan.name}`,
     });
 
-    const subscription = await svc.entities.StoreSubscription.create({
+    const subFields = {
       marketplaceId,
       storeCustomerId: customer.id,
       customerName: buyerName,
@@ -88,11 +89,18 @@ export default async function (req) {
       currency,
       productLimit: plan.productLimit ?? 0,
       orderId: order.id,
-      status: 'pending',
       gateway: method,
       // Stripe bills recurring plans automatically; everything else is invoiced each cycle.
       autoRenew: false,
-    });
+    };
+
+    // Reuse the customer's existing record (plan change / retry) instead of creating another one.
+    const subscription = existing
+      ? await svc.entities.StoreSubscription.update(existing.id, {
+          ...subFields,
+          status: existing.status === 'active' ? 'active' : 'pending',
+        })
+      : await svc.entities.StoreSubscription.create({ ...subFields, status: 'pending' });
 
     // ── Notify the subscriber and the store owner (non-fatal) ──
     const priceLabel = `${currency} ${price.toLocaleString()}`;

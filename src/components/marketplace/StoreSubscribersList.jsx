@@ -1,7 +1,8 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Loader2 } from "lucide-react";
+import { Users, Loader2, Check } from "lucide-react";
+import { toast } from "sonner";
 
 const STATUS = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -11,12 +12,33 @@ const STATUS = {
   expired: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
+function addCycle(billingType) {
+  const d = new Date();
+  if (billingType === "yearly") d.setFullYear(d.getFullYear() + 1);
+  else d.setMonth(d.getMonth() + 1);
+  return d.toISOString();
+}
+
 export default function StoreSubscribersList({ marketplaceId }) {
+  const queryClient = useQueryClient();
   const { data: subs = [], isLoading } = useQuery({
     queryKey: ["storeSubscribers", marketplaceId],
     queryFn: () => base44.entities.StoreSubscription.filter({ marketplaceId }, "-created_date"),
     enabled: !!marketplaceId,
   });
+
+  const approve = async (s) => {
+    await base44.entities.StoreSubscription.update(s.id, {
+      status: "active",
+      startedAt: s.startedAt || new Date().toISOString(),
+      currentPeriodEnd: s.billingType === "one_time" ? undefined : addCycle(s.billingType),
+    });
+    if (s.orderId) {
+      await base44.entities.StoreOrder.update(s.orderId, { paymentStatus: "paid", accessStatus: "granted", status: "completed", paidAt: new Date().toISOString() });
+    }
+    toast.success("Subscription approved.");
+    queryClient.invalidateQueries({ queryKey: ["storeSubscribers", marketplaceId] });
+  };
 
   if (isLoading) return <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
 
@@ -40,7 +62,15 @@ export default function StoreSubscribersList({ marketplaceId }) {
               {s.currentPeriodEnd ? ` · renews ${new Date(s.currentPeriodEnd).toLocaleDateString()}` : ""}
             </p>
           </div>
-          <span className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${STATUS[s.status] || STATUS.pending}`}>{s.status}</span>
+          <div className="flex items-center gap-2 shrink-0">
+            {(s.status === "pending" || s.status === "past_due") && (
+              <button onClick={() => approve(s)}
+                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25">
+                <Check className="w-3.5 h-3.5" /> Approve
+              </button>
+            )}
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS[s.status] || STATUS.pending}`}>{s.status}</span>
+          </div>
         </div>
       ))}
     </div>
