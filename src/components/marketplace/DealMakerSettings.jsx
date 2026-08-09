@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Check, Play, Loader2 } from "lucide-react";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import KnowledgeFileUpload from "@/components/marketplace/KnowledgeFileUpload";
 import { DEAL_MAKER_BG_THEMES } from "@/components/store/dealmaker/dealMakerThemes";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -259,7 +260,12 @@ export default function DealMakerSettings({ deal, onChange }) {
       </div>
 
       <div>
-        <label className="text-xs text-muted-foreground">Training / Knowledge Base</label>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <label className="text-xs text-muted-foreground">Training / Knowledge Base</label>
+          <KnowledgeFileUpload
+            onExtracted={(text) => set("dealMakerKnowledge")({ target: { value: `${deal.dealMakerKnowledge || ""}${text}` } })}
+          />
+        </div>
         <Textarea
           value={deal.dealMakerKnowledge}
           onChange={set("dealMakerKnowledge")}
