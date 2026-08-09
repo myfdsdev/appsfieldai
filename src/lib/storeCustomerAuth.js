@@ -121,8 +121,8 @@ export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, 
 export async function fetchStorePlans(marketplaceId) {
   const token = getStoredToken(marketplaceId) || undefined;
   const res = await base44.functions.invoke("storeSubscriptions", { marketplaceId, token });
-  if (res.data?.error) return { plans: [], subscriptions: [] };
-  return { plans: res.data.plans || [], subscriptions: res.data.subscriptions || [] };
+  if (res.data?.error) return { plans: [], subscriptions: [], unlockedProducts: [] };
+  return { plans: res.data.plans || [], subscriptions: res.data.subscriptions || [], unlockedProducts: res.data.unlockedProducts || [] };
 }
 
 // Subscribe to a store plan. Works for signed-in customers and guests (name + email),

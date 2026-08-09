@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Pencil, CreditCard, Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import PlanProductPicker from "@/components/marketplace/PlanProductPicker";
 
 const BILLING = [
   { id: "one_time", label: "One-time payment" },
@@ -20,6 +21,7 @@ const blank = (marketplaceId) => ({
   billingType: "monthly",
   price: 0,
   productLimit: 0,
+  includedListingIds: [],
   features: [],
   accessUrl: "",
   accessInstructions: "",
@@ -89,6 +91,16 @@ export default function StorePlanManager({ marketplaceId, currency = "USD" }) {
           <div className="md:col-span-2">
             <label className="text-xs text-muted-foreground">What's included (one per line)</label>
             <Textarea value={(form.features || []).join("\n")} onChange={e => setForm(f => ({ ...f, features: e.target.value.split("\n").filter(Boolean) }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-24 resize-none" placeholder={"Access to all products\nPriority support"} />
+          </div>
+          <div className="md:col-span-2">
+            <label className="text-xs text-muted-foreground">Products included in this plan (leave empty to include all store products, up to the limit)</label>
+            <div className="mt-1">
+              <PlanProductPicker
+                marketplaceId={marketplaceId}
+                value={form.includedListingIds || []}
+                onChange={(ids) => setForm(f => ({ ...f, includedListingIds: ids }))}
+              />
+            </div>
           </div>
           <div className="md:col-span-2">
             <label className="text-xs text-muted-foreground">Access URL delivered after payment (optional)</label>

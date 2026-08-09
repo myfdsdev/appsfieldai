@@ -58,7 +58,43 @@ export default async function (req) {
       subscriptions.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     }
 
-    return Response.json({ plans, subscriptions });
+    // Products unlocked by the customer's ACTIVE subscriptions — delivered with
+    // their access info so the members area can hand them over.
+    const unlockedProducts = [];
+    const activeSubs = subscriptions.filter((s) => s.status === 'active');
+    if (activeSubs.length) {
+      const listings = await svc.entities.SaaSListing.filter({ marketplaceId });
+      const seen = new Set();
+      for (const sub of activeSubs) {
+        const plan = allPlans.find((p) => p.id === sub.planId);
+        if (!plan) continue;
+        const ids = plan.includedListingIds || [];
+        let items = ids.length ? listings.filter((l) => ids.includes(l.id)) : listings;
+        const limit = plan.productLimit ?? 0;
+        if (!ids.length) {
+          if (limit === 0) items = [];
+          else if (limit > 0) items = items.slice(0, limit);
+        }
+        for (const l of items) {
+          if (seen.has(l.id)) continue;
+          seen.add(l.id);
+          unlockedProducts.push({
+            id: l.id,
+            softwareName: l.softwareName,
+            shortDescription: l.shortDescription || '',
+            logo: l.logo || '',
+            category: l.category || '',
+            planName: plan.name,
+            delivery: {
+              accessUrl: l.delivery?.accessUrl || plan.accessUrl || '',
+              instructions: l.delivery?.instructions || plan.accessInstructions || '',
+            },
+          });
+        }
+      }
+    }
+
+    return Response.json({ plans, subscriptions, unlockedProducts });
   } catch (error) {
     console.error('storeSubscriptions error:', error);
     return Response.json({ error: error.message }, { status: 500 });

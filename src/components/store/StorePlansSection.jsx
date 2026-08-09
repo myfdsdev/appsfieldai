@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Check, Loader2, Star, CreditCard } from "lucide-react";
 import { fetchStorePlans, cancelStoreSubscription } from "@/lib/storeCustomerAuth";
 import StoreSubscribeModal from "@/components/store/StoreSubscribeModal";
+import StoreUnlockedProducts from "@/components/store/StoreUnlockedProducts";
 import { toast } from "sonner";
 
 const STATUS_LABEL = {
@@ -21,6 +22,7 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
   const mutedStyle = pal ? { color: `${pal.text}99` } : undefined;
   const [plans, setPlans] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
+  const [unlocked, setUnlocked] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
@@ -31,7 +33,7 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
     if (!marketplaceId) return;
     if (!silent) setLoading(true);
     fetchStorePlans(marketplaceId)
-      .then((res) => { setPlans(res.plans || []); setSubscriptions(res.subscriptions || []); })
+      .then((res) => { setPlans(res.plans || []); setSubscriptions(res.subscriptions || []); setUnlocked(res.unlockedProducts || []); })
       .finally(() => setLoading(false));
   };
 
@@ -82,6 +84,8 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
           ))}
         </div>
       )}
+
+      <StoreUnlockedProducts products={unlocked} brandColor={brandColor} pal={pal} />
 
       {plans.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
