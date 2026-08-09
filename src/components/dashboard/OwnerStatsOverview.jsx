@@ -8,35 +8,44 @@ import StatCard from "@/components/dashboard/StatCard";
 export default function OwnerStatsOverview({ marketplaces = [] }) {
   const marketplaceIds = useMemo(() => marketplaces.map((m) => m.id), [marketplaces]);
 
-  const { data: listings = [] } = useQuery({
+  const { data: listings = [], isFetching: fetchingListings } = useQuery({
     queryKey: ["ownerListings", marketplaceIds],
     queryFn: async () => {
       const results = await Promise.all(marketplaceIds.map((id) => base44.entities.SaaSListing.filter({ marketplaceId: id })));
       return results.flat();
     },
     enabled: marketplaceIds.length > 0,
+    retry: 2,
   });
 
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
 
   // Real store sales come from StoreOrder records created at checkout.
-  const { data: orders = [] } = useQuery({
+  const { data: orders = [], isFetching: fetchingOrders } = useQuery({
     queryKey: ["ownerStoreOrders", marketplaceIds],
     queryFn: async () => {
       const results = await Promise.all(marketplaceIds.map((id) => base44.entities.StoreOrder.filter({ marketplaceId: id })));
       return results.flat();
     },
     enabled: marketplaceIds.length > 0,
+    retry: 2,
   });
 
-  const { data: customers = [] } = useQuery({
+  const { data: customers = [], isFetching: fetchingCustomers } = useQuery({
     queryKey: ["ownerCustomers", marketplaceIds],
     queryFn: async () => {
       const results = await Promise.all(marketplaceIds.map((id) => base44.entities.StoreCustomer.filter({ marketplaceId: id })));
       return results.flat();
     },
     enabled: marketplaceIds.length > 0,
+    retry: 2,
   });
+
+  // Still resolving the stores or their data — show a placeholder instead of a misleading 0.
+  const loading =
+    marketplaceIds.length === 0 ||
+    ((fetchingListings || fetchingOrders || fetchingCustomers) &&
+      listings.length === 0 && orders.length === 0 && customers.length === 0);
 
   const liveProducts = listings.filter((l) => ["active", "approved", "live"].includes(l.status) || l.dealStatus === "live").length;
   // Paid store orders drive revenue; total units sold = sum of purchased quantities.
@@ -45,10 +54,10 @@ export default function OwnerStatsOverview({ marketplaces = [] }) {
   const revenue = paidOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
   const stats = [
-    { icon: Package, label: "Live Products", value: liveProducts, color: "from-violet-600 to-purple-600" },
-    { icon: ShoppingBag, label: "Orders Sold", value: unitsSold, color: "from-orange-500 to-amber-500" },
-    { icon: Users, label: "Customers", value: customers.length, color: "from-cyan-600 to-blue-600" },
-    { icon: DollarSign, label: "Revenue", value: `$${revenue.toLocaleString()}`, color: "from-emerald-600 to-green-600" },
+    { icon: Package, label: "Live Products", value: loading ? "—" : liveProducts, color: "from-violet-600 to-purple-600" },
+    { icon: ShoppingBag, label: "Orders Sold", value: loading ? "—" : unitsSold, color: "from-orange-500 to-amber-500" },
+    { icon: Users, label: "Customers", value: loading ? "—" : customers.length, color: "from-cyan-600 to-blue-600" },
+    { icon: DollarSign, label: "Revenue", value: loading ? "—" : `$${revenue.toLocaleString()}`, color: "from-emerald-600 to-green-600" },
   ];
 
   return (

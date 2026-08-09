@@ -112,6 +112,24 @@ export default function AiChatWidget() {
 
   return (
     <>
+      {/* Ask-me bubble */}
+      <AnimatePresence>
+        {!open && (
+          <motion.button
+            onClick={handleToggle}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ delay: 0.6 }}
+            className="fixed bottom-[5.5rem] right-6 z-50 max-w-[220px] text-left bg-card border border-orange-500/30 rounded-2xl rounded-br-sm shadow-lg shadow-black/20 px-3.5 py-2.5"
+          >
+            <p className="text-[11px] leading-snug text-foreground">
+              👋 Ask me anything regarding <span className="text-orange-400 font-semibold">AppsField</span>
+            </p>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Floating Mascot Button */}
       <motion.button
         onClick={handleToggle}
