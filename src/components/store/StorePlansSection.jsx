@@ -60,7 +60,19 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
     );
   }
 
-  const liveSubs = subscriptions.filter((s) => s.status === "active" || s.status === "pending");
+  // One card per plan — keep the newest record (active wins over pending).
+  const liveSubs = Object.values(
+    subscriptions
+      .filter((s) => s.status === "active" || s.status === "pending")
+      .reduce((acc, s) => {
+        const cur = acc[s.planId];
+        const better = !cur
+          || (s.status === "active" && cur.status !== "active")
+          || (s.status === cur.status && new Date(s.created_date || 0) > new Date(cur.created_date || 0));
+        if (better) acc[s.planId] = s;
+        return acc;
+      }, {})
+  );
 
   return (
     <div className="space-y-6">

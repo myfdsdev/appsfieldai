@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Loader2, Check } from "lucide-react";
+import { Users, Loader2, Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUS = {
@@ -43,6 +43,12 @@ export default function StoreSubscribersList({ marketplaceId }) {
     queryClient.invalidateQueries({ queryKey: ["storeSubscribers", marketplaceId] });
   };
 
+  const remove = async (s) => {
+    await base44.entities.StoreSubscription.delete(s.id);
+    toast.success("Subscriber removed.");
+    queryClient.invalidateQueries({ queryKey: ["storeSubscribers", marketplaceId] });
+  };
+
   if (isLoading) return <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
 
   if (subs.length === 0) {
@@ -73,6 +79,10 @@ export default function StoreSubscribersList({ marketplaceId }) {
               </button>
             )}
             <span className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS[s.status] || STATUS.pending}`}>{s.status}</span>
+            <button onClick={() => remove(s)} title="Delete subscriber"
+              className="p-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       ))}
