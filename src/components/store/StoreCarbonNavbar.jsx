@@ -43,6 +43,7 @@ export default function StoreCarbonNavbar({ marketplace, sections = {}, customer
     { label: "Best Sellers", target: "store-best-sellers" },
     { label: "Categories", target: "store-categories" },
     { label: "Lifetime Deals", target: "store-lifetime-deals" },
+    ...(sections.plansEnabled ? [{ label: "Plans", target: "store-plans" }] : []),
     ...(marketplace.type === "multi_vendor" ? [{ label: "Become A Vendor?", target: "store-become-vendor" }] : []),
   ];
 

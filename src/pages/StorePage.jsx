@@ -350,17 +350,6 @@ export default function StorePage() {
           {/* Categories */}
           <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} styleSlug={sections.storeStyle} onSelect={handleSelectCategory} />
 
-          {/* Subscription plans */}
-          {plansEnabled && (
-            <StorePlansBand
-              marketplace={marketplace}
-              customer={customer}
-              brandColor={pal?.accent || brandColor}
-              title={sections.plansTitle}
-              subtitle={sections.plansSubtitle}
-            />
-          )}
-
           {/* Lifetime Deals (searchable grid of all store products) */}
           <div id="store-lifetime-deals">
             <OneInALifetimeDeals
@@ -394,6 +383,17 @@ export default function StorePage() {
 
       {/* Testimonials */}
       {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={pal?.accent || brandColor} title={sections.testimonialsTitle} styleSlug={sections.storeStyle} />}
+
+      {/* Subscription plans — above the "Why Buy From Us" section */}
+      {plansEnabled && (
+        <StorePlansBand
+          marketplace={marketplace}
+          customer={customer}
+          brandColor={pal?.accent || brandColor}
+          title={sections.plansTitle}
+          subtitle={sections.plansSubtitle}
+        />
+      )}
 
       {/* Custom Section */}
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} styleSlug={sections.storeStyle} />}
