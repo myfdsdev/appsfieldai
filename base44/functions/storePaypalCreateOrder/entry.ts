@@ -49,7 +49,10 @@ Deno.serve(async (req) => {
     const authData = await authRes.json();
     if (!authData.access_token) {
       console.error('PayPal auth failed:', authData);
-      return Response.json({ error: 'Could not connect to PayPal. Check the store PayPal credentials.' }, { status: 502 });
+      const detail = authData?.error_description || authData?.error || '';
+      return Response.json({
+        error: `PayPal rejected the store credentials (${payment.paypalMode === 'live' ? 'Live' : 'Sandbox'} mode)${detail ? `: ${detail}` : ''}. Update the Client ID & Secret in Payment Settings.`,
+      }, { status: 400 });
     }
 
     const currency = order.currency || 'USD';
@@ -79,7 +82,8 @@ Deno.serve(async (req) => {
     const createData = await createRes.json();
     if (!createData.id) {
       console.error('PayPal create order failed:', createData);
-      return Response.json({ error: 'Could not create PayPal order' }, { status: 502 });
+      const detail = createData?.details?.[0]?.description || createData?.message || '';
+      return Response.json({ error: `Could not create PayPal order${detail ? `: ${detail}` : ''}` }, { status: 400 });
     }
 
     // Store the PayPal order id on our order for capture/idempotency.

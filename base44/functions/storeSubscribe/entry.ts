@@ -57,7 +57,7 @@ export default async function (req) {
     const price = Number(plan.price) || 0;
 
     // Plan prices are already set by the owner in the store currency — no FX conversion.
-    const order = await svc.entities.StoreOrder.create({
+    const orderFields = {
       marketplaceId,
       storeCustomerId: customer.id,
       customerName: buyerName,
@@ -75,7 +75,17 @@ export default async function (req) {
         ? { accessUrl: plan.accessUrl || '', instructions: plan.accessInstructions || '' }
         : undefined,
       notes: `Subscription: ${plan.name}`,
-    });
+    };
+
+    // Reuse the existing unpaid order instead of piling up a new StoreOrder every retry.
+    let reusableOrder = null;
+    if (existing?.orderId) {
+      const prev = (await svc.entities.StoreOrder.filter({ id: existing.orderId }))[0];
+      if (prev && prev.paymentStatus === 'pending') reusableOrder = prev;
+    }
+    const order = reusableOrder
+      ? await svc.entities.StoreOrder.update(reusableOrder.id, orderFields)
+      : await svc.entities.StoreOrder.create(orderFields);
 
     const subFields = {
       marketplaceId,
