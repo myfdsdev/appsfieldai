@@ -37,10 +37,14 @@ export default function StorePlanManager({ marketplaceId, currency = "USD" }) {
 
   const { data: plans = [], isFetching } = useQuery({
     queryKey: ["storePlans", marketplaceId],
-    queryFn: () => base44.entities.StorePlan.filter({ marketplaceId }, "sortOrder"),
+    queryFn: async () => {
+      const rows = await base44.entities.StorePlan.filter({ marketplaceId });
+      return [...rows].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    },
     enabled: !!marketplaceId,
     refetchOnMount: "always",
     staleTime: 0,
+    retry: 2,
   });
   const isLoading = !marketplaceId || (isFetching && plans.length === 0);
 
