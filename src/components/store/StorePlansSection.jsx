@@ -27,9 +27,9 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
   const currency = marketplace?.currency || "USD";
   const marketplaceId = marketplace?.id;
 
-  const load = () => {
+  const load = ({ silent } = {}) => {
     if (!marketplaceId) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     fetchStorePlans(marketplaceId)
       .then((res) => { setPlans(res.plans || []); setSubscriptions(res.subscriptions || []); })
       .finally(() => setLoading(false));
@@ -133,8 +133,8 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
         marketplace={marketplace}
         customer={customer}
         brandColor={brandColor}
-        onClose={() => { setSelected(null); load(); }}
-        onSubscribed={load}
+        onClose={() => { setSelected(null); load({ silent: true }); }}
+        onSubscribed={() => load({ silent: true })}
       />
     </div>
   );
