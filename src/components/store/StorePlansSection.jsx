@@ -14,7 +14,11 @@ const STATUS_LABEL = {
 
 // Customer-facing subscription plans for a store: the plan cards plus the
 // customer's own subscription state when they're signed in.
-export default function StorePlansSection({ marketplace, customer, brandColor = "#f97316" }) {
+export default function StorePlansSection({ marketplace, customer, brandColor = "#f97316", pal }) {
+  const cardStyle = pal
+    ? { background: pal.card || pal.surface, borderColor: pal.cardBorder, color: pal.text }
+    : undefined;
+  const mutedStyle = pal ? { color: `${pal.text}99` } : undefined;
   const [plans, setPlans] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,30 +88,30 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
           {plans.map((p) => {
             const subscribed = subscriptions.some((s) => s.planId === p.id && s.status === "active");
             return (
-              <div key={p.id} className="rounded-2xl border bg-card/60 p-5 flex flex-col"
-                style={p.highlighted ? { borderColor: brandColor } : { borderColor: "hsl(var(--border) / 0.4)" }}>
+              <div key={p.id} className={`rounded-2xl border p-5 flex flex-col ${pal ? "" : "bg-card/60"}`}
+                style={{ ...(cardStyle || {}), ...(p.highlighted ? { borderColor: brandColor } : (pal ? {} : { borderColor: "hsl(var(--border) / 0.4)" })) }}>
                 {p.highlighted && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2 self-start text-white" style={{ background: brandColor }}>
                     <Star className="w-3 h-3" /> Most popular
                   </span>
                 )}
                 <p className="font-display font-bold">{p.name}</p>
-                {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
+                {p.description && <p className="text-xs text-muted-foreground mt-1" style={mutedStyle}>{p.description}</p>}
                 <p className="mt-3">
                   <span className="text-2xl font-display font-bold" style={{ color: brandColor }}>{currency} {p.price}</span>
-                  <span className="text-xs text-muted-foreground ml-1">
+                  <span className="text-xs text-muted-foreground ml-1" style={mutedStyle}>
                     {p.billingType === "one_time" ? "one-time" : p.billingType === "yearly" ? "/year" : "/month"}
                   </span>
                 </p>
                 <ul className="mt-3 space-y-1.5 flex-1">
                   {p.productLimit !== 0 && (
-                    <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <li className="flex items-start gap-2 text-xs text-muted-foreground" style={mutedStyle}>
                       <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: brandColor }} />
                       {p.productLimit === -1 ? "Unlimited products" : `${p.productLimit} products included`}
                     </li>
                   )}
                   {(p.features || []).map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground" style={mutedStyle}>
                       <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: brandColor }} /> {f}
                     </li>
                   ))}

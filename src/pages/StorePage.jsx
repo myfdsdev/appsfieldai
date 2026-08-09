@@ -392,6 +392,7 @@ export default function StorePage() {
           brandColor={pal?.accent || brandColor}
           title={sections.plansTitle}
           subtitle={sections.plansSubtitle}
+          styleSlug={sections.storeStyle}
         />
       )}
 
