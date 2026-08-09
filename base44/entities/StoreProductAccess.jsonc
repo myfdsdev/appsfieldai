@@ -1,0 +1,61 @@
+{
+  "name": "StoreProductAccess",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Store this access request belongs to"
+    },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "StoreCustomer who requested access"
+    },
+    "customerName": {
+      "type": "string"
+    },
+    "customerEmail": {
+      "type": "string"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "Product the customer wants access to"
+    },
+    "listingTitle": {
+      "type": "string"
+    },
+    "subscriptionId": {
+      "type": "string",
+      "description": "Subscription that entitles the customer to this product"
+    },
+    "planName": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "granted",
+        "denied"
+      ],
+      "default": "requested",
+      "description": "Lifecycle of the access request"
+    },
+    "accessUrl": {
+      "type": "string",
+      "description": "Access link the owner delivered"
+    },
+    "instructions": {
+      "type": "string",
+      "description": "Login details / instructions the owner delivered"
+    },
+    "grantedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "storeCustomerId",
+    "listingId"
+  ]
+}

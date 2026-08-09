@@ -136,6 +136,15 @@ export async function subscribeToStorePlan({ marketplaceId, planId, paymentMetho
   return res.data;
 }
 
+// Request access to a product included with the customer's active plan.
+export async function requestProductAccess({ marketplaceId, listingId }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in");
+  const res = await base44.functions.invoke("storeProductAccess", { marketplaceId, token, listingId });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data.access;
+}
+
 // Cancel one of the customer's own subscriptions.
 export async function cancelStoreSubscription({ marketplaceId, subscriptionId }) {
   const token = getStoredToken(marketplaceId);

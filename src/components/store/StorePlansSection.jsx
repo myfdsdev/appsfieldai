@@ -97,7 +97,13 @@ export default function StorePlansSection({ marketplace, customer, brandColor = 
         </div>
       )}
 
-      <StoreUnlockedProducts products={unlocked} brandColor={brandColor} pal={pal} />
+      <StoreUnlockedProducts
+        products={unlocked}
+        brandColor={brandColor}
+        pal={pal}
+        marketplaceId={marketplaceId}
+        onChanged={() => load({ silent: true })}
+      />
 
       {plans.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

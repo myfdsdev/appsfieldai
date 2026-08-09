@@ -64,6 +64,7 @@ export default async function (req) {
     const activeSubs = subscriptions.filter((s) => s.status === 'active');
     if (activeSubs.length) {
       const listings = await svc.entities.SaaSListing.filter({ marketplaceId });
+      const accessRows = await svc.entities.StoreProductAccess.filter({ marketplaceId, storeCustomerId: customer.id });
       const seen = new Set();
       for (const sub of activeSubs) {
         const plan = allPlans.find((p) => p.id === sub.planId);
@@ -78,7 +79,12 @@ export default async function (req) {
         for (const l of items) {
           if (seen.has(l.id)) continue;
           seen.add(l.id);
+          const req = accessRows.find((a) => a.listingId === l.id) || null;
           unlockedProducts.push({
+            accessStatus: req ? req.status : 'none',
+            accessGrant: req && req.status === 'granted'
+              ? { accessUrl: req.accessUrl || '', instructions: req.instructions || '' }
+              : null,
             id: l.id,
             softwareName: l.softwareName,
             shortDescription: l.shortDescription || '',

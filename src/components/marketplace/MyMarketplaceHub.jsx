@@ -30,6 +30,7 @@ import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsMana
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
 import StorePlanManager from "@/components/marketplace/StorePlanManager";
 import StoreSubscribersList from "@/components/marketplace/StoreSubscribersList";
+import StoreAccessRequests from "@/components/marketplace/StoreAccessRequests";
 import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
 import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
 import DealMakerSettings from "@/components/marketplace/DealMakerSettings";
@@ -591,6 +592,10 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Subscribers</p>
                 <StoreSubscribersList marketplaceId={marketplace?.id} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Access Requests</p>
+                <StoreAccessRequests marketplaceId={marketplace?.id} />
               </div>
             </div>
           )}
