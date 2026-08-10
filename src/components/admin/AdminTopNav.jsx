@@ -105,6 +105,7 @@ const NAV_GROUPS = [
     label: "System & Config",
     items: [
       { id: "system",           label: "General Settings", icon: SlidersHorizontal },
+      { id: "support_agent",    label: "Support Agent",    icon: Bot },
       { id: "payment_settings", label: "Payment Settings", icon: CreditCard },
       { id: "domain_settings",  label: "Domain Settings",  icon: Globe },
       { id: "stripe_int",       label: "Integrations",     icon: Link },

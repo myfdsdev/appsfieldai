@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone, UserPlus, ShieldCheck, FileText, Star, FileCode, Bot, Sparkles, Workflow, AtSign, FileStack, ContactRound, Calendar } from "lucide-react";
-import DividendPanel from "@/components/admin/DividendPanel";
 import PlatformDomainConfig from "@/components/admin/PlatformDomainConfig";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -52,7 +51,6 @@ export default function AdminPanel() {
   const { data: allListings = [], isLoading } = useQuery({ queryKey: ["allListings"], queryFn: () => base44.entities.SaaSListing.list() });
   const { data: allBids = [] } = useQuery({ queryKey: ["allBids"], queryFn: () => base44.entities.Bid.filter({}, ["-created_date"], 100) });
   const { data: allUsers = [] } = useQuery({ queryKey: ["allUsers"], queryFn: () => base44.entities.User.list() });
-  const { data: allTransactions = [] } = useQuery({ queryKey: ["allTransactions"], queryFn: () => base44.entities.Transaction.filter({}, ["-created_date"], 100) });
   const { data: allReservations = [] } = useQuery({ queryKey: ["allReservations"], queryFn: () => base44.entities.DealReservations.list("-created_date", 100) });
   const { data: allAcquisitions = [] } = useQuery({ queryKey: ["allAcquisitions"], queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100) });
   const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 100) });
@@ -295,8 +293,6 @@ export default function AdminPanel() {
         </Card>
       </motion.div>
       <PlatformDomainConfig />
-      <SupportAgentConfig />
-      <SupportChatReports />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -346,27 +342,6 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Card className="border-border/40 bg-[#1a1a1a]">
-          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Receipt className="w-4 h-4 text-violet-400" />Transaction History<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allTransactions.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/20">
-            {allTransactions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p> : allTransactions.slice(0, 30).map(t => {
-              const isPos = t.amount > 0;
-              const tl = { share_purchase: "Share Purchase", full_ownership_purchase: "Full Ownership", deposit: "Deposit", withdrawal: "Withdrawal", dividend: "Dividend", sale_revenue: "Sale Revenue" }[t.type] || t.type;
-              return (
-                <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center"><ArrowDownRight className={`w-4 h-4 ${isPos ? "text-emerald-400" : "text-red-400"}`} /></div>
-                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div>
-                  </div>
-                  <span className={`text-sm font-display font-bold shrink-0 ${isPos ? "text-emerald-400" : "text-red-400"}`}>{isPos ? "+" : "-"}${Math.abs(t.amount).toLocaleString()}</span>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </motion.div>
-      <DividendPanel />
     </>
   );
 
@@ -694,6 +669,13 @@ export default function AdminPanel() {
         );
       case "system":
         return systemContent;
+      case "support_agent":
+        return (
+          <>
+            <SupportAgentConfig />
+            <SupportChatReports />
+          </>
+        );
       case "app_notif":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
