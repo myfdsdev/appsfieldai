@@ -14,6 +14,10 @@
       "type": "string",
       "description": "Optional URL the action button opens"
     },
+    "appUrl": {
+      "type": "string",
+      "description": "App URL used in the email's 'Get access to the app' button"
+    },
     "buttonLabel": {
       "type": "string",
       "description": "Label of the action button shown in the popup"

@@ -39,7 +39,7 @@ export default function BroadcastComposer({ onSent }) {
     }
     setTesting(true);
     try {
-      const res = await base44.functions.invoke("sendBroadcast", { test: true, broadcast: form });
+      const res = await base44.functions.invoke("sendBroadcast", { test: true, broadcast: { ...form, appUrl: window.location.origin } });
       toast.success(res.data?.emailed ? "Test sent to your notifications and email" : "Test sent to your notifications");
     } catch (e) {
       toast.error("Could not send the test");
@@ -60,6 +60,7 @@ export default function BroadcastComposer({ onSent }) {
     try {
       const created = await base44.entities.AdminBroadcast.create({
         ...form,
+        appUrl: window.location.origin,
         durationHours: Number(form.durationHours) || 0,
         scheduledAt: form.scheduleMode === "scheduled" ? new Date(form.scheduledAt).toISOString() : "",
         status: "scheduled",

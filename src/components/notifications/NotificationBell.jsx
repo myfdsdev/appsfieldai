@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import NotificationDetailModal from "@/components/notifications/NotificationDetailModal";
 
 const typeConfig = {
   outbid:              { icon: Gavel, color: "bg-amber-500/10 text-amber-400" },
@@ -39,6 +40,7 @@ function timeAgo(dateStr) {
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState(null);
   const ref = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -113,6 +115,8 @@ export default function NotificationBell() {
       navigate(`/saas/${n.listingId}`);
     } else if (n.relatedRequestId) {
       navigate("/requests");
+    } else {
+      setDetail(n);
     }
   };
 
@@ -186,6 +190,8 @@ export default function NotificationBell() {
           </div>
         </div>
       )}
+
+      <NotificationDetailModal notification={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

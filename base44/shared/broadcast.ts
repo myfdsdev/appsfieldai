@@ -23,14 +23,39 @@ async function sendMail(to: string, subject: string, html: string) {
 }
 
 function buildHtml(broadcast) {
+  const appUrl = broadcast.appUrl || "https://appsfieldai.com";
   const mediaHtml =
     broadcast.mediaType === "image" && broadcast.mediaUrl
-      ? `<p><img src="${broadcast.mediaUrl}" alt="" style="max-width:100%;border-radius:12px" /></p>`
+      ? `<img src="${broadcast.mediaUrl}" alt="" style="width:100%;border-radius:14px;margin:0 0 22px" />`
       : "";
-  const buttonHtml = broadcast.linkUrl
-    ? `<p><a href="${broadcast.linkUrl}" style="display:inline-block;background:#f97316;color:#fff;padding:10px 18px;border-radius:10px;text-decoration:none">${broadcast.buttonLabel || "Open"}</a></p>`
-    : "";
-  return `<div style="font-family:Inter,Arial,sans-serif"><h2>${broadcast.title}</h2>${mediaHtml}<p>${broadcast.message}</p>${buttonHtml}</div>`;
+  const btn = (href, label, primary) =>
+    `<a href="${href}" style="display:inline-block;margin:0 8px 10px 0;padding:13px 26px;border-radius:12px;font-weight:600;font-size:14px;text-decoration:none;${
+      primary
+        ? "background:#f97316;color:#ffffff;"
+        : "background:#ffffff;color:#111827;border:1px solid #e5e7eb;"
+    }">${label}</a>`;
+
+  const actions =
+    (broadcast.linkUrl ? btn(broadcast.linkUrl, broadcast.buttonLabel || "Learn more", true) : "") +
+    btn(appUrl, "Get access to AppsField AI", !broadcast.linkUrl);
+
+  return `
+  <div style="background:#f5f6f8;padding:32px 12px;font-family:Inter,Helvetica,Arial,sans-serif">
+    <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #eceef1">
+      <div style="background:linear-gradient(135deg,#f97316,#b45309);padding:20px 28px">
+        <p style="margin:0;color:#ffffff;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">AppsField AI · Announcement</p>
+      </div>
+      <div style="padding:28px">
+        <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#111827">${broadcast.title}</h1>
+        ${mediaHtml}
+        <div style="font-size:15px;line-height:1.7;color:#4b5563;white-space:pre-line">${broadcast.message}</div>
+        <div style="margin-top:26px">${actions}</div>
+      </div>
+      <div style="padding:18px 28px;background:#fafbfc;border-top:1px solid #eceef1">
+        <p style="margin:0;font-size:12px;color:#9ca3af">You're receiving this because you have an AppsField AI account.<br /><a href="${appUrl}" style="color:#f97316;text-decoration:none">${appUrl}</a></p>
+      </div>
+    </div>
+  </div>`;
 }
 
 // Sends the announcement to a single user only (test send). Nothing is persisted
