@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { deliverBroadcast } from '../../shared/broadcast.ts';
+import { deliverBroadcast, deliverTest } from '../../shared/broadcast.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -9,10 +9,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admins only' }, { status: 403 });
     }
 
-    const { broadcastId } = await req.json();
-    if (!broadcastId) return Response.json({ error: 'Missing broadcastId' }, { status: 400 });
+    const body = await req.json();
 
-    const broadcast = await base44.asServiceRole.entities.AdminBroadcast.get(broadcastId);
+    // Test send — deliver the draft to the admin only, nothing is broadcast.
+    if (body.test) {
+      const result = await deliverTest(base44, body.broadcast || {}, me);
+      return Response.json({ success: true, test: true, ...result });
+    }
+
+    if (!body.broadcastId) return Response.json({ error: 'Missing broadcastId' }, { status: 400 });
+
+    const broadcast = await base44.asServiceRole.entities.AdminBroadcast.get(body.broadcastId);
     if (!broadcast) return Response.json({ error: 'Announcement not found' }, { status: 404 });
 
     const result = await deliverBroadcast(base44, broadcast);

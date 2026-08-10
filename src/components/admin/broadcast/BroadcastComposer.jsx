@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Megaphone, Send, Loader2 } from "lucide-react";
+import { Megaphone, Send, Loader2, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const EMPTY = {
   title: "",
@@ -27,8 +28,24 @@ const EMPTY = {
 export default function BroadcastComposer({ onSent }) {
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const sendTest = async () => {
+    if (!form.title.trim() || !form.message.trim()) {
+      toast.error("Title and description are required");
+      return;
+    }
+    setTesting(true);
+    try {
+      const res = await base44.functions.invoke("sendBroadcast", { test: true, broadcast: form });
+      toast.success(res.data?.emailed ? "Test sent to your notifications and email" : "Test sent to your notifications");
+    } catch (e) {
+      toast.error("Could not send the test");
+    }
+    setTesting(false);
+  };
 
   const submit = async () => {
     if (!form.title.trim() || !form.message.trim()) {
@@ -102,8 +119,20 @@ export default function BroadcastComposer({ onSent }) {
             </Select>
           </div>
           <div className="sm:col-span-2">
-            <label className="text-xs text-muted-foreground">Media URL</label>
-            <Input value={form.mediaUrl} onChange={(e) => set("mediaUrl", e.target.value)} disabled={form.mediaType === "none"} placeholder="https://... (image or mp4)" className="bg-[#252525] border-border/30 rounded-xl mt-1" />
+            <label className="text-xs text-muted-foreground">Media file</label>
+            <div className="mt-1">
+              {form.mediaType === "none" ? (
+                <Input disabled placeholder="Select a media type first" className="bg-[#252525] border-border/30 rounded-xl" />
+              ) : (
+                <R2ImageUpload
+                  value={form.mediaUrl}
+                  onChange={(url) => set("mediaUrl", url)}
+                  campaignId="admin-broadcast"
+                  accept={form.mediaType === "video" ? "video/*" : "image/*"}
+                  placeholder={form.mediaType === "video" ? "https://... (mp4 or YouTube)" : "https://... (image)"}
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -153,10 +182,16 @@ export default function BroadcastComposer({ onSent }) {
           </div>
         </div>
 
-        <Button onClick={submit} disabled={busy} className="bg-orange-500 hover:bg-orange-600 rounded-xl text-sm">
-          {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-          {form.scheduleMode === "instant" ? "Send Now" : "Schedule"}
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={submit} disabled={busy} className="bg-orange-500 hover:bg-orange-600 rounded-xl text-sm">
+            {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+            {form.scheduleMode === "instant" ? "Send Now" : "Schedule"}
+          </Button>
+          <Button onClick={sendTest} disabled={testing} variant="outline" className="border-border/40 rounded-xl text-sm">
+            {testing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FlaskConical className="w-4 h-4 mr-2" />}
+            Send Test to Me
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
