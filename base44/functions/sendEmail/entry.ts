@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { getNotificationSettings, isChannelEnabled } from '../../shared/notificationSettings.ts';
 
 // Reusable email sender backed by Resend.
 // Payload: { to, subject, html, fromName?, fromEmail?, replyTo? }
@@ -13,10 +14,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Email service not configured' }, { status: 500 });
     }
 
-    const { to, subject, html, fromName, fromEmail, replyTo } = await req.json();
+    const { to, subject, html, fromName, fromEmail, replyTo, eventKey } = await req.json();
 
     if (!to || !subject || !html) {
       return Response.json({ error: 'Missing to, subject, or html' }, { status: 400 });
+    }
+
+    // Respect the admin-managed notification controls.
+    const base44 = createClientFromRequest(req);
+    const settings = await getNotificationSettings(base44);
+    if (!isChannelEnabled(settings, eventKey, 'email')) {
+      return Response.json({ success: true, skipped: true, reason: 'disabled by notification settings' });
     }
 
     // Resolve the from address. Prefer an explicit sender, else fall back to the

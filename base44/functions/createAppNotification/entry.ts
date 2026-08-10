@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { getNotificationSettings, isChannelEnabled } from '../../shared/notificationSettings.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -8,6 +9,12 @@ Deno.serve(async (req) => {
 
     if (!userId || !type || !title || !message) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Respect the admin-managed notification controls.
+    const settings = await getNotificationSettings(base44);
+    if (!isChannelEnabled(settings, type, "inApp")) {
+      return Response.json({ success: true, skipped: true, reason: "disabled by notification settings" });
     }
 
     const notif = await base44.asServiceRole.entities.Notification.create({

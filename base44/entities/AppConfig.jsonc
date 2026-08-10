@@ -72,6 +72,39 @@
         }
       }
     },
+    "notificationSettings": {
+      "type": "object",
+      "description": "Admin-managed notification controls: master channel switches plus per-event in-app/email toggles",
+      "properties": {
+        "masterInApp": {
+          "type": "boolean",
+          "default": true,
+          "description": "Master switch for all in-app notifications"
+        },
+        "masterEmail": {
+          "type": "boolean",
+          "default": true,
+          "description": "Master switch for all notification emails"
+        },
+        "events": {
+          "type": "object",
+          "description": "Per-event overrides keyed by notification event key",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "inApp": {
+                "type": "boolean",
+                "default": true
+              },
+              "email": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          }
+        }
+      }
+    },
     "popupVideoEnabled": {
       "type": "boolean",
       "default": false,

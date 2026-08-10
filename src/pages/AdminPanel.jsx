@@ -25,6 +25,7 @@ import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
 import WebhookSettings from "@/components/admin/settings/WebhookSettings";
 import SupportAgentConfig from "@/components/admin/settings/SupportAgentConfig";
 import SupportChatReports from "@/components/admin/settings/SupportChatReports";
+import NotificationControlPanel from "@/components/admin/settings/NotificationControlPanel";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -730,24 +731,7 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "notif_settings":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <Settings className="w-4 h-4 text-muted-foreground" />Notification Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Notification preferences and triggers are configured per-event. Email and in-app notifications fire automatically on listing submissions, approvals, bid updates, and deal status changes.</p>
-                <div className="flex items-center gap-3 mt-3 flex-wrap">
-                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Auto-trigger On</Badge>
-                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[11px]">Per-event Rules</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
+        return <NotificationControlPanel />;
       case "email_settings": case "payment_settings":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
