@@ -26,6 +26,7 @@ import WebhookSettings from "@/components/admin/settings/WebhookSettings";
 import SupportAgentConfig from "@/components/admin/settings/SupportAgentConfig";
 import SupportChatReports from "@/components/admin/settings/SupportChatReports";
 import NotificationControlPanel from "@/components/admin/settings/NotificationControlPanel";
+import BroadcastManager from "@/components/admin/BroadcastManager";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -716,20 +717,7 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "push_notif":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-                  <Smartphone className="w-4 h-4 text-amber-400" />Push Notifications
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground py-4 text-center">Push notification support coming soon.</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
+        return <BroadcastManager />;
       case "notif_settings":
         return <NotificationControlPanel />;
       case "email_settings": case "payment_settings":

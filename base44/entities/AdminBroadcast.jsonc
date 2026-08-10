@@ -1,0 +1,109 @@
+{
+  "name": "AdminBroadcast",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Headline of the announcement"
+    },
+    "message": {
+      "type": "string",
+      "description": "Body/description of the announcement"
+    },
+    "linkUrl": {
+      "type": "string",
+      "description": "Optional URL the action button opens"
+    },
+    "buttonLabel": {
+      "type": "string",
+      "description": "Label of the action button shown in the popup"
+    },
+    "mediaUrl": {
+      "type": "string",
+      "description": "Optional image or video URL shown in the popup"
+    },
+    "mediaType": {
+      "type": "string",
+      "enum": [
+        "none",
+        "image",
+        "video"
+      ],
+      "default": "none",
+      "description": "Type of media attached to the announcement"
+    },
+    "audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "store_owners",
+        "admins"
+      ],
+      "default": "store_owners",
+      "description": "Who receives this announcement"
+    },
+    "sendEmail": {
+      "type": "boolean",
+      "default": false,
+      "description": "Also send the announcement by email"
+    },
+    "showPopup": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the announcement as a popup when the recipient opens the app"
+    },
+    "scheduleMode": {
+      "type": "string",
+      "enum": [
+        "instant",
+        "scheduled"
+      ],
+      "default": "instant",
+      "description": "Send immediately or at a scheduled time"
+    },
+    "scheduledAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a scheduled announcement should be sent"
+    },
+    "durationHours": {
+      "type": "number",
+      "default": 24,
+      "description": "How many hours the popup stays visible after sending (0 = never expires)"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Computed moment the popup stops showing"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "sent",
+        "cancelled"
+      ],
+      "default": "scheduled",
+      "description": "Lifecycle status of the announcement"
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the announcement was delivered"
+    },
+    "recipientCount": {
+      "type": "number",
+      "default": 0,
+      "description": "How many recipients received it"
+    },
+    "emailCount": {
+      "type": "number",
+      "default": 0,
+      "description": "How many emails were sent"
+    }
+  },
+  "required": [
+    "title",
+    "message"
+  ]
+}

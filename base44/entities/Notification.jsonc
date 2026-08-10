@@ -36,7 +36,8 @@
         "affiliate_rejected",
         "affiliate_message",
         "affiliate_commission",
-        "product_access_request"
+        "product_access_request",
+        "announcement"
       ],
       "description": "Type of notification"
     },
@@ -47,6 +48,10 @@
     "message": {
       "type": "string",
       "description": "Notification message"
+    },
+    "linkUrl": {
+      "type": "string",
+      "description": "Optional URL opened when the notification is clicked (announcements)"
     },
     "listingId": {
       "type": "string",
