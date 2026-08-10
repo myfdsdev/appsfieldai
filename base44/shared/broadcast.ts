@@ -71,10 +71,13 @@ export async function deliverBroadcast(base44, broadcast) {
   let emailCount = 0;
   if (broadcast.sendEmail) {
     const html = buildHtml(broadcast);
+    // Throttle: emails go out one at a time with a small delay so the provider
+    // isn't hit with the whole batch at once.
     for (const u of recipients) {
       if (!u.email) continue;
       const ok = await sendMail(u.email, broadcast.title, html);
       if (ok) emailCount++;
+      await new Promise((r) => setTimeout(r, 700));
     }
   }
 

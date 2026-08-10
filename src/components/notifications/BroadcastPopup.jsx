@@ -21,8 +21,9 @@ export default function BroadcastPopup() {
   const { data: user } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me(), retry: false });
   const { data: broadcasts = [] } = useQuery({
     queryKey: ["activeBroadcasts"],
-    queryFn: () => base44.entities.AdminBroadcast.filter({ status: "sent" }, "-sentAt", 20),
+    queryFn: () => base44.entities.AdminBroadcast.list("-created_date", 20),
     enabled: !!user,
+    refetchInterval: 60000,
   });
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function BroadcastPopup() {
     const now = Date.now();
     const match = broadcasts.find(
       (b) =>
+        b.status === "sent" &&
         b.showPopup !== false &&
         !dismissed.includes(b.id) &&
         (!b.expiresAt || new Date(b.expiresAt).getTime() > now) &&
