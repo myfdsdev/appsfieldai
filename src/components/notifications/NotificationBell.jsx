@@ -43,21 +43,45 @@ export default function NotificationBell() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: notifications = [] } = useQuery({
+  // Initial history load — realtime events keep it up to date from here on.
+  const { data: initial = [] } = useQuery({
     queryKey: ["myNotificationsBell"],
     queryFn: async () => {
       const authed = await base44.auth.isAuthenticated();
-      if (!authed) return [];
+      if (!authed) return { userId: null, items: [] };
       const user = await base44.auth.me();
-      return base44.entities.Notification.filter(
+      const items = await base44.entities.Notification.filter(
         { userId: user.id },
         "-created_date",
         30
       );
+      return { userId: user.id, items };
     },
-    refetchInterval: 15000,
     staleTime: 0,
   });
+
+  const myUserId = initial?.userId || null;
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    setNotifications(initial?.items || []);
+  }, [initial]);
+
+  // Realtime: merge create/update/delete events instantly (no polling).
+  useEffect(() => {
+    if (!myUserId) return;
+    const unsubscribe = base44.entities.Notification.subscribe((event) => {
+      const record = event?.data;
+      if (!record || record.userId !== myUserId) return;
+      setNotifications((prev) => {
+        if (event.type === "delete") return prev.filter((n) => n.id !== record.id);
+        const exists = prev.some((n) => n.id === record.id);
+        if (exists) return prev.map((n) => (n.id === record.id ? { ...n, ...record } : n));
+        return [record, ...prev].slice(0, 30);
+      });
+    });
+    return unsubscribe;
+  }, [myUserId]);
 
   const unreadCount = notifications.filter((n) => !(n.isRead || n.read)).length;
 

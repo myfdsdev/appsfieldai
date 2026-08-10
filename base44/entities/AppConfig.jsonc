@@ -30,6 +30,48 @@
       "type": "string",
       "description": "Custom app favicon image URL"
     },
+    "supportAgent": {
+      "type": "object",
+      "description": "Global configuration for the floating in-app support help agent (super admin managed)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the floating support agent is shown to users"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the support agent"
+        },
+        "tagline": {
+          "type": "string",
+          "description": "Short subtitle shown under the agent name in the chat header"
+        },
+        "mascotImageUrl": {
+          "type": "string",
+          "description": "Mascot / avatar image URL for the floating button and chat header"
+        },
+        "bubbleText": {
+          "type": "string",
+          "description": "Teaser bubble text shown above the floating button"
+        },
+        "greeting": {
+          "type": "string",
+          "description": "Welcome message shown in an empty chat"
+        },
+        "knowledgeBase": {
+          "type": "string",
+          "description": "Extra instructions / knowledge the agent must know, injected as context on the first user message"
+        },
+        "quickPrompts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Suggested quick prompts shown in an empty chat"
+        }
+      }
+    },
     "popupVideoEnabled": {
       "type": "boolean",
       "default": false,

@@ -1,0 +1,39 @@
+{
+  "name": "SupportChatReport",
+  "type": "object",
+  "properties": {
+    "conversationId": {
+      "type": "string",
+      "description": "ID of the support agent conversation this report summarizes"
+    },
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who had the conversation"
+    },
+    "userName": {
+      "type": "string",
+      "description": "Name of the user at the time of the chat"
+    },
+    "userEmail": {
+      "type": "string",
+      "description": "Email of the user at the time of the chat"
+    },
+    "conclusion": {
+      "type": "string",
+      "description": "AI-generated conclusion summarizing what the user asked and how it was resolved"
+    },
+    "messageCount": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of messages in the conversation when the report was generated"
+    },
+    "transcript": {
+      "type": "string",
+      "description": "Plain-text transcript of the conversation"
+    }
+  },
+  "required": [
+    "conversationId",
+    "conclusion"
+  ]
+}

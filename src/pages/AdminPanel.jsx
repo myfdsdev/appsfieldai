@@ -24,6 +24,8 @@ import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import AIEngineSettings from "@/components/admin/settings/AIEngineSettings";
 import WebhookSettings from "@/components/admin/settings/WebhookSettings";
+import SupportAgentConfig from "@/components/admin/settings/SupportAgentConfig";
+import SupportChatReports from "@/components/admin/settings/SupportChatReports";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -293,6 +295,8 @@ export default function AdminPanel() {
         </Card>
       </motion.div>
       <PlatformDomainConfig />
+      <SupportAgentConfig />
+      <SupportChatReports />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
