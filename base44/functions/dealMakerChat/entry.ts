@@ -3,6 +3,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 // Deal Maker Agent — the AI sales closer for a store's public page.
 // Runs the "Dealmaker" persona over the store's real product catalog and
 // returns a reply plus any action tokens the frontend should act on.
+// Canonical product-name normalizer. Used for BOTH resolving an action token's
+// value to a real listing and for the text↔token consistency check, so a name
+// only ever matches the product it actually is — never a similar one.
+// Strips trademark marks, punctuation and collapses whitespace.
+function normalizeName(s: string): string {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[™®©]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -307,6 +319,17 @@ ${greeting ? `OPENING GREETING: When the conversation is empty, open with exactl
 
 ${knowledge ? `STORE KNOWLEDGE BASE (owner-provided facts, tasks and rules you MUST follow and may quote — this is your training):\n${knowledge}` : ''}
 
+PRODUCT IDENTITY ROSTER — these are the ONLY products that exist on this store. Each line is one product: its EXACT name, the app_id you MUST use in action tokens for it, and what it is. Products are DISTINCT even when their names look or sound similar — never treat two of them as the same thing, never blend their descriptions, features or prices, and never use one's app_id when talking about another:
+${catalog.map((c) => `- "${c.name}" → app_id: ${c.app_id} — ${c.category}, ${c.pricing_type}${c.full_price != null ? `, ${c.full_price} ${currency}` : ''}`).join('\n') || '- (no products)'}
+
+PRODUCT MATCHING RULES (absolute — breaking these misleads the buyer):
+1. Action token values MUST be the exact app_id string from the roster above — never a product name, never a paraphrase, never an id you invented.
+2. The product you NAME in your text and the product whose app_id you put in the token MUST be the same product. If you write about "${catalog[0]?.name || 'Product A'}", the token must carry ${catalog[0]?.name || 'Product A'}'s app_id — never another product's.
+3. Spell product names EXACTLY as in the roster, character for character, including any ™/® marks, numbers and spacing. Do not shorten, abbreviate, rebrand or "clean up" a name.
+4. If the visitor asks for a product by name, answer about THAT product only — using ONLY that product's own description, features and price from the CATALOG. Never substitute a similar-sounding or same-category product, and never carry one product's price or features over to another.
+5. Only products in the roster above exist and can be shown. Anything mentioned in the store knowledge base but NOT in the roster is NOT available — you may not name it, card it, price it, or substitute a different product for it. Say it isn't available right now and either offer a genuinely relevant listed product or go to PLAN MODE.
+6. If no product in the roster genuinely matches what the visitor needs, name NO product at all and go to PLAN MODE. Showing an approximate match is never acceptable.
+
 STORE CATEGORIES: ${categories.join(', ') || 'none yet'}.
 ${catalog.length === 0 ? `
 EMPTY CATALOG: This store currently has NO products. You therefore CANNOT recommend, name, or show any product — doing so would be inventing something that doesn't exist, which is forbidden. Never emit SHOW_APP / SHOW_DETAILS / RUN_DEMO / START_CHECKOUT / OFFER_RESERVATION. As soon as you understand the visitor's business/need, go straight into PLAN MODE: ask a couple of smart scoping questions, then draft a custom software plan with [ACTION:PROPOSE_PLAN:{json}] so the owner can follow up with a proposal.
@@ -399,23 +422,61 @@ ${JSON.stringify(catalog)}`;
     while ((match = tokenRegex.exec(reply)) !== null) {
       if (match[1] === 'PROPOSE_PLAN') continue; // already handled above
       let val = match[2] ? match[2].trim() : null;
-      // The model sometimes passes the app NAME instead of its id — resolve
-      // it back to the real listing id so the frontend can match the card.
+      // The model sometimes passes the app NAME instead of its id — resolve it
+      // back to the real listing id. EXACT (normalized) match ONLY: a fuzzy
+      // "contains" match used to snap e.g. "3D ScrollShock" onto "Scroll Stop
+      // AI", carding a completely different product. If the name isn't an exact
+      // catalog product, the token is dropped instead.
       if (val && !listings.some((l) => l.id === val)) {
-        const lc = val.toLowerCase();
-        // Exact name match first, then a loose contains match (handles slight
-        // name variations the model writes).
-        const byName = listings.find((l) => (l.softwareName || '').toLowerCase() === lc)
-          || listings.find((l) => {
-            const n = (l.softwareName || '').toLowerCase();
-            return n && (n.includes(lc) || lc.includes(n));
-          });
+        const target = normalizeName(val);
+        const byName = listings.find((l) => normalizeName(l.softwareName) === target);
         val = byName ? byName.id : null;
       }
       // Drop product-referencing actions that don't point at a real listing —
       // prevents showing a wrong/unrelated product card for a hallucinated name.
       if (PRODUCT_ACTIONS.has(match[1]) && !val) continue;
       actions.push({ type: match[1], value: val || null });
+    }
+
+    // ── TEXT ↔ TOKEN CONSISTENCY GUARD ───────────────────────────────────
+    // The model sometimes names one product in words while emitting a token for
+    // a DIFFERENT product, so the visitor reads about product A but sees product
+    // B's card and price. The text is what the visitor believes, so the card must
+    // follow the text: if the product NAMED in the reply isn't the one in the
+    // token, re-point the token at the named product — and if the named product
+    // isn't in the live catalog at all, drop the card rather than show a wrong one.
+    {
+      const scanText = ' ' + normalizeName(
+        reply.replace(planRegex, ' ').replace(tokenRegex, ' ')
+      ) + ' ';
+      // Every catalog product explicitly named in the reply text.
+      const mentioned = listings
+        .filter((l) => {
+          const n = normalizeName(l.softwareName);
+          return n && scanText.includes(` ${n} `);
+        })
+        // Longest name first — the most specific product wins (e.g. prefer
+        // "3D ScrollShock" over a shorter name contained inside it).
+        .sort((a, b) => normalizeName(b.softwareName).length - normalizeName(a.softwareName).length);
+
+      if (mentioned.length) {
+        const mentionedIds = new Set(mentioned.map((l) => l.id));
+        const primaryId = mentioned[0].id;
+        for (const a of actions) {
+          if (!PRODUCT_ACTIONS.has(a.type)) continue;
+          if (a.value && mentionedIds.has(a.value)) continue; // already consistent
+          console.warn(
+            `dealMakerChat: ${a.type} pointed at "${a.value}" but the reply names "${mentioned[0].softwareName}" — re-pointing to the named product.`
+          );
+          a.value = primaryId;
+        }
+      }
+      // Final sweep: never let a product action through without a real listing.
+      for (let i = actions.length - 1; i >= 0; i--) {
+        const a = actions[i];
+        if (!PRODUCT_ACTIONS.has(a.type)) continue;
+        if (!a.value || !listings.some((l) => l.id === a.value)) actions.splice(i, 1);
+      }
     }
     // Parse suggested quick-reply chips: [SUGGEST: a | b | c]
     let suggestions = [];

@@ -7,12 +7,16 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    if (!user) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const { voice, provider = 'base44', voiceModel = '', voiceInstructions = '', openaiApiKey = '', geminiApiKey = '', name } = await req.json();
     if (!voice) return Response.json({ error: 'voice is required' }, { status: 400 });
+
+    // Store owners may preview the built-in Base44 voices for their Deal Maker
+    // agent. Custom providers / API keys stay admin-only.
+    if (provider !== 'base44' && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const svc = base44.asServiceRole;
     const cacheKey = `${provider}|${voiceModel}|${voice}`;
