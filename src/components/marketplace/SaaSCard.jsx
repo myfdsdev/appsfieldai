@@ -113,6 +113,8 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
   const fullPrice = (price && price > 0) ? price : (sharePrice || 0) * (totalShares || 0);
   const isSold = status === "sold";
   const sharesLeft = totalShares - soldShares;
+  // Only treat a product as a group deal when it's actually offered as one with spots.
+  const isGroupDeal = (dealType === "group_deal" || dealType === "both") && totalShares > 0;
   const sharePercent = totalShares > 0 ? (soldShares / totalShares) * 100 : 0;
 
   const handleFavToggle = async (e) => {
@@ -209,7 +211,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
 
         {/* Pricing — fixed-height block so single-purchase & group-deal cards align */}
         <div className="space-y-3 min-h-[104px] flex flex-col justify-center">
-          {dealType === "single_purchase" ? (
+          {!isGroupDeal ? (
             <div className="rounded-lg bg-secondary/40 p-3 text-center" style={boxStyle}>
               <p className="text-[10px] text-muted-foreground" style={mutedStyle}>Deal Price</p>
               <p className="text-lg font-display font-bold" style={{ color: priceColor }}>{fmtPrice(fullPrice)}</p>
@@ -258,7 +260,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
           </div>
         ) : onAddToCart || onBuyNow ? (
           <div className="flex gap-2 pt-1 mt-auto">
-            {dealType !== "single_purchase" ? (
+            {isGroupDeal ? (
               <Button size="sm" onClick={() => onReserveSpot?.(listing)} disabled={isSold || sharesLeft <= 0} className={primaryBtnClass} style={primaryBtnStyle}>
                 {sharesLeft <= 0 ? "Sold Out" : "Reserve a Spot"}
               </Button>
@@ -278,7 +280,7 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
           </div>
         ) : (
           <div className="flex gap-2 pt-1 mt-auto">
-            {(dealType !== "single_purchase") ? (
+            {isGroupDeal ? (
               <Button size="sm" onClick={() => onBuySpot?.(listing)} disabled={isSold || sharesLeft <= 0} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg text-[11px] h-8 disabled:opacity-40 text-white border-0">
                 {sharesLeft <= 0 ? "Sold Out" : `Buy Spot — ${fmtPrice(sharePrice)}`}
               </Button>
