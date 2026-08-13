@@ -40,9 +40,9 @@ export default function StoreAppsfieldNavbar({
   const scrollTo = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
 
   const navItems = [
-    { label: "Best Sellers", target: "store-best-sellers" },
+    ...((sections.dealsEndingSoonEnabled ?? true) ? [{ label: "Best Sellers", target: "store-best-sellers" }] : []),
     { label: "Categories", target: "store-categories" },
-    { label: "Lifetime Deals", target: "store-lifetime-deals" },
+    ...((sections.productsEnabled ?? true) ? [{ label: "Lifetime Deals", target: "store-lifetime-deals" }] : []),
     ...(sections.plansEnabled ? [{ label: "Plans", target: "store-plans" }] : []),
     ...(marketplace.type === "multi_vendor" ? [{ label: "Become A Vendor?", target: "store-become-vendor" }] : []),
   ];
