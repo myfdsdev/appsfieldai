@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard, FolderKanban, Contact, Store
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, Mail, ShoppingBag, ShieldCheck, Code2, Share2, Sparkles, TrendingUp, CreditCard, FolderKanban, Contact, Store, Flame
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,6 +191,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
     dealsEndingSoonEnabled: marketplace?.pageSections?.dealsEndingSoonEnabled ?? true,
     productsEnabled: marketplace?.pageSections?.productsEnabled ?? true,
     productsSectionTitle: marketplace?.pageSections?.productsSectionTitle || "",
+    productsSectionSubtitle: marketplace?.pageSections?.productsSectionSubtitle || "",
     plansEnabled: marketplace?.pageSections?.plansEnabled ?? false,
     plansTitle: marketplace?.pageSections?.plansTitle || "",
     plansSubtitle: marketplace?.pageSections?.plansSubtitle || "",
