@@ -65,12 +65,16 @@ export default function StoreBinaseaHero({ marketplace, sections = {}, listings 
             {sections.heroBadgeText}
           </span>
         )}
-        <h1 className={`${h.titleClass} mb-5 text-balance`} style={{ fontFamily: style.headingFont }}>
-          {title}
-        </h1>
-        <p className="text-sm sm:text-base max-w-xl mx-auto mb-8 opacity-75" style={{ fontFamily: style.bodyFont }}>
-          {subtitle}
-        </p>
+        {(sections.headerTextEnabled ?? true) && (
+          <>
+            <h1 className={`${h.titleClass} mb-5 text-balance`} style={{ fontFamily: style.headingFont }}>
+              {title}
+            </h1>
+            <p className="text-sm sm:text-base max-w-xl mx-auto mb-8 opacity-75" style={{ fontFamily: style.bodyFont }}>
+              {subtitle}
+            </p>
+          </>
+        )}
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}

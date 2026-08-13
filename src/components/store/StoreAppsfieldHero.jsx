@@ -50,10 +50,14 @@ export default function StoreAppsfieldHero({ marketplace, sections = {} }) {
             <span className="inline-block px-3 py-1 bg-white rounded-full text-[10px] font-bold tracking-wider mb-4 border self-start uppercase" style={{ color: accent, borderColor: `${accent}33` }}>
               {badge}
             </span>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#161616] leading-tight mb-4" style={{ fontFamily: "'Outfit', sans-serif" }}>
-              {title}
-            </h1>
-            <p className="text-[#6B7280] text-base md:text-lg mb-8 max-w-md leading-relaxed">{subtitle}</p>
+            {(sections.headerTextEnabled ?? true) && (
+              <>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#161616] leading-tight mb-4" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                  {title}
+                </h1>
+                <p className="text-[#6B7280] text-base md:text-lg mb-8 max-w-md leading-relaxed">{subtitle}</p>
+              </>
+            )}
             <div>
               <button
                 onClick={scrollToDeals}

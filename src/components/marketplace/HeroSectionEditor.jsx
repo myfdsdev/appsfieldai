@@ -79,7 +79,20 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
 
       {/* Headline & subtitle */}
       <div>
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Headline & Subtitle</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Headline & Subtitle</p>
+          <button
+            type="button"
+            onClick={() => set("headerTextEnabled", !(form.headerTextEnabled ?? true))}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors ${
+              (form.headerTextEnabled ?? true)
+                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                : "bg-secondary/50 text-muted-foreground border-border/30"
+            }`}
+          >
+            {(form.headerTextEnabled ?? true) ? "Visible" : "Invisible"}
+          </button>
+        </div>
         <div className="space-y-2">
           <Input
             value={form.headerTitle || ""}

@@ -53,6 +53,8 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
   const hasSideSplit = sideImage && (sidePos === "left" || sidePos === "right");
   const isLeft = hasSideSplit ? true : h.align === "left";
 
+  // Owners can hide the hero headline + subtitle text while keeping the hero itself.
+  const textVisible = sections.headerTextEnabled ?? true;
   const title = sections.headerTitle || marketplace.name;
   const subtitle =
     sections.headerSubtitle ||
@@ -88,6 +90,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
               {sections.heroBadgeText}
             </motion.span>
           )}
+          {textVisible && (
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -97,6 +100,8 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
           >
             {title}
           </motion.h1>
+          )}
+          {textVisible && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -106,6 +111,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
           >
             {subtitle}
           </motion.p>
+          )}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -177,6 +183,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
       )}
 
       {/* Headline */}
+      {textVisible && (
       <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -195,8 +202,10 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
           <span>{title}</span>
         )}
       </motion.h1>
+      )}
 
       {/* Subheadline */}
+      {textVisible && (
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -206,6 +215,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
       >
         {subtitle}
       </motion.p>
+      )}
 
       {/* CTA */}
       <motion.div

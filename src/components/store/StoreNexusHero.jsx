@@ -45,6 +45,7 @@ export default function StoreNexusHero({ marketplace, sections = {}, listingsCou
         </span>
 
         {/* Headline — last two words get the gradient */}
+        {(sections.headerTextEnabled ?? true) && (
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -54,7 +55,9 @@ export default function StoreNexusHero({ marketplace, sections = {}, listingsCou
         >
           <GradientTitle title={title} accent={accent} accent2={accent2} />
         </motion.h1>
+        )}
 
+        {(sections.headerTextEnabled ?? true) && (
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -63,6 +66,7 @@ export default function StoreNexusHero({ marketplace, sections = {}, listingsCou
         >
           {subtitle}
         </motion.p>
+        )}
 
         {/* Dual CTAs */}
         <motion.div

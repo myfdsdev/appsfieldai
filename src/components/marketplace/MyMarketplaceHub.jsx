@@ -174,6 +174,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
   const [pageForm, setPageForm] = useState({
     storeStyle: marketplace?.pageSections?.storeStyle || "",
     headerEnabled: marketplace?.pageSections?.headerEnabled ?? true,
+    headerTextEnabled: marketplace?.pageSections?.headerTextEnabled ?? true,
     headerTitle: marketplace?.pageSections?.headerTitle || "",
     headerSubtitle: marketplace?.pageSections?.headerSubtitle || "",
     headerImageUrl: marketplace?.pageSections?.headerImageUrl || "",
