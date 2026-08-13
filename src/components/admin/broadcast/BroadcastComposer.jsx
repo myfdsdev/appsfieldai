@@ -14,6 +14,7 @@ const EMPTY = {
   title: "",
   message: "",
   linkUrl: "",
+  appUrl: "https://appsfieldai.com",
   buttonLabel: "",
   mediaType: "none",
   mediaUrl: "",
@@ -39,7 +40,7 @@ export default function BroadcastComposer({ onSent }) {
     }
     setTesting(true);
     try {
-      const res = await base44.functions.invoke("sendBroadcast", { test: true, broadcast: { ...form, appUrl: window.location.origin } });
+      const res = await base44.functions.invoke("sendBroadcast", { test: true, broadcast: form });
       toast.success(res.data?.emailed ? "Test sent to your notifications and email" : "Test sent to your notifications");
     } catch (e) {
       toast.error("Could not send the test");
@@ -60,7 +61,6 @@ export default function BroadcastComposer({ onSent }) {
     try {
       const created = await base44.entities.AdminBroadcast.create({
         ...form,
-        appUrl: window.location.origin,
         durationHours: Number(form.durationHours) || 0,
         scheduledAt: form.scheduleMode === "scheduled" ? new Date(form.scheduledAt).toISOString() : "",
         status: "scheduled",
@@ -105,6 +105,11 @@ export default function BroadcastComposer({ onSent }) {
             <label className="text-xs text-muted-foreground">Button link</label>
             <Input value={form.linkUrl} onChange={(e) => set("linkUrl", e.target.value)} placeholder="https://..." className="bg-[#252525] border-border/30 rounded-xl mt-1" />
           </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-muted-foreground">App URL (used in the email footer & "Get access" button)</label>
+          <Input value={form.appUrl} onChange={(e) => set("appUrl", e.target.value)} placeholder="https://appsfieldai.com" className="bg-[#252525] border-border/30 rounded-xl mt-1" />
         </div>
 
         <div className="grid sm:grid-cols-3 gap-3">
