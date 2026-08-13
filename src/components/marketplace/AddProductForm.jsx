@@ -193,25 +193,19 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
       dealStartDate: new Date().toISOString(),
       dealEndDate,
       soldShares: listing?.soldShares || 0,
-      // Publishing must actually publish. Previously, editing a draft and hitting
-      // "Update & Publish" kept form.status ("draft"), so the product silently
-      // stayed unpublished. Draft/rejected listings now go live on publish.
-      status: asDraft
-        ? "draft"
-        : (isEditing
-            ? (["draft", "rejected"].includes(form.status) ? "active" : form.status)
-            : "pending"),
+      // Publishing always makes the product live — no pending review step.
+      status: asDraft ? "draft" : "active",
     };
 
     if (isEditing) {
       await base44.entities.SaaSListing.update(listing.id, payload);
-      toast.success("Product updated!");
+      toast.success(asDraft ? "Saved as draft." : "Product updated and live!");
     } else {
       const user = await base44.auth.me();
       payload.ownerId = user.id;
       payload.sellerName = payload.sellerName || user.full_name || "Anonymous";
       await base44.entities.SaaSListing.create(payload);
-      toast.success("Product created!");
+      toast.success(asDraft ? "Saved as draft." : "Product published and live!");
     }
 
     queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
@@ -663,7 +657,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                 <Save className="w-4 h-4 mr-1.5" /> Save as Draft
               </Button>
               <Button onClick={() => handleSave(false)} disabled={saving} className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl text-white border-0">
-                <Rocket className="w-4 h-4 mr-1.5" /> {isEditing ? "Update & Publish" : "Submit for Review"}
+                <Rocket className="w-4 h-4 mr-1.5" /> {isEditing ? "Update & Publish" : "Publish & Go Live"}
               </Button>
             </div>
           </>
