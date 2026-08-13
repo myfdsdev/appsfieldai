@@ -193,7 +193,14 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
       dealStartDate: new Date().toISOString(),
       dealEndDate,
       soldShares: listing?.soldShares || 0,
-      status: asDraft ? "draft" : (isEditing ? form.status : "pending"),
+      // Publishing must actually publish. Previously, editing a draft and hitting
+      // "Update & Publish" kept form.status ("draft"), so the product silently
+      // stayed unpublished. Draft/rejected listings now go live on publish.
+      status: asDraft
+        ? "draft"
+        : (isEditing
+            ? (["draft", "rejected"].includes(form.status) ? "active" : form.status)
+            : "pending"),
     };
 
     if (isEditing) {

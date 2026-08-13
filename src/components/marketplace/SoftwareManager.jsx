@@ -271,6 +271,9 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 flex-wrap">
+                  {(item.status === "draft" || item.status === "rejected") && (
+                    <Button size="sm" variant="ghost" onClick={() => handleAction(item, "active")} disabled={actionLoading === item.id} className="h-7 text-[10px] text-emerald-400"><CheckCircle className="w-3 h-3 mr-1" />Publish</Button>
+                  )}
                   {item.status === "pending" && (
                     <>
                       <Button size="sm" variant="ghost" onClick={() => handleAction(item, "active")} disabled={actionLoading === item.id} className="h-7 text-[10px] text-emerald-400"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button>
