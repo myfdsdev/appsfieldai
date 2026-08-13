@@ -249,6 +249,8 @@ export default function StorePage() {
   const faqEnabled = sections.faqEnabled ?? false;
   const trustBadgesEnabled = sections.trustBadgesEnabled ?? false;
   const plansEnabled = sections.plansEnabled ?? false;
+  const dealsEndingSoonEnabled = sections.dealsEndingSoonEnabled ?? true;
+  const productsEnabled = sections.productsEnabled ?? true;
   const affiliateSettings = marketplace.affiliateSettings || null;
   const affiliateEnabled = !!affiliateSettings?.enabled;
   // Base URL for referral links — on a subdomain/custom domain it's the origin root,
@@ -341,7 +343,7 @@ export default function StorePage() {
       ) : (
         <>
           {/* Best Sellers / 🔥 Deals Ending Soon — Binasea shows these in the header instead */}
-          {sections.storeStyle !== "monolith" && (
+          {dealsEndingSoonEnabled && sections.storeStyle !== "monolith" && (
             <div id="store-best-sellers">
               <DealsEndingSoon listings={software} styleSlug={sections.storeStyle} currency={marketplace.currency} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
             </div>
@@ -351,6 +353,7 @@ export default function StorePage() {
           <StoreCategories listings={software} savedCategories={savedCategories} brandColor={brandColor} styleSlug={sections.storeStyle} onSelect={handleSelectCategory} />
 
           {/* Lifetime Deals (searchable grid of all store products) */}
+          {productsEnabled && (
           <div id="store-lifetime-deals">
             <OneInALifetimeDeals
               listings={categoryFilter ? software.filter(l => l.category === categoryFilter) : software}
@@ -367,6 +370,7 @@ export default function StorePage() {
               onSearchChange={setSearchQuery}
             />
           </div>
+          )}
 
           {/* Become A Vendor? — only on multi-vendor stores */}
           {marketplace.type === "multi_vendor" && (

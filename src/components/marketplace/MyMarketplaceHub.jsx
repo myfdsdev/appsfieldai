@@ -188,6 +188,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
     heroGradientEnd: marketplace?.pageSections?.heroGradientEnd || "",
     heroSolidColor: marketplace?.pageSections?.heroSolidColor || "",
     heroBgOpacity: marketplace?.pageSections?.heroBgOpacity ?? 100,
+    dealsEndingSoonEnabled: marketplace?.pageSections?.dealsEndingSoonEnabled ?? true,
     productsEnabled: marketplace?.pageSections?.productsEnabled ?? true,
     productsSectionTitle: marketplace?.pageSections?.productsSectionTitle || "",
     plansEnabled: marketplace?.pageSections?.plansEnabled ?? false,
@@ -352,9 +353,15 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
                   enabled={pageForm.headerEnabled} onToggle={() => setPageForm(f => ({ ...f, headerEnabled: !f.headerEnabled }))}>
                   <HeroSectionEditor form={pageForm} setForm={setPageForm} marketplace={marketplace} />
                 </SectionCard>
-                <SectionCard title="Product Sections" icon={Package}
+                <SectionCard title="Exclusive Deals (countdown slider)" icon={Flame}
+                  enabled={pageForm.dealsEndingSoonEnabled} onToggle={() => setPageForm(f => ({ ...f, dealsEndingSoonEnabled: !f.dealsEndingSoonEnabled }))}>
+                  <p className="text-[11px] text-muted-foreground">The horizontal slider of deals with countdown timers, shown near the top of your store.</p>
+                </SectionCard>
+                <SectionCard title="Products Grid" icon={Package}
                   enabled={pageForm.productsEnabled} onToggle={() => setPageForm(f => ({ ...f, productsEnabled: !f.productsEnabled }))}>
-                  <div><label className="text-xs text-muted-foreground">Section Title</label><Input value={pageForm.productsSectionTitle} onChange={e => setPageForm(f => ({ ...f, productsSectionTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Featured Deals" /></div>
+                  <div><label className="text-xs text-muted-foreground">Section Title</label><Input value={pageForm.productsSectionTitle} onChange={e => setPageForm(f => ({ ...f, productsSectionTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Once In A Lifetime Deals" /></div>
+                  <div><label className="text-xs text-muted-foreground">Subtitle</label><Input value={pageForm.productsSectionSubtitle} onChange={e => setPageForm(f => ({ ...f, productsSectionSubtitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Exclusive lifetime offers from this store" /></div>
+                  <p className="text-[11px] text-muted-foreground">The searchable grid of all your store products.</p>
                 </SectionCard>
                 <SectionCard title="Subscription Plans" icon={CreditCard}
                   enabled={pageForm.plansEnabled} onToggle={() => setPageForm(f => ({ ...f, plansEnabled: !f.plansEnabled }))}>
