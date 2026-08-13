@@ -336,11 +336,12 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                     </div>
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
                       <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Full Price</p>
-                      <p className="text-xs font-display font-bold">${((listing.sharePrice || 0) * (listing.totalShares || 0)).toLocaleString()}</p>
+                      <p className="text-xs font-display font-bold">${(isGroupDeal ? (listing.sharePrice || 0) * (listing.totalShares || 0) : (listing.discountPrice || listing.price || 0)).toLocaleString()}</p>
                     </div>
                   </div>
 
-                  {/* Share Price & Progress */}
+                  {/* Share Price & Progress — group deals only */}
+                  {isGroupDeal && (
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Per Share: <span className="font-bold" style={{ color: accent || "#f79a1b" }}>${listing.sharePrice}</span></span>
@@ -353,6 +354,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                     />
                     <p className="text-[10px] text-muted-foreground">{sharesLeft} shares remaining</p>
                   </div>
+                  )}
 
                   {/* Seller */}
                   <div className="flex items-center justify-between text-xs">
