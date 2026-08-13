@@ -335,6 +335,18 @@
           "type": "number",
           "default": 5
         },
+        "dealMakerLauncherPosition": {
+          "type": "string",
+          "enum": [
+            "bottom_left",
+            "bottom_center",
+            "bottom_right",
+            "top_left",
+            "top_right"
+          ],
+          "default": "bottom_left",
+          "description": "Where the floating Deal Maker launcher button sits on the store page"
+        },
         "dealMakerBgTheme": {
           "type": "string",
           "enum": [

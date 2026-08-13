@@ -5,6 +5,7 @@ import { Sparkles, Check, Play, Loader2 } from "lucide-react";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import KnowledgeFileUpload from "@/components/marketplace/KnowledgeFileUpload";
 import { DEAL_MAKER_BG_THEMES } from "@/components/store/dealmaker/dealMakerThemes";
+import { DEAL_MAKER_POSITIONS, DEFAULT_DEAL_MAKER_POSITION } from "@/components/store/dealmaker/dealMakerPositions";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
@@ -200,6 +201,38 @@ export default function DealMakerSettings({ deal, onChange }) {
           })}
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">Character layouts show a full standing image — use a tall portrait for best results.</p>
+      </div>
+
+      {/* Launcher position on the store page */}
+      <div>
+        <label className="text-xs text-muted-foreground">Launcher Position on Store</label>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mt-1.5">
+          {DEAL_MAKER_POSITIONS.map((p) => {
+            const active = (deal.dealMakerLauncherPosition || DEFAULT_DEAL_MAKER_POSITION) === p.key;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => onChange("dealMakerLauncherPosition", p.key)}
+                className={`rounded-xl border p-2 transition-colors ${active ? "border-primary bg-primary/10" : "border-border/40 bg-secondary/30 hover:border-border"}`}
+              >
+                <span className={`relative block h-10 rounded-lg bg-neutral-900 ${p.key.startsWith("top") ? "" : ""}`}>
+                  <span
+                    className={`absolute w-2.5 h-2.5 rounded-full bg-primary ${
+                      p.key === "bottom_left" ? "bottom-1 left-1"
+                      : p.key === "bottom_right" ? "bottom-1 right-1"
+                      : p.key === "bottom_center" ? "bottom-1 left-1/2 -translate-x-1/2"
+                      : p.key === "top_left" ? "top-1 left-1"
+                      : "top-1 right-1"
+                    }`}
+                  />
+                </span>
+                <p className="text-[10px] mt-1 text-center leading-tight">{p.label}</p>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">Where the floating agent button appears on your store's front page.</p>
       </div>
 
       {/* Preset background gradient theme */}

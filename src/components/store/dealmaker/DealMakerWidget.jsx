@@ -7,6 +7,7 @@ import DealMakerOrb from "./DealMakerOrb";
 import DealMakerCharacter from "./DealMakerCharacter";
 import DealMakerConversation from "./DealMakerConversation";
 import { getDealMakerBgTheme } from "./dealMakerThemes";
+import { getDealMakerPosition } from "./dealMakerPositions";
 
 // The Deal Maker Agent — a full-screen, boundary-less immersive experience.
 // - Collapsed: a bottom-center avatar launcher with a pulsing glow + "Hey" bubble.
@@ -170,6 +171,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
   const layout = sections.dealMakerLayout || "centered";
   const bgOpacity = (sections.dealMakerBgOpacity ?? 5) / 100;
   const bgTheme = getDealMakerBgTheme(sections.dealMakerBgTheme);
+  const launcherPos = getDealMakerPosition(sections.dealMakerLauncherPosition);
   const voiceProvider = marketplace?.voiceProvider || "base44";
   const dealMakerVoice = marketplace?.dealMakerVoice || sections.dealMakerVoice || "river";
   const storeName = marketplace?.name || "our store";
@@ -402,16 +404,16 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="fixed bottom-24 left-6 md:left-10 z-[60] flex flex-col items-center gap-3"
+            className={`fixed z-[60] flex ${launcherPos.top ? "flex-col-reverse" : "flex-col"} items-center gap-3 ${launcherPos.className}`}
           >
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="relative rounded-2xl rounded-b-md bg-white px-4 py-2.5 shadow-xl shadow-black/30 max-w-[220px]"
+              className={`relative rounded-2xl bg-white px-4 py-2.5 shadow-xl shadow-black/30 max-w-[220px] ${launcherPos.top ? "rounded-t-md" : "rounded-b-md"}`}
             >
               <p className="text-sm font-medium text-neutral-800">{bubbleText}</p>
-              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white" />
+              <span className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white ${launcherPos.top ? "-top-1.5" : "-bottom-1.5"}`} />
             </motion.div>
 
             <button
