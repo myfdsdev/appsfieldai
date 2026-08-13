@@ -35,8 +35,9 @@ Deno.serve(async (req) => {
     ]);
 
     // Resolve seller display name for each listing:
-    // - vendor-listed products show the vendor's business name
-    // - everything else shows the store owner's name
+    // - a seller name set on the product always wins
+    // - vendor-listed products fall back to the vendor's business name
+    // - otherwise the store owner's name
     let storeOwnerName = '';
     try {
       if (m.ownerId) {
@@ -54,7 +55,7 @@ Deno.serve(async (req) => {
 
     software.forEach((s) => {
       s.resolvedSellerName =
-        (s.vendorId && vendorNameById[s.vendorId]) || storeOwnerName || s.sellerName || 'Store Owner';
+        s.sellerName || (s.vendorId && vendorNameById[s.vendorId]) || storeOwnerName || 'Store Owner';
     });
 
     // Expose only the voice PROVIDER (never the API key) so the Deal Maker widget

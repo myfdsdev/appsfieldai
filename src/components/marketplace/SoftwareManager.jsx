@@ -86,11 +86,18 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
     enabled: !!marketplaceId,
   });
 
-  const { data: categories = [] } = useQuery({
+  const { data: softwareCategories = [] } = useQuery({
     queryKey: ["softwareCategories", marketplaceId],
     queryFn: () => base44.entities.SoftwareCategory.filter({ marketplaceId }),
     enabled: !!marketplaceId,
   });
+
+  // The Categories tab (and store creation) stores categories on the Marketplace
+  // record — merge both sources so everything the owner added is selectable here.
+  const categories = [...new Set([
+    ...(marketplace?.categories || []),
+    ...softwareCategories.map(c => c.name).filter(Boolean),
+  ])];
 
   const { data: dfy } = useDfyLimit();
 
