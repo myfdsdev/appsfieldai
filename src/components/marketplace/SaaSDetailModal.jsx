@@ -205,7 +205,10 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
   if (!open) return null;
 
   const isSold = listing?.status === "sold";
-  const sharesLeft = listing ? listing.totalShares - listing.soldShares : 0;
+  const sharesLeft = listing ? (listing.totalShares || 0) - (listing.soldShares || 0) : 0;
+  // Group-deal UI (per-share price, spots progress, Buy Spot) only applies when the
+  // product is actually offered as a group deal with spots configured.
+  const isGroupDeal = !!listing && (listing.dealType === "group_deal" || listing.dealType === "both") && (listing.totalShares || 0) > 0;
   const monthlyProfit = listing ? listing.monthlyRevenue - (listing.monthlyExpenses || 0) : 0;
 
   return (
@@ -404,7 +407,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                   {!isSold ? (
                     (onAddToCart || onBuyNow) ? (
                       // Store context — 2-column layout with cart option
-                      listing.dealType === "single_purchase" ? (
+                      !isGroupDeal ? (
                         <div className="grid grid-cols-2 gap-2 pt-1">
                           <Button
                             variant="outline"
