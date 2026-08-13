@@ -77,7 +77,7 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
         />
       </div>
 
-      {/* Headline & subtitle */}
+      {/* Headline & subtitle — can be hidden while keeping the hero background/CTA */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Headline & Subtitle</p>
