@@ -402,7 +402,7 @@ export default function DealMakerWidget({ marketplaceId, marketplace, listings =
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-3"
+            className="fixed bottom-24 left-6 md:left-10 z-[60] flex flex-col items-center gap-3"
           >
             <motion.div
               initial={{ opacity: 0, y: 8 }}
