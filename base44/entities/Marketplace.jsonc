@@ -22,11 +22,11 @@
         "workspace"
       ],
       "default": "single_vendor",
-      "description": "Marketplace type. single_vendor = you sell your own products. multi_vendor = other sellers can list. workspace = a service-offering store (sell services/agency offerings instead of software products)."
+      "description": "Marketplace type. single_vendor = you sell your own products. multi_vendor = other sellers can list. workspace = a service-offering store."
     },
     "description": {
       "type": "string",
-      "description": "Owner's description of what the marketplace is about (used to AI-generate store content)"
+      "description": "Owner's description of what the marketplace is about"
     },
     "template": {
       "type": "string",
@@ -150,8 +150,7 @@
       "properties": {
         "paypalEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether PayPal payments are enabled for this store"
+          "default": false
         },
         "paypalMode": {
           "type": "string",
@@ -159,55 +158,43 @@
             "sandbox",
             "live"
           ],
-          "default": "sandbox",
-          "description": "PayPal environment"
+          "default": "sandbox"
         },
         "paypalClientId": {
-          "type": "string",
-          "description": "PayPal REST API Client ID"
+          "type": "string"
         },
         "paypalSecret": {
-          "type": "string",
-          "description": "PayPal REST API Secret Key"
+          "type": "string"
         },
         "paypalEmail": {
-          "type": "string",
-          "description": "PayPal account email to receive payments"
+          "type": "string"
         },
         "stripeEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether Stripe card payments are enabled for this store"
+          "default": false
         },
         "stripeSecretKey": {
-          "type": "string",
-          "description": "The store owner's own Stripe Secret Key (sk_live_... or sk_test_...) used to create Checkout Sessions"
+          "type": "string"
         },
         "stripePublishableKey": {
-          "type": "string",
-          "description": "The store owner's Stripe Publishable Key (pk_live_... or pk_test_...), optional / for reference"
+          "type": "string"
         },
         "razorpayEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether Razorpay card/UPI/netbanking payments are enabled for this store"
+          "default": false
         },
         "razorpayKeyId": {
-          "type": "string",
-          "description": "The store owner's Razorpay Key ID (rzp_live_... or rzp_test_...) used to open Checkout and create orders"
+          "type": "string"
         },
         "razorpayKeySecret": {
-          "type": "string",
-          "description": "The store owner's Razorpay Key Secret used to create orders and verify payment signatures"
+          "type": "string"
         },
         "codEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether Cash on Delivery / pay-your-own-way is enabled"
+          "default": false
         },
         "codInstructions": {
-          "type": "string",
-          "description": "Instructions shown to customers choosing the manual / COD payment option"
+          "type": "string"
         }
       }
     },
@@ -217,38 +204,30 @@
       "properties": {
         "smtpEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether custom SMTP is enabled for store emails"
+          "default": false
         },
         "smtpHost": {
-          "type": "string",
-          "description": "SMTP server host"
+          "type": "string"
         },
         "smtpPort": {
           "type": "number",
-          "default": 587,
-          "description": "SMTP server port"
+          "default": 587
         },
         "smtpUsername": {
-          "type": "string",
-          "description": "SMTP username"
+          "type": "string"
         },
         "smtpPassword": {
-          "type": "string",
-          "description": "SMTP password"
+          "type": "string"
         },
         "smtpSecure": {
           "type": "boolean",
-          "default": true,
-          "description": "Use TLS/SSL"
+          "default": true
         },
         "fromName": {
-          "type": "string",
-          "description": "Sender display name"
+          "type": "string"
         },
         "fromEmail": {
-          "type": "string",
-          "description": "Sender email address"
+          "type": "string"
         },
         "templates": {
           "type": "object",
@@ -311,45 +290,36 @@
       "properties": {
         "storeStyle": {
           "type": "string",
-          "description": "Selected full visual store style slug (aurora, monolith, neon, linen, carbon)"
+          "description": "Selected full visual store style slug"
         },
         "productsSectionSubtitle": {
-          "type": "string",
-          "description": "Optional subtitle shown under the products section title"
+          "type": "string"
         },
         "plansEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether the subscription plans section is shown on the store page (right after Categories)"
+          "default": false
         },
         "plansTitle": {
-          "type": "string",
-          "description": "Heading for the subscription plans section on the store page"
+          "type": "string"
         },
         "plansSubtitle": {
-          "type": "string",
-          "description": "Subtitle shown under the subscription plans section heading"
+          "type": "string"
         },
         "dealMakerVoice": {
-          "type": "string",
-          "description": "Text-to-speech voice name used by the Deal Maker agent"
+          "type": "string"
         },
         "dealMakerEnabled": {
           "type": "boolean",
-          "default": true,
-          "description": "Whether the Deal Maker AI sales agent shows on the store page"
+          "default": true
         },
         "dealMakerName": {
-          "type": "string",
-          "description": "Display name for the Deal Maker agent (e.g. Max)"
+          "type": "string"
         },
         "dealMakerImageUrl": {
-          "type": "string",
-          "description": "Profile image URL for the Deal Maker agent (shown in the centered welcome hero and chat)"
+          "type": "string"
         },
         "dealMakerTagline": {
-          "type": "string",
-          "description": "Short professional title/tagline shown under the agent name (e.g. AI Deal Strategist)"
+          "type": "string"
         },
         "dealMakerLayout": {
           "type": "string",
@@ -359,13 +329,11 @@
             "avatar_right",
             "spotlight"
           ],
-          "default": "centered",
-          "description": "Deal Maker immersive layout"
+          "default": "centered"
         },
         "dealMakerBgOpacity": {
           "type": "number",
-          "default": 5,
-          "description": "Transparency (0-100) of the dark dim overlay behind the immersive Deal Maker chat."
+          "default": 5
         },
         "dealMakerBgTheme": {
           "type": "string",
@@ -377,32 +345,36 @@
             "emerald",
             "mono"
           ],
-          "default": "midnight",
-          "description": "Preset background color/gradient theme behind the immersive Deal Maker chat"
+          "default": "midnight"
         },
         "dealMakerOwnerName": {
-          "type": "string",
-          "description": "Owner name the agent references for follow-ups and custom builds"
+          "type": "string"
         },
         "dealMakerNiche": {
-          "type": "string",
-          "description": "Who the store helps (e.g. gym owners, coaches) \u2014 shapes the agent's pitch"
+          "type": "string"
         },
         "dealMakerGuarantee": {
-          "type": "string",
-          "description": "Guarantee line the agent uses when closing"
+          "type": "string"
         },
         "dealMakerGreeting": {
-          "type": "string",
-          "description": "Custom opening greeting the agent uses; falls back to a generated one when empty"
+          "type": "string"
         },
         "dealMakerKnowledge": {
-          "type": "string",
-          "description": "Free-form training/knowledge base: store info, tasks, rules, FAQs the agent must know"
+          "type": "string"
         },
         "headerEnabled": {
           "type": "boolean",
           "default": true
+        },
+        "headerTextEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the hero headline, subtitle and badge text are shown"
+        },
+        "dealsEndingSoonEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the Exclusive Deals countdown slider is shown"
         },
         "headerTitle": {
           "type": "string"
@@ -414,12 +386,10 @@
           "type": "string"
         },
         "headerLogoUrl": {
-          "type": "string",
-          "description": "Store logo shown in the top navigation bar"
+          "type": "string"
         },
         "heroSideImageUrl": {
-          "type": "string",
-          "description": "Feature image shown beside the hero headline (product shot / illustration)"
+          "type": "string"
         },
         "heroSideImagePosition": {
           "type": "string",
@@ -428,16 +398,16 @@
             "center",
             "right"
           ],
-          "default": "right",
-          "description": "Position of the hero side image relative to the headline"
+          "default": "right"
         },
         "heroBadgeText": {
-          "type": "string",
-          "description": "Small badge/pill text above the hero headline"
+          "type": "string"
         },
         "heroCtaText": {
-          "type": "string",
-          "description": "Hero call-to-action button label"
+          "type": "string"
+        },
+        "heroSecondaryCtaText": {
+          "type": "string"
         },
         "heroBgType": {
           "type": "string",
@@ -446,25 +416,20 @@
             "solid",
             "image"
           ],
-          "default": "gradient",
-          "description": "Hero background style"
+          "default": "gradient"
         },
         "heroGradientStart": {
-          "type": "string",
-          "description": "Hero gradient start color"
+          "type": "string"
         },
         "heroGradientEnd": {
-          "type": "string",
-          "description": "Hero gradient end color"
+          "type": "string"
         },
         "heroSolidColor": {
-          "type": "string",
-          "description": "Hero solid background color"
+          "type": "string"
         },
         "heroBgOpacity": {
           "type": "number",
-          "default": 100,
-          "description": "Hero background opacity percentage"
+          "default": 100
         },
         "productsEnabled": {
           "type": "boolean",
@@ -482,50 +447,40 @@
         },
         "trustBadgesEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether the trust/policy badges strip is shown on the store page"
+          "default": false
         },
         "trustBadgesTitle": {
-          "type": "string",
-          "description": "Optional heading above the trust badges strip"
+          "type": "string"
         },
         "trustBadges": {
           "type": "array",
-          "description": "Trust/policy factors shown to buyers",
           "items": {
             "type": "object",
             "properties": {
               "icon": {
-                "type": "string",
-                "description": "Preset icon key (shield, lock, gdpr, paypal, stripe, verified, badge, award)"
+                "type": "string"
               },
               "imageUrl": {
-                "type": "string",
-                "description": "Optional custom badge image URL (overrides preset icon)"
+                "type": "string"
               },
               "text": {
-                "type": "string",
-                "description": "Badge label / caption"
+                "type": "string"
               },
               "link": {
-                "type": "string",
-                "description": "Optional URL the badge links to"
+                "type": "string"
               }
             }
           }
         },
         "faqEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether the FAQ section is shown (below the footer)"
+          "default": false
         },
         "faqTitle": {
-          "type": "string",
-          "description": "FAQ section heading"
+          "type": "string"
         },
         "faqs": {
           "type": "array",
-          "description": "List of frequently asked questions",
           "items": {
             "type": "object",
             "properties": {
@@ -551,20 +506,16 @@
         },
         "customBannerEnabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether the custom banner band is shown on the store page"
+          "default": false
         },
         "customBannerImageUrl": {
-          "type": "string",
-          "description": "Background image for the custom banner band"
+          "type": "string"
         },
         "customBannerTitle": {
-          "type": "string",
-          "description": "Custom banner heading"
+          "type": "string"
         },
         "customBannerSubtitle": {
-          "type": "string",
-          "description": "Custom banner subheadline"
+          "type": "string"
         },
         "customBannerTextPosition": {
           "type": "string",
@@ -573,8 +524,7 @@
             "center",
             "right"
           ],
-          "default": "center",
-          "description": "Alignment of the banner heading/subheadline"
+          "default": "center"
         },
         "footerEnabled": {
           "type": "boolean",
@@ -584,16 +534,13 @@
           "type": "string"
         },
         "footerCopyright": {
-          "type": "string",
-          "description": "Bottom-bar copyright line shown on all themes"
+          "type": "string"
         },
         "footerLogoUrl": {
-          "type": "string",
-          "description": "Logo image shown in the store footer (falls back to store logo)"
+          "type": "string"
         },
         "socialLinks": {
           "type": "object",
-          "description": "Social media profile links shown in the footer",
           "properties": {
             "facebook": {
               "type": "string"
@@ -616,12 +563,10 @@
           }
         },
         "customCodeHead": {
-          "type": "string",
-          "description": "Custom HTML/JS injected into the page head (e.g. FB/Google pixel, analytics)"
+          "type": "string"
         },
         "customCodeBody": {
-          "type": "string",
-          "description": "Custom HTML/JS injected at the end of the page body"
+          "type": "string"
         }
       }
     },
@@ -712,39 +657,32 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "default": false,
-          "description": "Whether the affiliate program is enabled for this store"
+          "default": false
         },
         "defaultCommissionRate": {
           "type": "number",
-          "default": 30,
-          "description": "Default commission percentage for products that do not set their own"
+          "default": 30
         },
         "minCommissionRate": {
           "type": "number",
-          "default": 10,
-          "description": "Lower bound of the allowed commission range"
+          "default": 10
         },
         "maxCommissionRate": {
           "type": "number",
-          "default": 50,
-          "description": "Upper bound of the allowed commission range"
+          "default": 50
         },
         "holdDays": {
           "type": "number",
-          "default": 14,
-          "description": "Days a commission stays on hold (refund window) before it clears to payable"
+          "default": 14
         },
         "questions": {
           "type": "array",
-          "description": "Questions affiliates must answer when applying to promote a product",
           "items": {
             "type": "string"
           }
         },
         "terms": {
-          "type": "string",
-          "description": "Affiliate program terms shown to applicants"
+          "type": "string"
         }
       }
     }

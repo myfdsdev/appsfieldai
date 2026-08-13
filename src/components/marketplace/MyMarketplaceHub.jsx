@@ -289,6 +289,7 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
     setSaving(true);
     await base44.entities.Marketplace.update(marketplace.id, { pageSections: pageForm });
     queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
+    queryClient.invalidateQueries({ queryKey: ["hubMarketplace", marketplace.id] });
     toast.success("Page settings saved!");
     setSaving(false);
   };
