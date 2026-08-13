@@ -390,10 +390,6 @@ export default function MyMarketplaceHub({ marketplace: marketplaceProp, onBack 
                   enabled={pageForm.faqEnabled} onToggle={() => setPageForm(f => ({ ...f, faqEnabled: !f.faqEnabled }))}>
                   <FaqSectionEditor form={pageForm} setForm={setPageForm} />
                 </SectionCard>
-                <SectionCard title="Custom Section Boxes" icon={Layers}
-                  enabled={pageForm.customBoxesEnabled} onToggle={() => setPageForm(f => ({ ...f, customBoxesEnabled: !f.customBoxesEnabled }))}>
-                  <p className="text-xs text-muted-foreground">Custom content boxes can be managed from your Admin Hub.</p>
-                </SectionCard>
                 <SectionCard title="Custom Banner" icon={Image}
                   enabled={pageForm.customBannerEnabled} onToggle={() => setPageForm(f => ({ ...f, customBannerEnabled: !f.customBannerEnabled }))}>
                   <CustomBannerEditor form={pageForm} setForm={setPageForm} />
