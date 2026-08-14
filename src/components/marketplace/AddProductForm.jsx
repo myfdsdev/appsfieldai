@@ -249,7 +249,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         {activeTab === "details" && (
           <>
             <div>
-              <label className="text-xs text-muted-foreground">Software Name *</label>
+              <label className="text-xs text-muted-foreground">Software / Product Name *</label>
               <Input value={form.softwareName} onChange={e => update("softwareName", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="e.g. SuperCRM Pro" />
             </div>
             <div>
