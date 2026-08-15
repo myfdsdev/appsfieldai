@@ -5,6 +5,20 @@ import { base44 } from "@/api/base44Client";
 
 const tokenKey = (marketplaceId) => `store_customer_token_${marketplaceId}`;
 
+// Invoke a backend function and always surface the server's real error message
+// (non-2xx responses otherwise throw a generic "Request failed with status code 400").
+async function invokeFn(name, payload, fallback) {
+  let res;
+  try {
+    res = await base44.functions.invoke(name, payload);
+  } catch (err) {
+    const serverError = err?.response?.data?.error;
+    throw new Error(serverError || fallback || err.message);
+  }
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+
 export function getStoredToken(marketplaceId) {
   if (!marketplaceId) return null;
   return localStorage.getItem(tokenKey(marketplaceId));
@@ -110,9 +124,7 @@ export async function reserveStoreSpot({ marketplaceId, listingId, spots, phone,
 // guests pass name + email (no session required) and get a fresh token back.
 export async function checkoutStoreOrder({ marketplaceId, items, paymentMethod, fullName, email, phone, notes, refCode }) {
   const token = getStoredToken(marketplaceId) || undefined;
-  const res = await base44.functions.invoke("storeCheckout", { marketplaceId, token, items, paymentMethod, fullName, email, phone, notes, refCode });
-  if (res.data?.error) throw new Error(res.data.error);
-  return res.data;
+  return await invokeFn("storeCheckout", { marketplaceId, token, items, paymentMethod, fullName, email, phone, notes, refCode }, "Checkout failed. Please try again.");
 }
 
 // ── Store subscription plans ──
@@ -159,18 +171,14 @@ export async function cancelStoreSubscription({ marketplaceId, subscriptionId })
 export async function createPaypalOrder({ marketplaceId, orderId, returnUrl, cancelUrl, token }) {
   const useToken = token || getStoredToken(marketplaceId);
   if (!useToken) throw new Error("Please sign in to pay");
-  const res = await base44.functions.invoke("storePaypalCreateOrder", { marketplaceId, token: useToken, orderId, returnUrl, cancelUrl });
-  if (res.data?.error) throw new Error(res.data.error);
-  return res.data;
+  return await invokeFn("storePaypalCreateOrder", { marketplaceId, token: useToken, orderId, returnUrl, cancelUrl }, "Could not start the PayPal payment.");
 }
 
 // Capture a PayPal payment after the buyer approves and returns to the store.
 export async function capturePaypalOrder({ marketplaceId, paypalOrderId }) {
   const token = getStoredToken(marketplaceId);
   if (!token) throw new Error("Please sign in");
-  const res = await base44.functions.invoke("storePaypalCapture", { marketplaceId, token, paypalOrderId });
-  if (res.data?.error) throw new Error(res.data.error);
-  return res.data;
+  return await invokeFn("storePaypalCapture", { marketplaceId, token, paypalOrderId }, "Could not confirm the PayPal payment.");
 }
 
 // Create a Stripe Checkout Session for a pending StoreOrder and get the hosted checkout URL.
@@ -178,9 +186,7 @@ export async function capturePaypalOrder({ marketplaceId, paypalOrderId }) {
 export async function createStripeCheckout({ marketplaceId, orderId, returnUrl, cancelUrl, token }) {
   const useToken = token || getStoredToken(marketplaceId);
   if (!useToken) throw new Error("Please sign in to pay");
-  const res = await base44.functions.invoke("storeStripeCreateCheckout", { marketplaceId, token: useToken, orderId, returnUrl, cancelUrl });
-  if (res.data?.error) throw new Error(res.data.error);
-  return res.data;
+  return await invokeFn("storeStripeCreateCheckout", { marketplaceId, token: useToken, orderId, returnUrl, cancelUrl }, "Could not start the card payment.");
 }
 
 // Confirm a Stripe payment after the buyer returns to the store from Stripe Checkout.
@@ -198,9 +204,7 @@ export async function confirmStripeOrder({ marketplaceId, orderId }) {
 export async function createRazorpayOrder({ marketplaceId, orderId, token }) {
   const useToken = token || getStoredToken(marketplaceId);
   if (!useToken) throw new Error("Please sign in to pay");
-  const res = await base44.functions.invoke("storeRazorpayCreateOrder", { marketplaceId, token: useToken, orderId });
-  if (res.data?.error) throw new Error(res.data.error);
-  return res.data;
+  return await invokeFn("storeRazorpayCreateOrder", { marketplaceId, token: useToken, orderId }, "Could not start the Razorpay payment.");
 }
 
 // Verify a Razorpay payment after the buyer completes the Checkout popup.
