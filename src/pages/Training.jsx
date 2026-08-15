@@ -5,8 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { GraduationCap, PlayCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getYouTubeId } from "@/lib/youtube";
-import MinimalYouTubePlayer from "@/components/MinimalYouTubePlayer";
+import TrainingVideoCard from "@/components/training/TrainingVideoCard";
 
 export default function Training() {
   const navigate = useNavigate();
@@ -50,24 +49,9 @@ export default function Training() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {videos.map((v) => {
-            const id = getYouTubeId(v.videoUrl);
-            return (
-              <div key={v.id} className="rounded-2xl border border-border/30 bg-card overflow-hidden flex flex-col">
-                {id ? (
-                  <MinimalYouTubePlayer url={v.videoUrl} autoplay={false} />
-                ) : (
-                  <div className="relative aspect-video bg-black flex items-center justify-center text-muted-foreground/50">
-                    <PlayCircle className="w-10 h-10" />
-                  </div>
-                )}
-                <div className="p-4 flex-1">
-                  <h3 className="font-semibold text-foreground">{v.name}</h3>
-                  {v.description && <p className="text-sm text-muted-foreground mt-1">{v.description}</p>}
-                </div>
-              </div>
-            );
-          })}
+          {videos.map((v) => (
+            <TrainingVideoCard key={v.id} video={v} />
+          ))}
         </div>
       )}
     </div>
