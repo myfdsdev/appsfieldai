@@ -241,11 +241,13 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, currency
           )}
         </div>
 
-        {/* Revenue & Growth */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground" style={mutedStyle}>
-          <span>+{growthRate}% growth</span>
-          <span>{fmtPrice(monthlyRevenue)}/mo</span>
-        </div>
+        {/* Revenue & Growth — only shown when the owner actually filled them in */}
+        {(growthRate > 0 || monthlyRevenue > 0) && (
+          <div className="flex items-center justify-between text-xs text-muted-foreground" style={mutedStyle}>
+            <span>{growthRate > 0 ? `+${growthRate}% growth` : ""}</span>
+            <span>{monthlyRevenue > 0 ? `${fmtPrice(monthlyRevenue)}/mo` : ""}</span>
+          </div>
+        )}
 
         {/* Buttons */}
         {/* Store context (cart enabled): single-purchase → Add to Cart + Buy Now; group deals → Reserve. */}

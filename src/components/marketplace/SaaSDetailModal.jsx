@@ -210,6 +210,8 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
   // product is actually offered as a group deal with spots configured.
   const isGroupDeal = !!listing && (listing.dealType === "group_deal" || listing.dealType === "both") && (listing.totalShares || 0) > 0;
   const monthlyProfit = listing ? listing.monthlyRevenue - (listing.monthlyExpenses || 0) : 0;
+  // Hide the revenue/profit stats entirely when the owner left them empty (0).
+  const showFinancials = (listing?.monthlyRevenue || 0) > 0;
 
   return (
     <AnimatePresence>
@@ -287,30 +289,30 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
 
                   {/* What's Included — clear buyer policies */}
                   {(listing.usageLimits || listing.supportInfo || listing.refundPolicy || listing.redemptionInstructions) && (
-                    <div className="rounded-xl border border-border/40 bg-secondary/30 p-3 space-y-2">
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase">What's Included</p>
+                    <div className="rounded-xl border border-border/40 bg-secondary/30 p-3 space-y-2" style={pal ? { background: `${pal.accent}12`, borderColor: `${pal.accent}33`, color: pal.text } : undefined}>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase" style={pal ? { color: pal.text, opacity: 0.65 } : undefined}>What's Included</p>
                       {listing.usageLimits && (
                         <div className="flex gap-2 text-xs">
                           <Zap className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
-                          <span><span className="font-medium">Plan limits:</span> <span className="text-muted-foreground">{listing.usageLimits}</span></span>
+                          <span><span className="font-medium">Plan limits:</span> <span className="text-muted-foreground" style={pal ? { color: pal.text, opacity: 0.85 } : undefined}>{listing.usageLimits}</span></span>
                         </div>
                       )}
                       {listing.supportInfo && (
                         <div className="flex gap-2 text-xs">
                           <Bot className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
-                          <span><span className="font-medium">Support:</span> <span className="text-muted-foreground">{listing.supportInfo}</span></span>
+                          <span><span className="font-medium">Support:</span> <span className="text-muted-foreground" style={pal ? { color: pal.text, opacity: 0.85 } : undefined}>{listing.supportInfo}</span></span>
                         </div>
                       )}
                       {listing.refundPolicy && (
                         <div className="flex gap-2 text-xs">
                           <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                          <span><span className="font-medium">Refund policy:</span> <span className="text-muted-foreground">{listing.refundPolicy}</span></span>
+                          <span><span className="font-medium">Refund policy:</span> <span className="text-muted-foreground" style={pal ? { color: pal.text, opacity: 0.85 } : undefined}>{listing.refundPolicy}</span></span>
                         </div>
                       )}
                       {listing.redemptionInstructions && (
                         <div className="flex gap-2 text-xs">
                           <FileText className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
-                          <span><span className="font-medium">How to redeem:</span> <span className="text-muted-foreground">{listing.redemptionInstructions}</span></span>
+                          <span><span className="font-medium">How to redeem:</span> <span className="text-muted-foreground" style={pal ? { color: pal.text, opacity: 0.85 } : undefined}>{listing.redemptionInstructions}</span></span>
                         </div>
                       )}
                     </div>
@@ -325,18 +327,22 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                     </div>
                   )}
 
-                  {/* Financials */}
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* Financials — revenue/profit only when the owner filled them in */}
+                  <div className={`grid gap-2 ${showFinancials ? "grid-cols-3" : "grid-cols-1"}`}>
+                    {showFinancials && (
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
                       <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Revenue</p>
                       <p className="text-xs font-display font-bold text-emerald-400">${listing.monthlyRevenue?.toLocaleString()}</p>
                       <p className="text-[9px]" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>/mo</p>
                     </div>
+                    )}
+                    {showFinancials && (
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
                       <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Profit</p>
                       <p className="text-xs font-display font-bold" style={{ color: accent || "#f79a1b" }}>${monthlyProfit.toLocaleString()}</p>
                       <p className="text-[9px]" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>/mo</p>
                     </div>
+                    )}
                     <div className="rounded-xl bg-secondary/50 p-2.5 text-center" style={pal ? { background: `${pal.accent}12` } : undefined}>
                       <p className="text-[9px] uppercase" style={pal ? { color: pal.text, opacity: 0.6 } : undefined}>Full Price</p>
                       <p className="text-xs font-display font-bold">${(isGroupDeal ? (listing.sharePrice || 0) * (listing.totalShares || 0) : (listing.discountPrice || listing.price || 0)).toLocaleString()}</p>
