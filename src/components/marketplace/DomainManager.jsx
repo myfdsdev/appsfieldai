@@ -336,21 +336,10 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
 
             {domainState?.verificationStatus !== "verified" && (
               <>
-                {/* DNS record to add */}
-                <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20 hidden">
-                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add this DNS record at your domain provider</p>
-
-                  <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
-                    <CopyField label="Type" value={dns.type} />
-                    <CopyField label="Host / Name" value={dns.name} />
-                    <CopyField label="Value" value={dns.target} />
-                  </div>
-
-                  <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
-                    <Clock className="w-3 h-3 mt-0.5 shrink-0" />
-                    DNS changes can take a few minutes to 48 hours to propagate. Click verify once added.
-                  </p>
-                </div>
+                <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+                  <Clock className="w-3 h-3 mt-0.5 shrink-0" />
+                  DNS changes can take a few minutes to 48 hours to propagate. Click verify once added.
+                </p>
 
                 <Button onClick={handleVerify} disabled={verifying} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1.5">
                   {verifying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
