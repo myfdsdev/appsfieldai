@@ -324,10 +324,20 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
               </div>
             ) : null}
 
+            {/* DNS record — always visible so the owner can re-check it any time */}
+            <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20">
+              <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />DNS record for {domain}</p>
+              <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
+                <CopyField label="Type" value={dns.type} />
+                <CopyField label="Host / Name" value={dns.name} />
+                <CopyField label="Value" value={dns.target} />
+              </div>
+            </div>
+
             {domainState?.verificationStatus !== "verified" && (
               <>
                 {/* DNS record to add */}
-                <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20">
+                <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20 hidden">
                   <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add this DNS record at your domain provider</p>
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
