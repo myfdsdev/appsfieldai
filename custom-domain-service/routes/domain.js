@@ -160,13 +160,15 @@ router.delete("/domains/:domain", requireBearer, async (req, res) => {
   if (!domain) return res.status(400).json({ error: "Invalid domain." });
 
   const doc = await domains().findOne({ domain });
-  if (!doc) return res.status(404).json({ error: "Domain mapping not found." });
-  if (req.authUserId && doc.owner_user_id && doc.owner_user_id !== req.authUserId) {
+  // `force` releases a domain that is still registered with the hosting
+  // provider but has no mapping here (a stuck/duplicate hostname).
+  if (!doc && !req.body?.force) return res.status(404).json({ error: "Domain mapping not found." });
+  if (doc && req.authUserId && doc.owner_user_id && doc.owner_user_id !== req.authUserId) {
     return res.status(403).json({ error: "You do not own this domain mapping." });
   }
 
   try {
-    await render.deleteDomain(doc.render_domain_id || domain);
+    await render.deleteDomain(doc?.render_domain_id || domain);
   } catch (err) {
     console.error("Render deleteDomain failed", err.response?.data || err.message);
     // Continue — we still remove our own mapping so the store stops routing here.

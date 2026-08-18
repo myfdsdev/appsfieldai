@@ -64,6 +64,8 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [releaseDomain, setReleaseDomain] = useState("");
+  const [releasing, setReleasing] = useState(false);
   const [platformDomain, setPlatformDomain] = useState("");
   const [domainSource, setDomainSource] = useState("");
   // Verification/SSL status + DNS instructions now live in the standalone
@@ -162,6 +164,26 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
       toast.error(err.message || "Could not disconnect domain. Try again.");
     }
     setDisconnecting(false);
+  };
+
+  // A domain can stay registered with the hosting provider from an earlier
+  // attempt while this store shows nothing connected ("Duplicate custom
+  // hostname"). This releases it so it can be connected again.
+  const handleReleaseDomain = async () => {
+    const clean = releaseDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+    if (!clean) return;
+    setReleasing(true);
+    try {
+      await domainServiceFetch(`/api/admin/domains/${encodeURIComponent(clean)}`, {
+        method: "DELETE",
+        body: JSON.stringify({ userId: marketplace?.ownerId, force: true }),
+      });
+      toast.success(`${clean} released — you can connect it again now.`);
+      setReleaseDomain("");
+    } catch (err) {
+      toast.error(err.message || "Could not release that domain.");
+    }
+    setReleasing(false);
   };
 
   const refreshMp = async () => {
@@ -263,6 +285,22 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
           <Input value={customDomain} onChange={e => setCustomDomain(e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl flex-1" placeholder="deals.yourbrand.com" />
           <Button onClick={handleConnectDomain} disabled={saving || !customDomain.trim()} className="bg-gradient-to-r from-amber-600 to-orange-600 text-white border-0 rounded-xl gap-1.5"><Globe className="w-4 h-4" />Connect</Button>
         </div>
+
+        {!domain && (
+          <div className="p-3 rounded-xl border border-border/30 bg-secondary/20 space-y-2">
+            <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+              <Info className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+              Getting a "duplicate domain" error? The domain may still be registered from an earlier attempt. Release it here, then connect again.
+            </p>
+            <div className="flex gap-2">
+              <Input value={releaseDomain} onChange={e => setReleaseDomain(e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl flex-1" placeholder="yourdomain.com" />
+              <Button onClick={handleReleaseDomain} disabled={releasing || !releaseDomain.trim()} variant="outline" className="rounded-xl gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400">
+                {releasing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Release
+              </Button>
+            </div>
+          </div>
+        )}
 
         {domain && (
           <div className="space-y-4">

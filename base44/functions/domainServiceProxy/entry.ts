@@ -78,7 +78,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    return Response.json(data, { status: res.status });
+    // Always answer 200 so the SDK doesn't collapse the origin's descriptive
+    // error into a generic "Request failed with status code 400". The real
+    // message is passed through in `error` for the UI to display.
+    if (!res.ok) {
+      const message = data?.error || data?.message || `Domain service error (${res.status})`;
+      console.error(`domainServiceProxy: origin ${res.status}: ${message}`);
+      return Response.json({ error: message, status: res.status });
+    }
+
+    return Response.json(data);
   } catch (error) {
     console.error("domainServiceProxy error:", error.message);
     return Response.json({ error: error.message }, { status: 500 });
