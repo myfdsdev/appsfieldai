@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Payment could not be verified' }, { status: 402 });
     }
 
-    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order));
+    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, await paidOrderUpdate(base44, order));
 
     // Fire-and-forget order confirmation email with a full branded invoice.
     if (customer.email) {

@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       }, { status: 402 });
     }
 
-    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order, { paypalCaptureId: captureId }));
+    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, await paidOrderUpdate(base44, order, { paypalCaptureId: captureId }));
 
     // Fire-and-forget order confirmation email with a full branded invoice.
     if (customer.email) {

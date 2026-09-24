@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
       if (oData.status === 'COMPLETED') {
         const cap = oData?.purchase_units?.[0]?.payments?.captures?.[0];
         if (cap?.status === 'COMPLETED' && cap?.id) {
-          await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order, { paypalCaptureId: cap.id }));
+          await base44.asServiceRole.entities.StoreOrder.update(order.id, await paidOrderUpdate(base44, order, { paypalCaptureId: cap.id }));
           results.push({ id: order.id, action: 'marked_paid_already_completed' });
         }
         continue;
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         const captureStatus = captureObj?.status;
 
         if (capData.status === 'COMPLETED' && captureId && captureStatus === 'COMPLETED') {
-          const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order, { paypalCaptureId: captureId }));
+          const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, await paidOrderUpdate(base44, order, { paypalCaptureId: captureId }));
           results.push({ id: order.id, action: 'captured' });
 
           // Send the same order-confirmation email the normal flow sends.
