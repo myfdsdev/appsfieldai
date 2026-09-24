@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   X, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2,
-  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight, ShoppingCart
+  CalendarCheck, DollarSign, FileText, Users, ChevronLeft, ChevronRight, ShoppingCart, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -212,6 +212,8 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
   const monthlyProfit = listing ? listing.monthlyRevenue - (listing.monthlyExpenses || 0) : 0;
   // Hide the revenue/profit stats entirely when the owner left them empty (0).
   const showFinancials = (listing?.monthlyRevenue || 0) > 0;
+  // Custom redirect button replaces the default buy/cart actions (same as the store card).
+  const customBtn = listing?.customButton?.enabled && listing.customButton.url ? listing.customButton : null;
 
   return (
     <AnimatePresence>
@@ -410,7 +412,17 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                   )}
 
                   {/* Action Buttons */}
-                  {!isSold ? (
+                  {customBtn ? (
+                    <Button
+                      asChild
+                      className={`w-full ${solidBtnClass}`}
+                      style={solidBtnStyle}
+                    >
+                      <a href={customBtn.url} target={customBtn.openInNewTab !== false ? "_blank" : "_self"} rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 mr-1.5" /> {customBtn.label?.trim() || "Learn More"}
+                      </a>
+                    </Button>
+                  ) : !isSold ? (
                     (onAddToCart || onBuyNow) ? (
                       // Store context — 2-column layout with cart option
                       !isGroupDeal ? (
