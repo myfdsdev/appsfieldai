@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { paidOrderUpdate } from '../../shared/paidOrder.ts';
 
 // Confirms a Stripe payment after the buyer returns to the store from Stripe Checkout.
 // Retrieves the Checkout Session with the store's own Stripe key, verifies it's paid,
@@ -63,11 +64,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Payment was not completed', status: session.payment_status }, { status: 402 });
     }
 
-    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, {
-      paymentStatus: 'paid',
-      status: 'processing',
-      paidAt: new Date().toISOString(),
-    });
+    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order));
 
     // Fire-and-forget order confirmation email with a full branded invoice.
     if (customer.email) {

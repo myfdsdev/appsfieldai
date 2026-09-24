@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { paidOrderUpdate } from '../../shared/paidOrder.ts';
 
 // Captures a PayPal payment after the buyer approves it, then marks the StoreOrder
 // paid. Called when PayPal redirects the buyer back to the store with ?token=<paypalOrderId>.
@@ -82,12 +83,7 @@ Deno.serve(async (req) => {
       }, { status: 402 });
     }
 
-    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, {
-      paymentStatus: 'paid',
-      status: 'processing',
-      paidAt: new Date().toISOString(),
-      paypalCaptureId: captureId,
-    });
+    const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order, { paypalCaptureId: captureId }));
 
     // Fire-and-forget order confirmation email with a full branded invoice.
     if (customer.email) {

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { paidOrderUpdate } from '../../shared/paidOrder.ts';
 
 // Safety net: buyers sometimes approve a PayPal payment but never complete the
 // redirect back to the store, so the capture never runs and the order is left
@@ -57,10 +58,7 @@ Deno.serve(async (req) => {
       if (oData.status === 'COMPLETED') {
         const cap = oData?.purchase_units?.[0]?.payments?.captures?.[0];
         if (cap?.status === 'COMPLETED' && cap?.id) {
-          await base44.asServiceRole.entities.StoreOrder.update(order.id, {
-            paymentStatus: 'paid', status: 'processing',
-            paidAt: new Date().toISOString(), paypalCaptureId: cap.id,
-          });
+          await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order, { paypalCaptureId: cap.id }));
           results.push({ id: order.id, action: 'marked_paid_already_completed' });
         }
         continue;
@@ -82,10 +80,7 @@ Deno.serve(async (req) => {
         const captureStatus = captureObj?.status;
 
         if (capData.status === 'COMPLETED' && captureId && captureStatus === 'COMPLETED') {
-          const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, {
-            paymentStatus: 'paid', status: 'processing',
-            paidAt: new Date().toISOString(), paypalCaptureId: captureId,
-          });
+          const updated = await base44.asServiceRole.entities.StoreOrder.update(order.id, paidOrderUpdate(order, { paypalCaptureId: captureId }));
           results.push({ id: order.id, action: 'captured' });
 
           // Send the same order-confirmation email the normal flow sends.
