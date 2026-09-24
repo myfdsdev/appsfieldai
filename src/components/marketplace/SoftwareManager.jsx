@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play, KeyRound, ChevronDown, ChevronUp, FileSpreadsheet } from "lucide-react";
+import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play, KeyRound, ChevronDown, ChevronUp, FileSpreadsheet, FileText, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -48,6 +48,8 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
   // Opens the actual public product page buyers see, in a new tab.
   const viewProductUrl = (item) =>
     storeBase ? `${storeBase.replace(/\/$/, "")}/saas/${item.id}` : `/saas/${item.id}`;
+  // Dedicated, shareable mini sales page for the product.
+  const salesPageUrl = (item) => `${storeBase.replace(/\/$/, "")}/p/${item.id}`;
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -293,6 +295,8 @@ export default function SoftwareManager({ marketplaceId, marketplaceType, market
                   <Button size="sm" variant="ghost" onClick={() => { setEditing(item); setShowForm(true); }} className="h-7 text-[10px]"><Edit3 className="w-3 h-3 mr-1" />Edit</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleFeatureToggle(item)} className={`h-7 text-[10px] ${item.featured ? "text-amber-400" : ""}`}><Star className="w-3 h-3 mr-1" />{item.featured ? "Unfeature" : "Feature"}</Button>
                   <a href={viewProductUrl(item)} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="ghost" className="h-7 text-[10px]"><ExternalLink className="w-3 h-3 mr-1" />View</Button></a>
+                  <a href={salesPageUrl(item)} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="ghost" className="h-7 text-[10px] text-cyan-400"><FileText className="w-3 h-3 mr-1" />Sales Page</Button></a>
+                  <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(salesPageUrl(item)); toast.success("Sales page link copied!"); }} className="h-7 text-[10px] text-cyan-400"><Link2 className="w-3 h-3 mr-1" />Copy Link</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(item)} disabled={actionLoading === item.id} className="h-7 text-[10px] text-red-400"><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
                   {item.adminAccess?.type === "url" && item.adminAccess?.url && (
                     <Button size="sm" variant="ghost" disabled={provisioning === item.id} onClick={async () => {

@@ -50,6 +50,7 @@ import LeadFinder from '@/pages/LeadFinder';
 import Training from '@/pages/Training';
 import MarketingStudio from '@/pages/MarketingStudio';
 import Bonus from '@/pages/Bonus';
+import ProductSalesPage from '@/pages/ProductSalesPage';
 // Add page imports here
 
 // When the app is served from a customer store subdomain (wildcard DNS),
@@ -57,6 +58,7 @@ import Bonus from '@/pages/Bonus';
 const StoreSubdomainApp = () => (
   <Routes>
     <Route path="/saas/:id" element={<StorePage />} />
+    <Route path="/p/:id" element={<ProductSalesPage />} />
     <Route path="/page/:pageSlug" element={<StoreCustomPage />} />
     <Route path="/blog" element={<StoreBlogIndex />} />
     <Route path="/blog/:blogSlug" element={<StoreBlogPost />} />
@@ -107,6 +109,7 @@ const AuthenticatedApp = () => {
       {/* Public store pages — accessible without login, no app chrome */}
       <Route path="/store/:slug" element={<StorePage />} />
       <Route path="/store/:slug/saas/:id" element={<StorePage />} />
+      <Route path="/store/:slug/p/:id" element={<ProductSalesPage />} />
       <Route path="/store/:slug/dashboard" element={<StoreDashboard />} />
       <Route path="/store/:slug/affiliates" element={<StoreAffiliatePage />} />
       <Route path="/store/:slug/page/:pageSlug" element={<StoreCustomPage />} />
