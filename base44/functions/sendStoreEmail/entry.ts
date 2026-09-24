@@ -164,22 +164,40 @@ function orderConfirmationHtml(opts: {
     ? `<span style="display:inline-block;background:#e7f7ee;color:#1a8a4f;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">PAID</span>`
     : `<span style="display:inline-block;background:#fff4e5;color:#b26a00;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">PENDING PAYMENT</span>`;
 
-  const dashboardBtn = opts.dashboardUrl
-    ? `<div style="margin:24px 0 8px;">
-        <a href="${esc(opts.dashboardUrl)}" style="display:inline-block;background:${esc(brand)};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 26px;border-radius:10px;">Open your dashboard</a>
+  // Prominent product-access card (confirmed orders with delivery info only).
+  const accessCard = (accessUrl || accessInstr)
+    ? `<div style="margin:0 0 24px;padding:22px;border:2px solid ${esc(brand)};border-radius:14px;background:#fafafa;">
+        <div style="font-size:12px;font-weight:800;color:#111;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">🔑 Your product access</div>
+        <p style="margin:0 0 16px;color:#444;font-size:14px;">Everything you need to start using your purchase is below.</p>
+        ${accessUrl ? emailButton(accessUrl, 'Access Your Product →', brand, true) : ''}
+        ${accessUrl ? `<p style="margin:12px 0 0;font-size:12px;color:#777;">Button not working? Copy this link:<br/><a href="${esc(accessUrl)}" target="_blank" style="color:#1a56db;text-decoration:underline;word-break:break-all;">${esc(accessUrl)}</a></p>` : ''}
+        ${accessInstr ? `<div style="margin-top:16px;padding:14px 16px;background:#ffffff;border:1px solid #e5e5e5;border-radius:10px;">
+            <div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Access instructions / login details</div>
+            <div style="font-size:14px;color:#222;white-space:pre-wrap;font-family:Consolas,Menlo,monospace;">${esc(accessInstr)}</div>
+          </div>` : ''}
       </div>`
     : '';
 
-  const instructions = order?.delivery?.instructions
-    ? `<div style="margin-top:20px;padding:16px;background:#f7f7fb;border-radius:10px;">
-        <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Access instructions</div>
-        <div style="font-size:14px;color:#333;white-space:pre-wrap;">${esc(order.delivery.instructions)}</div>
+  // Pending orders get a clear "what happens next" block.
+  const nextSteps = !confirmed
+    ? `<div style="margin:24px 0 0;padding:16px 18px;background:#f7f7fb;border-radius:12px;">
+        <div style="font-size:12px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">What happens next</div>
+        <div style="font-size:14px;color:#333;line-height:1.8;">1. The store confirms your payment.<br/>2. You receive a confirmation email with your access link.<br/>3. Your product also appears in your dashboard.</div>
+      </div>`
+    : '';
+
+  const dashboardBtn = opts.dashboardUrl
+    ? `<div style="margin:28px 0 8px;">
+        ${emailButton(opts.dashboardUrl, confirmed ? 'Open Your Dashboard' : 'Track Your Order', confirmed && (accessUrl || accessInstr) ? '#111111' : brand)}
+        <p style="margin:10px 0 0;font-size:12px;color:#777;">Or open: <a href="${esc(opts.dashboardUrl)}" target="_blank" style="color:#1a56db;text-decoration:underline;word-break:break-all;">${esc(opts.dashboardUrl)}</a></p>
       </div>`
     : '';
 
   return `
-    <h1 style="margin:0 0 4px;font-size:22px;color:#111;">${heading}</h1>
-    <p style="margin:0 0 20px;color:#555;">${introLine}</p>
+    <h1 style="margin:0 0 6px;font-size:24px;color:#111;">${heading}</h1>
+    <p style="margin:0 0 18px;color:#555;font-size:15px;">${introLine}</p>
+    ${banner}
+    ${accessCard}
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
       <tr>
@@ -209,7 +227,7 @@ function orderConfirmationHtml(opts: {
       </tfoot>
     </table>
 
-    ${instructions}
+    ${nextSteps}
     ${dashboardBtn}
   `;
 }
@@ -416,8 +434,8 @@ Deno.serve(async (req) => {
     } else if (templateKey.startsWith('subscription')) {
       const bodyText = applyVars((tpl?.body || def.body), mergedVars);
       const btn = dashboardUrl
-        ? `<div style="margin:24px 0 8px;">
-            <a href="${esc(dashboardUrl)}" style="display:inline-block;background:${esc(brand)};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 26px;border-radius:10px;">Manage your subscription</a>
+        ? `<div style="margin:24px 0 8px;">${emailButton(dashboardUrl, 'Manage Your Subscription', brand)}
+            <p style="margin:10px 0 0;font-size:12px;color:#777;">Or open: <a href="${esc(dashboardUrl)}" target="_blank" style="color:#1a56db;text-decoration:underline;word-break:break-all;">${esc(dashboardUrl)}</a></p>
           </div>`
         : '';
       const inner = `<div style="white-space:pre-wrap;">${esc(bodyText)}</div>${btn}`;
