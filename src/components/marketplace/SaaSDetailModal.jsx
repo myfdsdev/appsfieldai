@@ -13,6 +13,7 @@ import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import BuySpotModal from "@/components/marketplace/BuySpotModal";
 import { getStoreStyle } from "@/components/store/storeStyles";
+import ShareProductButton from "@/components/marketplace/ShareProductButton";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -244,6 +245,12 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
             >
               <X className="w-4 h-4" />
             </button>
+            {listing && (
+              <ShareProductButton
+                listing={listing}
+                className="absolute top-3 right-12 z-20 w-8 h-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors"
+              />
+            )}
 
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
@@ -263,7 +270,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                 {/* RIGHT — Details (40%) */}
                 <div className="flex-1 h-full overflow-y-auto flex flex-col p-5 space-y-4">
                   {/* Title & Category */}
-                  <div className="pr-6">
+                  <div className="pr-16">
                     <h2 className="text-lg font-display font-bold leading-snug">{listing.softwareName}</h2>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <Badge variant="outline" className="text-[10px] font-medium" style={pal ? { borderColor: `${pal.accent}55`, color: pal.text } : undefined}>{listing.category}</Badge>
