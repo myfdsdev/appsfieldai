@@ -84,6 +84,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     refundPolicy: "",
     redemptionInstructions: "",
     delivery: { accessUrl: "", instructions: "" },
+    autoDelivery: false,
     customButton: { enabled: false, label: "", url: "", openInNewTab: true },
     affiliateEnabled: false,
     affiliateCommissionRate: 30,
@@ -128,6 +129,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
           accessUrl: listing.delivery?.accessUrl || "",
           instructions: listing.delivery?.instructions || "",
         },
+        autoDelivery: listing.autoDelivery || false,
         customButton: {
           enabled: listing.customButton?.enabled || false,
           label: listing.customButton?.label || "",
@@ -304,6 +306,16 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                   <label className="text-xs text-muted-foreground">Access Instructions</label>
                   <Textarea value={form.delivery.instructions} onChange={e => update("delivery", { ...form.delivery, instructions: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20" placeholder="Login details, license key, redemption steps..." />
                 </div>
+                <label className="flex items-start gap-3 p-3 rounded-xl border border-orange-500/30 bg-orange-500/5 cursor-pointer hover:bg-orange-500/10 transition-colors">
+                  <input type="checkbox" checked={form.autoDelivery} onChange={e => update("autoDelivery", e.target.checked)} className="accent-orange-500 w-4 h-4 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Eligible for auto-approved access & delivery</p>
+                    <p className="text-[10px] text-muted-foreground">When checked, orders paid online (PayPal, Stripe, Razorpay) are approved instantly and the access info above is delivered to the buyer automatically. Unchecked = you approve & deliver manually.</p>
+                    {form.autoDelivery && !form.delivery.accessUrl && !form.delivery.instructions && (
+                      <p className="text-[10px] text-amber-500 mt-1">Add an access URL or instructions above — otherwise there's nothing to auto-deliver.</p>
+                    )}
+                  </div>
+                </label>
               </div>
             </div>
 

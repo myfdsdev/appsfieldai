@@ -97,6 +97,11 @@
       "default": "locked",
       "description": "Buyer access to the product/license"
     },
+    "autoDeliver": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when every product in the order is marked eligible for auto-approved access & delivery"
+    },
     "paidAt": {
       "type": "string",
       "format": "date-time",

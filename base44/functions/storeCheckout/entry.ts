@@ -69,6 +69,8 @@ Deno.serve(async (req) => {
     // Default delivery info from the products being purchased (single product = use its delivery).
     let defaultDelivery = null;
     let vendorId = '';
+    // Auto-deliver only when EVERY purchased product is marked eligible by the owner.
+    let autoDeliver = true;
     // Commission entries to create after the order is recorded.
     const commissionDrafts = [];
     for (const it of items) {
@@ -89,6 +91,7 @@ Deno.serve(async (req) => {
       lineItems.push({ listingId: listing.id, listingTitle: listing.softwareName || '', unitPrice, quantity });
       total += lineTotal;
       if (!vendorId && listing.vendorId) vendorId = listing.vendorId;
+      if (!listing.autoDelivery) autoDeliver = false;
       if (!defaultDelivery && listing.delivery && (listing.delivery.accessUrl || listing.delivery.instructions)) {
         defaultDelivery = { accessUrl: listing.delivery.accessUrl || '', instructions: listing.delivery.instructions || '' };
       }
@@ -166,6 +169,7 @@ Deno.serve(async (req) => {
       affiliateId: affiliate ? affiliate.id : undefined,
       affiliateRefCode: affiliate ? affiliate.refCode : undefined,
       delivery: defaultDelivery || undefined,
+      autoDeliver,
       notes: notes || '',
     });
 

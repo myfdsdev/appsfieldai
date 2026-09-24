@@ -260,6 +260,11 @@
         }
       }
     },
+    "autoDelivery": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, orders for this product paid online (PayPal/Stripe/Razorpay) are auto-approved and the delivery info is sent instantly"
+    },
     "delivery": {
       "type": "object",
       "description": "Default product delivery / access info given to buyers after purchase",
