@@ -107,6 +107,27 @@ function shell(opts: { brand: string; logo?: string; storeName: string; inner: s
   </body></html>`;
 }
 
+// Picks black or white text for a given hex background so buttons stay readable
+// even when the store brand color is very light (e.g. yellow).
+function textOn(hex: string): string {
+  const h = String(hex || '').replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  if (Number.isNaN(n) || full.length !== 6) return '#ffffff';
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 170 ? '#111111' : '#ffffff';
+}
+
+// "Bulletproof" email button — table + bgcolor so it renders in Gmail/Outlook/Apple Mail.
+function emailButton(url: string, label: string, bg: string, fullWidth = false): string {
+  const fg = textOn(bg);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" ${fullWidth ? 'width="100%"' : ''} style="margin:0;">
+    <tr><td align="center" bgcolor="${esc(bg)}" style="background:${esc(bg)};border-radius:10px;">
+      <a href="${esc(url)}" target="_blank" style="display:block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:${fg};text-decoration:none;border-radius:10px;">${esc(label)}</a>
+    </td></tr>
+  </table>`;
+}
+
 // Builds the branded invoice / order-confirmation body.
 function orderConfirmationHtml(opts: {
   brand: string; logo?: string; storeName: string; supportEmail?: string;
@@ -120,15 +141,20 @@ function orderConfirmationHtml(opts: {
   const introLine = confirmed
     ? `Hi ${esc(opts.customerName)}, thanks for your purchase at <strong>${esc(storeName)}</strong>. Your payment is confirmed.`
     : `Hi ${esc(opts.customerName)}, thanks for your order at <strong>${esc(storeName)}</strong>. It's <strong>pending confirmation</strong> — we'll email you again as soon as it's approved.`;
+
+  const banner = confirmed
+    ? `<div style="margin:0 0 22px;padding:14px 18px;background:#e7f7ee;border:1px solid #bfe8cf;border-radius:12px;color:#146c3d;font-size:14px;font-weight:600;">✔ Payment received — your order is confirmed.</div>`
+    : `<div style="margin:0 0 22px;padding:14px 18px;background:#fff6e5;border:1px solid #ffd99a;border-radius:12px;color:#8a5200;font-size:14px;font-weight:600;">⏳ Awaiting confirmation — you'll get product access once it's approved.</div>`;
+
+  // Access is only shown once the order is confirmed.
+  const accessUrl = confirmed ? order?.delivery?.accessUrl : '';
+  const accessInstr = confirmed ? order?.delivery?.instructions : '';
+
   const items = Array.isArray(order?.items) ? order.items : [];
   const rows = items.map((it: any) => {
     const lineTotal = (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1);
-    const access = order?.delivery?.accessUrl;
-    const accessLink = access
-      ? `<div style="margin-top:4px;"><a href="${esc(access)}" style="color:${esc(brand)};font-size:12px;text-decoration:none;">→ Access product</a></div>`
-      : '';
     return `<tr>
-      <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#222;">${esc(it.listingTitle)}${accessLink}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#222;font-weight:600;">${esc(it.listingTitle)}</td>
       <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#666;text-align:center;">${Number(it.quantity) || 1}</td>
       <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#222;text-align:right;white-space:nowrap;">${money(lineTotal, currency)}</td>
     </tr>`;
