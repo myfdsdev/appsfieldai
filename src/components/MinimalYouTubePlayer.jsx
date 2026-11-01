@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 import { getYouTubeId } from "@/lib/youtube";
+import { keepHdWhenReady } from "@/lib/hdEmbed";
 
 // Loads the YouTube IFrame API once and resolves when ready.
 let apiPromise = null;
@@ -42,6 +43,8 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
   useEffect(() => {
     if (!videoId) return;
     let cancelled = false;
+    // Same box on screen, but YouTube sees a 1920×1080 player and serves 1080p.
+    const stopHd = keepHdWhenReady(containerRef.current);
     loadYouTubeApi().then(() => {
       if (cancelled || !containerRef.current) return;
       // YouTube REPLACES the target node with an iframe. Give it a fresh child
@@ -82,6 +85,7 @@ export default function MinimalYouTubePlayer({ url, autoplay = true }) {
     }, 250);
     return () => {
       cancelled = true;
+      stopHd();
       clearInterval(interval);
       try { playerRef.current?.destroy?.(); } catch { /* ignore */ }
       if (containerRef.current) containerRef.current.innerHTML = "";
