@@ -19,7 +19,9 @@ export default function TrainingVideoCard({ video }) {
           {id ? (
             <>
               <img
-                src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`}
+                src={`https://img.youtube.com/vi/${id}/maxresdefault.jpg`}
+                onLoad={(e) => { if (e.currentTarget.naturalWidth <= 120) e.currentTarget.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }}
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }}
                 alt={video.name}
                 className="w-full h-full object-cover"
               />
